@@ -23,6 +23,33 @@ Monorepo containing a React (Vite + TS) client and an Express + GraphQL + Mongoo
   - Morgan (logging)
   - UUID (request id)
 
+## Screen Flow
+
+```mermaid
+graph TD
+  Register["Register"] --> Dashboard["Dashboard"]
+  Login["Login"] --> Dashboard
+
+  Dashboard --> UserProfile["User Profile"]
+  Dashboard --> Calendar["Calendar UI"]
+  Dashboard --> UserList["User List"]
+
+  Calendar --> UserList
+  UserProfile --> UserList
+
+  subgraph "User List CRUD"
+    Create["Create"]
+    Read["Read"]
+    Update["Update"]
+    Delete["Delete"]
+  end
+
+  UserList --> Create
+  UserList --> Read
+  UserList --> Update
+  UserList --> Delete
+```
+
 ## Project structure
 
 ```text
