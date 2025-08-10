@@ -20,10 +20,7 @@ function normalizeToDate(input: DateInput): Date {
 /**
  * Format a date/time in Japan Standard Time using a date-fns format pattern.
  */
-export function formatJST(
-  date: DateInput,
-  pattern: string = 'yyyy-MM-dd HH:mm'
-): string {
+export function formatJST(date: DateInput, pattern: string = 'yyyy-MM-dd HH:mm'): string {
   const d = normalizeToDate(date);
   return formatInTimeZone(d, JST_TZ, pattern);
 }
@@ -34,7 +31,7 @@ export function formatJST(
 export function formatJSTRange(
   start: DateInput,
   end: DateInput,
-  pattern: string = 'yyyy-MM-dd HH:mm'
+  pattern: string = 'yyyy-MM-dd HH:mm',
 ): string {
   const startDate = formatInTimeZone(normalizeToDate(start), JST_TZ, pattern);
   const endDate = formatInTimeZone(normalizeToDate(end), JST_TZ, pattern);

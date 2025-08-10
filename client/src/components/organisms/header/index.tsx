@@ -1,7 +1,8 @@
-import { NAV_PATHS, paths, type NavPath } from '@/constants/paths';
-import { useAuthContext } from '@/context/AuthContext';
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+
+import { NAV_PATHS, paths, type NavPath } from '@/constants/paths';
+import { useAuthContext } from '@/context/AuthContext';
 
 /**
  * Header component
@@ -10,17 +11,12 @@ export default function Header(): JSX.Element {
   // Get the current user (do not call hooks conditionally)
   const { isAuthenticated, logout, user } = useAuthContext();
   // Get the visible paths
-  const visiblePaths = NAV_PATHS.filter((p: NavPath) =>
-    isAuthenticated ? p.isAuth : !p.isAuth
-  );
+  const visiblePaths = NAV_PATHS.filter((p: NavPath) => (isAuthenticated ? p.isAuth : !p.isAuth));
   return (
     <header>
       <nav className="navbar navbar-expand-lg bg-body-tertiary mb-4">
         <div className="container">
-          <Link
-            to={paths.home}
-            className="navbar-brand d-flex align-items-center"
-          >
+          <Link to={paths.home} className="navbar-brand d-flex align-items-center">
             <img
               src="https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo.svg"
               alt="Logo"
@@ -73,7 +69,7 @@ export default function Header(): JSX.Element {
                   >
                     <img
                       src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        user?.name?.[0] ?? 'U'
+                        user?.name?.[0] ?? 'U',
                       )}&background=random`}
                       alt="avatar"
                       width={24}

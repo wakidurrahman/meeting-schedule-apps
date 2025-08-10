@@ -29,22 +29,17 @@ export default function Pagination({
             Previous
           </button>
         </li>
-        {Array.from({ length: Math.max(1, pageCount) }, (_, i) => i + 1).map(
-          (n) => (
-            <li
-              key={n}
-              className={`page-item ${n === currentPage ? 'active' : ''}`}
+        {Array.from({ length: Math.max(1, pageCount) }, (_, i) => i + 1).map((n) => (
+          <li key={n} className={`page-item ${n === currentPage ? 'active' : ''}`}>
+            <button
+              className="page-link"
+              aria-current={n === currentPage ? 'page' : undefined}
+              onClick={() => goTo(n)}
             >
-              <button
-                className="page-link"
-                aria-current={n === currentPage ? 'page' : undefined}
-                onClick={() => goTo(n)}
-              >
-                {n}
-              </button>
-            </li>
-          )
-        )}
+              {n}
+            </button>
+          </li>
+        ))}
         <li className={`page-item ${isLast ? 'disabled' : ''}`}>
           <button className="page-link" onClick={() => goTo(currentPage + 1)}>
             Next

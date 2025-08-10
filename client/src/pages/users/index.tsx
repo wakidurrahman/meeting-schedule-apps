@@ -1,9 +1,10 @@
+import { useQuery } from '@apollo/client';
+import React, { useMemo, useState } from 'react';
+
 import Pagination from '@/components/molecules/pagination';
 import Table from '@/components/molecules/table';
 import BaseTemplate from '@/components/templates/base-templates';
 import { GET_USERS, type UsersQueryData } from '@/graphql/queries';
-import { useQuery } from '@apollo/client';
-import React, { useMemo, useState } from 'react';
 
 export default function UsersPage(): JSX.Element {
   const { data } = useQuery<UsersQueryData>(GET_USERS);
@@ -36,11 +37,7 @@ export default function UsersPage(): JSX.Element {
         />
 
         <div className="mt-3">
-          <Pagination
-            currentPage={page}
-            pageCount={pageCount}
-            onPageChange={setPage}
-          />
+          <Pagination currentPage={page} pageCount={pageCount} onPageChange={setPage} />
         </div>
       </div>
     </BaseTemplate>

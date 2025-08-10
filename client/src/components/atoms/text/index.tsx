@@ -2,14 +2,7 @@ import React from 'react';
 
 type TextAlign = 'start' | 'center' | 'end';
 type TextTransform = 'lowercase' | 'uppercase' | 'capitalize';
-type TextWeight =
-  | 'lighter'
-  | 'light'
-  | 'normal'
-  | 'medium'
-  | 'semibold'
-  | 'bold'
-  | 'bolder';
+type TextWeight = 'lighter' | 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'bolder';
 type TextColor =
   | 'primary'
   | 'secondary'
@@ -33,19 +26,10 @@ export type TextProps<T extends keyof JSX.IntrinsicElements = 'p'> = {
 } & Omit<React.ComponentPropsWithoutRef<T>, 'as' | 'children' | 'className'>;
 
 export default function Text<T extends keyof JSX.IntrinsicElements = 'p'>(
-  props: TextProps<T>
+  props: TextProps<T>,
 ): JSX.Element {
-  const {
-    as,
-    align,
-    transform,
-    weight,
-    color,
-    truncate,
-    className,
-    children,
-    ...rest
-  } = props as TextProps;
+  const { as, align, transform, weight, color, truncate, className, children, ...rest } =
+    props as TextProps;
 
   const Element = (as || 'p') as any;
   const classes = [

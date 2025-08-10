@@ -1,8 +1,9 @@
+import React, { useMemo, useRef, useState } from 'react';
+
 import Button from '@/components/atoms/button';
 import TextField from '@/components/atoms/text-field';
 import BaseTemplate from '@/components/templates/base-templates';
 import { useAuthContext, useAuthUser } from '@/context/AuthContext';
-import React, { useMemo, useRef, useState } from 'react';
 
 export default function Profile(): JSX.Element {
   const authUser = useAuthUser();
@@ -16,9 +17,7 @@ export default function Profile(): JSX.Element {
   const avatarUrl = useMemo(() => {
     // Placeholder avatar using first letter
     const letter = (authUser.name || 'U').charAt(0).toUpperCase();
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      letter
-    )}&background=random`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(letter)}&background=random`;
   }, [authUser.name]);
 
   const onSave = async (e: React.FormEvent) => {
@@ -81,28 +80,16 @@ export default function Profile(): JSX.Element {
                 />
               </div>
 
-              {message && (
-                <div className="alert alert-info py-2 small">{message}</div>
-              )}
+              {message && <div className="alert alert-info py-2 small">{message}</div>}
 
               <div className="d-flex gap-2">
                 <Button type="submit" variant="primary" disabled={isSaving}>
                   Save changes
                 </Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  outline
-                  onClick={onDelete}
-                >
+                <Button type="button" variant="danger" outline onClick={onDelete}>
                   Delete profile
                 </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  outline
-                  onClick={logout}
-                >
+                <Button type="button" variant="secondary" outline onClick={logout}>
                   Logout
                 </Button>
               </div>

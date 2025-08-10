@@ -1,9 +1,3 @@
-import Button from '@/components/atoms/button';
-import TextField from '@/components/atoms/text-field';
-import BaseTemplate from '@/components/templates/base-templates';
-import { REGISTER, type RegisterMutationData } from '@/graphql/mutations';
-import type { UserRegisterInput } from '@/types/user';
-import { registerSchema } from '@/utils/validation';
 import { useMutation } from '@apollo/client';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,9 +6,17 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
-export default function Register(): JSX.Element {
-  const navigate = useNavigate();
+import Button from '@/components/atoms/button';
+import TextField from '@/components/atoms/text-field';
+import BaseTemplate from '@/components/templates/base-templates';
+import { REGISTER, type RegisterMutationData } from '@/graphql/mutations';
+import type { UserRegisterInput } from '@/types/user';
+import { registerSchema } from '@/utils/validation';
 
+export default function Register(): JSX.Element {
+  // navigate user to login page after successful registration
+  const navigate = useNavigate();
+  // form values
   type FormValues = z.infer<typeof registerSchema>;
 
   const {
@@ -48,12 +50,7 @@ export default function Register(): JSX.Element {
           <div className="col-md-6">
             <h2 className="mb-3">Register</h2>
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <TextField
-                label="Name"
-                required
-                error={errors.name?.message}
-                {...register('name')}
-              />
+              <TextField label="Name" required error={errors.name?.message} {...register('name')} />
               <TextField
                 type="email"
                 label="Email"
@@ -68,20 +65,12 @@ export default function Register(): JSX.Element {
                 error={errors.password?.message}
                 {...register('password')}
               />
-              {error && (
-                <div className="alert alert-danger">{error.message}</div>
-              )}
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={loading || isSubmitting}
-              >
+              {error && <div className="alert alert-danger">{error.message}</div>}
+              <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
                 Create account
               </Button>
             </form>
-            {process.env.NODE_ENV !== 'production' && (
-              <DevTool control={control} />
-            )}
+            {process.env.NODE_ENV !== 'production' && <DevTool control={control} />}
           </div>
         </div>
       </div>

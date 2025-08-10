@@ -9,33 +9,13 @@ export type TextareaFieldProps = {
   required?: boolean;
   className?: string;
   rows?: number;
-} & Omit<
-  React.TextareaHTMLAttributes<HTMLTextAreaElement>,
-  'className' | 'value'
->;
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'className' | 'value'>;
 
 const TextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
-  (
-    {
-      id,
-      label,
-      value,
-      error,
-      helpText,
-      required,
-      className,
-      rows = 3,
-      ...rest
-    },
-    ref
-  ) => {
+  ({ id, label, value, error, helpText, required, className, rows = 3, ...rest }, ref) => {
     const controlId = id || rest.name || undefined;
     const isInvalid = Boolean(error);
-    const classes = [
-      'form-control',
-      isInvalid ? 'is-invalid' : undefined,
-      className,
-    ]
+    const classes = ['form-control', isInvalid ? 'is-invalid' : undefined, className]
       .filter(Boolean)
       .join(' ');
 
@@ -59,7 +39,7 @@ const TextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
         {isInvalid && <div className="invalid-feedback">{error}</div>}
       </div>
     );
-  }
+  },
 );
 
 export default TextareaField;

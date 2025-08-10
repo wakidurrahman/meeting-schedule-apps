@@ -14,27 +14,10 @@ export type SelectFieldProps = {
 } & Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'className' | 'value'>;
 
 const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
-  (
-    {
-      id,
-      label,
-      value,
-      error,
-      helpText,
-      required,
-      className,
-      options,
-      ...rest
-    },
-    ref
-  ) => {
+  ({ id, label, value, error, helpText, required, className, options, ...rest }, ref) => {
     const controlId = id || rest.name || undefined;
     const isInvalid = Boolean(error);
-    const classes = [
-      'form-select',
-      isInvalid ? 'is-invalid' : undefined,
-      className,
-    ]
+    const classes = ['form-select', isInvalid ? 'is-invalid' : undefined, className]
       .filter(Boolean)
       .join(' ');
 
@@ -46,13 +29,7 @@ const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
             {required ? ' *' : ''}
           </label>
         )}
-        <select
-          id={controlId}
-          ref={ref}
-          className={classes}
-          value={value}
-          {...rest}
-        >
+        <select id={controlId} ref={ref} className={classes} value={value} {...rest}>
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -63,7 +40,7 @@ const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
         {isInvalid && <div className="invalid-feedback">{error}</div>}
       </div>
     );
-  }
+  },
 );
 
 export default SelectField;

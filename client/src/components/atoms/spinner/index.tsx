@@ -33,7 +33,7 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
       showLabel = false,
       ...rest
     },
-    ref
+    ref,
   ) => {
     const base = variant === 'grow' ? 'spinner-grow' : 'spinner-border';
     const classes = [
@@ -54,7 +54,7 @@ const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 export default Spinner;

@@ -1,3 +1,6 @@
+import React from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
 import { paths } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
 import CalendarPage from '@/pages/calendar';
@@ -7,8 +10,6 @@ import Login from '@/pages/login';
 import Profile from '@/pages/profile';
 import Register from '@/pages/register';
 import UsersPage from '@/pages/users';
-import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
 
 const pathsLink = paths;
 

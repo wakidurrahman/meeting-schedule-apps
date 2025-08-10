@@ -13,10 +13,7 @@ type ErrorBoundaryState = { hasError: boolean; error?: Error };
  * @param {JSX.Element} children - The children to render
  * @returns {JSX.Element} The error boundary
  */
-export default class ErrorBoundary extends React.Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   /**
    * State
    */

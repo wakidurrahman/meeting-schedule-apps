@@ -68,10 +68,7 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
           ))}
           {data.length === 0 && (
             <tr>
-              <td
-                colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                className="text-center"
-              >
+              <td colSpan={columns.length + (actions.length > 0 ? 1 : 0)} className="text-center">
                 No data
               </td>
             </tr>

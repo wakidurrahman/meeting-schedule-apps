@@ -38,12 +38,7 @@ export default function Alert({
     <div className={classes} role="alert">
       {children}
       {dismissible && (
-        <button
-          type="button"
-          className="btn-close"
-          aria-label="Close"
-          onClick={onClose}
-        />
+        <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
       )}
     </div>
   );

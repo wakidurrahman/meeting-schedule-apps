@@ -11,17 +11,10 @@ export type TextFieldProps = {
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className' | 'value'>;
 
 const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
-  (
-    { id, label, value, error, helpText, required, className, ...rest },
-    ref
-  ) => {
+  ({ id, label, value, error, helpText, required, className, ...rest }, ref) => {
     const controlId = id || rest.name || undefined;
     const isInvalid = Boolean(error);
-    const classes = [
-      'form-control',
-      isInvalid ? 'is-invalid' : undefined,
-      className,
-    ]
+    const classes = ['form-control', isInvalid ? 'is-invalid' : undefined, className]
       .filter(Boolean)
       .join(' ');
 
@@ -33,18 +26,12 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
             {required ? ' *' : ''}
           </label>
         )}
-        <input
-          id={controlId}
-          ref={ref}
-          className={classes}
-          value={value}
-          {...rest}
-        />
+        <input id={controlId} ref={ref} className={classes} value={value} {...rest} />
         {helpText && !isInvalid && <div className="form-text">{helpText}</div>}
         {isInvalid && <div className="invalid-feedback">{error}</div>}
       </div>
     );
-  }
+  },
 );
 
 export default TextField;

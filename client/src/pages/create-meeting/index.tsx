@@ -1,3 +1,10 @@
+import { useMutation, useQuery } from '@apollo/client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+
 import Button from '@/components/atoms/button';
 import SelectField from '@/components/atoms/select-field';
 import TextField from '@/components/atoms/text-field';
@@ -9,15 +16,8 @@ import {
   type CreateMeetingMutationVariables,
 } from '@/graphql/mutations';
 import { GET_USERS, type UsersQueryData } from '@/graphql/queries';
-import { useMutation, useQuery } from '@apollo/client';
-import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { z } from 'zod';
 
-const isValidObjectId = (value: string): boolean =>
-  /^[0-9a-fA-F]{24}$/.test(value);
+const isValidObjectId = (value: string): boolean => /^[0-9a-fA-F]{24}$/.test(value);
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -99,11 +99,7 @@ export default function CreateMeeting(): JSX.Element {
                 {...register('title')}
               />
 
-              <TextareaField
-                label="Description"
-                rows={3}
-                {...register('description')}
-              />
+              <TextareaField label="Description" rows={3} {...register('description')} />
 
               <div className="row">
                 <div className="col-md-6">
@@ -148,30 +144,15 @@ export default function CreateMeeting(): JSX.Element {
                   />
                 )}
               />
-              {usersError && (
-                <div className="text-danger small mt-2">
-                  Failed to load users
-                </div>
-              )}
+              {usersError && <div className="text-danger small mt-2">Failed to load users</div>}
 
-              {error && (
-                <div className="alert alert-danger">{error.message}</div>
-              )}
+              {error && <div className="alert alert-danger">{error.message}</div>}
 
               <div className="d-flex gap-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={loading || isSubmitting}
-                >
+                <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
                   Create
                 </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  outline
-                  onClick={() => navigate(-1)}
-                >
+                <Button type="button" variant="secondary" outline onClick={() => navigate(-1)}>
                   Cancel
                 </Button>
               </div>

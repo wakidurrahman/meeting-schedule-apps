@@ -40,9 +40,7 @@ export default function Button(props: ButtonProps): JSX.Element {
   const base = outline
     ? `btn btn-outline-${variant as ButtonOutlineVariant}`
     : `btn btn-${variant}`;
-  const classes = [base, size ? `btn-${size}` : undefined, className]
-    .filter(Boolean)
-    .join(' ');
+  const classes = [base, size ? `btn-${size}` : undefined, className].filter(Boolean).join(' ');
 
   if (isLink) {
     const {

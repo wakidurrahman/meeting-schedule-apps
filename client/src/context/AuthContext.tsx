@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 
-import {
-  AuthContextValue,
-  AuthUserNullable,
-  AuthenticatedUser,
-} from '@/types/user';
+import { AuthContextValue, AuthUserNullable, AuthenticatedUser } from '@/types/user';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -48,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value = useMemo(
     () => ({ user, token, isAuthenticated: Boolean(token), login, logout }),
-    [user, token]
+    [user, token],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -56,8 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuthContext = (): AuthContextValue => {
   const context = useContext(AuthContext);
-  if (!context)
-    throw new Error('useAuthContext must be used within AuthProvider');
+  if (!context) throw new Error('useAuthContext must be used within AuthProvider');
   return context;
 };
 

@@ -9,9 +9,10 @@
  * - Development tools integration
  */
 
-import { TOKEN_KEY } from '@/context/AuthContext';
 import { ApolloClient, HttpLink, InMemoryCache, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+
+import { TOKEN_KEY } from '@/context/AuthContext';
 
 /**
  * HTTP Link Configuration

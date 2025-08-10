@@ -8,12 +8,7 @@ export type HeadingProps = {
   children?: React.ReactNode;
 } & Omit<React.ComponentPropsWithoutRef<'h1'>, 'children' | 'className'>;
 
-export default function Heading({
-  level = 1,
-  className,
-  children,
-  ...rest
-}: HeadingProps) {
+export default function Heading({ level = 1, className, children, ...rest }: HeadingProps) {
   const Tag = `h${level}` as unknown as keyof JSX.IntrinsicElements;
   return (
     <Tag className={className} {...(rest as any)}>

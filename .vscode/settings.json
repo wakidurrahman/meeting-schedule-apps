@@ -1,0 +1,21 @@
+{
+  // Format on save for the whole workspace
+  "editor.formatOnSave": true,
+  // Use Prettier as the default formatter
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // Enable ESLint to fix problems on save
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    { "mode": "auto" },
+    { "directory": "client", "changeProcessCWD": true },
+    { "directory": "server", "changeProcessCWD": true }
+  ],
+  // Search both projects for tsconfig paths
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.tsdk": "client/node_modules/typescript/lib"
+}

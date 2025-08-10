@@ -1,7 +1,8 @@
-import { Meetings } from '@/types/meeting';
-import { AuthUser, UserProfile } from '@/types/user';
 import { gql } from '@apollo/client';
 import { TypedDocumentNode as TD } from '@graphql-typed-document-node/core';
+
+import { Meetings } from '@/types/meeting';
+import { AuthUser, UserProfile } from '@/types/user';
 
 /**
  * Get the current user
@@ -69,10 +70,7 @@ export const GET_USERS: TD<UsersQueryData, Record<string, never>> = gql`
 export interface MyProfileQueryData {
   myProfile: UserProfile | null;
 }
-export const GET_MY_PROFILE: TD<
-  MyProfileQueryData,
-  Record<string, never>
-> = gql`
+export const GET_MY_PROFILE: TD<MyProfileQueryData, Record<string, never>> = gql`
   query MyProfile {
     myProfile {
       id

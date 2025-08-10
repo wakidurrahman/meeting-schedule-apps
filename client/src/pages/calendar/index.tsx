@@ -1,5 +1,6 @@
-import BaseTemplate from '@/components/templates/base-templates';
 import React from 'react';
+
+import BaseTemplate from '@/components/templates/base-templates';
 
 export default function CalendarPage(): JSX.Element {
   return (
