@@ -27,7 +27,7 @@ Monorepo containing a React (Vite + TS) client and an Express + GraphQL + Mongoo
 
 ```mermaid
 graph TD
-  Register["Register"] --> Dashboard["Dashboard"]
+  Register["Register"] --> Login["Login"]
   Login["Login"] --> Dashboard
 
   Dashboard --> UserProfile["User Profile"]
