@@ -1,0 +1,39 @@
+{
+  "name": "meeting-scheduler-client",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Internal virtual meeting scheduler client (React + Vite + TS + Apollo)",
+  "engines": {
+    "node": ">=22.14.0 <23.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@apollo/client": "3.3.11",
+    "bootstrap": "5.3.3",
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.1",
+    "graphql": "^15.9.0",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-hook-form": "^7.52.1",
+    "react-router-dom": "^6.23.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "@hookform/devtools": "^4.3.1",
+    "@hookform/resolvers": "^3.9.0",
+    "@types/node": "^20.14.10",
+    "@types/react": "16.14.55",
+    "@types/react-dom": "16.9.24",
+    "@vitejs/plugin-react": "^4.3.1",
+    "sass": "^1.77.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10"
+  }
+}
