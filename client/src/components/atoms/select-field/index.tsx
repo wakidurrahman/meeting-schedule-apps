@@ -43,4 +43,6 @@ const SelectField = React.forwardRef<HTMLSelectElement, SelectFieldProps>(
   },
 );
 
+SelectField.displayName = 'SelectField';
+
 export default SelectField;

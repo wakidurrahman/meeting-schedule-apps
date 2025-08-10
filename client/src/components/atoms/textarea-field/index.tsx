@@ -42,4 +42,6 @@ const TextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
   },
 );
 
+TextareaField.displayName = 'TextareaField';
+
 export default TextareaField;

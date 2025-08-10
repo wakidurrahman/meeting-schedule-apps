@@ -6,7 +6,9 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
+import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
 import BaseTemplate from '@/components/templates/base-templates';
 import { REGISTER, type RegisterMutationData } from '@/graphql/mutations';
@@ -16,7 +18,7 @@ import { registerSchema } from '@/utils/validation';
 export default function Register(): JSX.Element {
   // navigate user to login page after successful registration
   const navigate = useNavigate();
-  // form values
+  // Zod form values
   type FormValues = z.infer<typeof registerSchema>;
 
   const {
@@ -48,29 +50,45 @@ export default function Register(): JSX.Element {
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6">
-            <h2 className="mb-3">Register</h2>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate>
-              <TextField label="Name" required error={errors.name?.message} {...register('name')} />
-              <TextField
-                type="email"
-                label="Email"
-                required
-                error={errors.email?.message}
-                {...register('email')}
-              />
-              <TextField
-                type="password"
-                label="Password"
-                required
-                error={errors.password?.message}
-                {...register('password')}
-              />
-              {error && <div className="alert alert-danger">{error.message}</div>}
-              <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
-                Create account
-              </Button>
-            </form>
-            {process.env.NODE_ENV !== 'production' && <DevTool control={control} />}
+            <div className="card">
+              <div className="card-body">
+                <Heading level={5} className="mb-3">
+                  Register
+                </Heading>
+                <form onSubmit={handleSubmit(onSubmit)} noValidate>
+                  <TextField
+                    label="Name"
+                    placeholder="Enter your name"
+                    required
+                    error={errors.name?.message}
+                    {...register('name')}
+                  />
+                  <TextField
+                    type="email"
+                    label="Email"
+                    placeholder="Enter your email"
+                    required
+                    error={errors.email?.message}
+                    {...register('email')}
+                  />
+                  <TextField
+                    type="password"
+                    label="Password"
+                    placeholder="Enter your password"
+                    required
+                    error={errors.password?.message}
+                    {...register('password')}
+                  />
+                  {error && <Alert variant="danger">{error.message}</Alert>}
+                  <div className="d-flex justify-content-center">
+                    <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
+                      Create account
+                    </Button>
+                  </div>
+                </form>
+                {process.env.NODE_ENV !== 'production' && <DevTool control={control} />}
+              </div>
+            </div>
           </div>
         </div>
       </div>

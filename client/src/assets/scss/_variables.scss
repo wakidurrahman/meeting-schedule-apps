@@ -1,13 +1,50 @@
 // Bootstrap variable overrides
-$primary: #3f51b5;
-$secondary: #607d8b;
-$success: #2e7d32;
-$info: #0288d1;
-$warning: #f9a825;
-$danger: #c62828;
-$light: #f8f9fa;
-$dark: #212121;
+// $primary: #3f51b5;
+// $secondary: #607d8b;
+// $success: #2e7d32;
+// $info: #0288d1;
+// $warning: #f9a825;
+// $danger: #c62828;
+// $light: #f8f9fa;
+// $dark: #212121;
+
+// Custom color variables
+$primary: #202d48;
+$secondary: #c4d0eb;
+$success: #8bc34a;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #dc3545;
+$light: #f2f6ff;
+$dark: #535353;
 
 $body-bg: #f6f7fb;
 $body-color: #212529;
 $border-radius: 0.5rem;
+
+// Custom CSS variables for runtime theming
+:root {
+  --bs-primary: #202d48;
+  --bs-secondary: #c4d0eb;
+  --bs-success: #8bc34a;
+  --bs-info: #17a2b8;
+  --bs-warning: #ffc107;
+  --bs-danger: #dc3545;
+  --bs-light: #f2f6ff;
+  --bs-dark: #535353;
+
+  // Custom button variables
+  --bs-btn-primary-color: #fff;
+  --bs-btn-primary-bg: var(--bs-primary);
+  --bs-btn-primary-border-color: var(--bs-primary);
+  --bs-btn-primary-hover-color: #fff;
+  --bs-btn-primary-hover-bg: #334977;
+  --bs-btn-primary-hover-border-color: #334977;
+  --bs-btn-primary-active-color: #fff;
+  --bs-btn-primary-active-bg: #1a2332;
+  --bs-btn-primary-active-border-color: #1a2332;
+  --bs-btn-primary-disabled-color: #fff;
+
+  // Font family
+  font-family: var(--bs-font-sans-serif);
+}

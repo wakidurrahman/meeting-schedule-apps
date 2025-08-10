@@ -9,6 +9,19 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: [
+          'import',
+          'mixed-decls',
+          'color-functions',
+          'global-builtin',
+          'legacy-js-api',
+        ],
+      },
+    },
+  },
   server: {
     // this is the server configuration for the client proxy.
     port: 5173,

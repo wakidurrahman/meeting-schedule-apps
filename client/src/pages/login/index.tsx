@@ -60,6 +60,7 @@ export default function Login(): JSX.Element {
               <TextField
                 type="email"
                 label="Email"
+                placeholder="Enter your email"
                 required
                 error={errors.email?.message}
                 {...register('email')}
@@ -67,6 +68,7 @@ export default function Login(): JSX.Element {
               <TextField
                 type="password"
                 label="Password"
+                placeholder="Enter your password"
                 required
                 error={errors.password?.message}
                 {...register('password')}
