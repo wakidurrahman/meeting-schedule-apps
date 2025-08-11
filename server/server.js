@@ -20,7 +20,12 @@ async function start() {
 
   const app = express();
 
-  app.use(helmet());
+  // Helmet CSP blocks GraphiQL's inline scripts. Disable CSP in dev.
+  app.use(
+    helmet({
+      contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+    }),
+  );
   app.use((req, _res, next) => {
     req.id = uuidv4();
     next();
@@ -40,6 +45,8 @@ async function start() {
       rootValue: resolvers,
       context: { req },
       graphiql: process.env.NODE_ENV !== 'production',
+      // schema: schema,
+      // rootValue: resolvers,
       customFormatErrorFn: (err) => {
         console.log('err', err);
         console.log('req', req.body);
