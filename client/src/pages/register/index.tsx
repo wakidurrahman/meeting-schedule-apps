@@ -10,7 +10,6 @@ import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
-// Global toasts are rendered at root; no page-local container needed
 import BaseTemplate from '@/components/templates/base-templates';
 import { REGISTER, type RegisterMutationData } from '@/graphql/mutations';
 import { useToast } from '@/hooks/use-toast';
@@ -30,13 +29,14 @@ export default function Register(): JSX.Element {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<FormValues>({
     resolver: zodResolver(RegisterSchema),
     mode: 'onChange', // validate on change
     criteriaMode: 'all', // validate all fields
     shouldFocusError: true, // focus on the first error
   });
+  // Register mutation hook with Apollo Client
   const [registerMutation, { loading, error }] = useMutation<
     RegisterMutationData,
     { input: UserRegisterInput }
@@ -70,42 +70,52 @@ export default function Register(): JSX.Element {
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-6">
+            {/* Register card */}
             <div className="card">
               <div className="card-body">
                 <Heading level={5} className="mb-3">
                   Register
                 </Heading>
+                {/* Register form */}
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
                   <TextField
                     label="Name"
                     placeholder="Enter your name"
-                    required
+                    disabled={loading}
                     error={errors.name?.message}
+                    helpText="Please enter your name"
                     {...register('name')}
                   />
                   <TextField
                     type="email"
                     label="Email"
                     placeholder="Enter your email"
-                    required
+                    disabled={loading}
                     error={errors.email?.message}
+                    helpText="Please enter your email. Example email: zain@example.com"
+                    isDirty={isDirty}
+                    isValid={isValid}
                     {...register('email')}
                   />
                   <TextField
                     type="password"
                     label="Password"
                     placeholder="Enter your password"
-                    required
+                    disabled={loading}
                     error={errors.password?.message}
+                    helpText="Example password base on the following: e.g. Zain123@, Min_123$"
                     {...register('password')}
                   />
+                  {/* Error message from server state */}
                   {error && <Alert variant="danger">{error.message}</Alert>}
+                  {/* Submit button */}
                   <div className="d-flex justify-content-center">
                     <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
-                      Create account
+                      {loading ? 'Loading...' : 'Create account'}
                     </Button>
                   </div>
                 </form>
+                {/* DevTools */}
                 {process.env.NODE_ENV !== 'production' && <DevTool control={control} />}
               </div>
             </div>

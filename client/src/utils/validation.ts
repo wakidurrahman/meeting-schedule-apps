@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// Register schema
 export const RegisterSchema = z.object({
   name: z
     .string()
@@ -16,4 +17,10 @@ export const RegisterSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
     ), // Example password base on the following regex: e.g. Zain123@, Min_123$
+});
+
+// Login schema
+export const LoginSchema = z.object({
+  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters'), // Example password base on the following regex: e.g. Zain123@, Min_123$
 });

@@ -13,18 +13,17 @@ import TextField from '@/components/atoms/text-field';
 import BaseTemplate from '@/components/templates/base-templates';
 import { useAuthContext } from '@/context/AuthContext';
 import { LOGIN, type LoginMutationData } from '@/graphql/mutations';
+import { useToast } from '@/hooks/use-toast';
 import type { UserLoginInput } from '@/types/user';
+import { LoginSchema } from '@/utils/validation';
 
 export default function Login(): JSX.Element {
   const navigate = useNavigate();
   const { login: setAuth } = useAuthContext();
-
-  const schema = z.object({
-    email: z.string().email('Invalid email'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-  });
-
-  type FormValues = z.infer<typeof schema>;
+  // Toast
+  const { addSuccess, addError } = useToast();
+  // form values
+  type FormValues = z.infer<typeof LoginSchema>;
 
   const {
     register,
@@ -32,11 +31,12 @@ export default function Login(): JSX.Element {
     control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    mode: 'onChange',
-    criteriaMode: 'all',
-    shouldFocusError: true,
+    resolver: zodResolver(LoginSchema),
+    mode: 'onChange', // validate on change
+    criteriaMode: 'all', // validate all fields
+    shouldFocusError: true, // focus on the first error
   });
+  // Login mutation hook with Apollo Client
   const [loginMutation, { loading, error }] = useMutation<
     LoginMutationData,
     { input: UserLoginInput }
@@ -44,10 +44,23 @@ export default function Login(): JSX.Element {
     onCompleted: (data) => {
       const { token, user } = data.login;
       setAuth(token, user);
-      navigate('/');
+      addSuccess({
+        title: 'Login Successful!',
+        subtitle: 'just now',
+        children: 'Welcome back!',
+        autohide: true,
+        delay: 3000,
+      });
+      navigate('/'); // navigate user to home page after successful login
+    },
+    onError: (error) => {
+      addError({
+        title: 'Login Failed!',
+        subtitle: 'just now',
+        children: error.message,
+      });
     },
   });
-
   const onSubmit = (values: FormValues) => {
     loginMutation({ variables: { input: values } });
   };
