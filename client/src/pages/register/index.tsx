@@ -1,3 +1,39 @@
+/**
+ * Register Page – end‑to‑end flow and state documentation
+ *
+ * Purpose
+ * - Collect new user credentials and create an account through the "GraphQL API".
+ *
+ * Visual structure
+ * - Card layout with three inputs: "name", "email", "password".
+ * - Submit button centered; inline error alert shows server errors when present.
+ *
+ * Form state management (React Hook Form + Zod)
+ * - useForm is configured with:
+ *   - resolver: zodResolver(RegisterSchema) → schema validation for all fields
+ *   - mode: 'onChange' → validate as the user types
+ *   - criteriaMode: 'all' → collect all issues per field (not just first)
+ *   - shouldFocusError: true → focus first invalid field on submit
+ * - Derived state used by the UI:
+ *   - errors: field‑level messages bound to inputs
+ *   - isSubmitting: true while submit promise is in flight
+ *   - isDirty / isValid: reflect current validation state for helper UI
+ *
+ * Transport (Apollo useMutation)
+ * - Mutation: REGISTER
+ * - Variables: { input: { name, email, password } }
+ * - Loading: `loading` signals network in‑flight (disables inputs & button)
+ * - Error: `error` from Apollo becomes an inline <Alert> and a toast
+ *
+ * Outcomes
+ * - Success: toast “Registration Successful” then navigate → /login
+ * - Failure: toast “Registration Failed” and keep user on the form
+ *
+ * Accessibility and UX
+ * - Inputs use `error` props to render invalid styles and messages
+ * - Submit button disabled while `loading || isSubmitting`
+ * - Dev tools: RHF DevTool is rendered only in non‑production builds
+ */
 import { useMutation } from '@apollo/client';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +53,7 @@ import type { UserRegisterInput } from '@/types/user';
 import { RegisterSchema } from '@/utils/validation';
 
 export default function Register(): JSX.Element {
-  // navigate user to login page after successful registration
+  // Navigate user to login page after successful registration
   const navigate = useNavigate();
   // Toast
   const { addSuccess, addError } = useToast();
@@ -26,10 +62,10 @@ export default function Register(): JSX.Element {
 
   // RHF instance
   const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting, isDirty, isValid },
+    register, // RHF register function
+    handleSubmit, // RHF handle submit function
+    control, // RHF control function
+    formState: { errors, isSubmitting, isDirty, isValid }, // RHF form state
   } = useForm<FormValues>({
     resolver: zodResolver(RegisterSchema),
     mode: 'onChange', // validate on change
@@ -122,8 +158,6 @@ export default function Register(): JSX.Element {
           </div>
         </div>
       </div>
-
-      {/* Toasts handled globally */}
     </BaseTemplate>
   );
 }

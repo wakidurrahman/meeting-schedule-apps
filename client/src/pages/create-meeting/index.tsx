@@ -1,3 +1,29 @@
+/**
+ * Create Meeting Page – flow and state documentation
+ *
+ * Purpose
+ * - Allow an authenticated user to schedule a meeting with optional attendee.
+ *
+ * Data dependencies
+ * - Query: `GET_USERS` to populate attendee select (optional).
+ * - Mutation: `CREATE_MEETING` to persist a new meeting.
+ *
+ * Form + validation (React Hook Form + Zod)
+ * - Fields: title, description?, startTime, endTime, attendeeId?
+ * - Zod schema ensures required fields and validates optional attendee as a Mongo ObjectId shape.
+ * - `mode: 'onChange'`; `errors` and `isSubmitting` drive UI and button state.
+ *
+ * Time handling
+ * - Inputs use `type="datetime-local"` (local time). Values are converted to ISO strings
+ *   with `toISOString()` before being sent to the server.
+ *
+ * Loading and errors
+ * - `usersLoading` disables attendee select; `usersError` shows a small inline message.
+ * - Mutation `loading` disables submit; mutation `error` is surfaced as an alert.
+ *
+ * Outcome
+ * - On success: navigate back to `/` (dashboard).
+ */
 import { useMutation, useQuery } from '@apollo/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';

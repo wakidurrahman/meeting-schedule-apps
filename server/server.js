@@ -26,9 +26,7 @@ async function start() {
     next();
   });
   morgan.token('id', (req) => req.id);
-  app.use(
-    morgan(':id :method :url :status :res[content-length] - :response-time ms')
-  );
+  app.use(morgan(':id :method :url :status :res[content-length] - :response-time ms'));
   app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
   app.use(express.json());
   app.use(authMiddleware);
@@ -45,8 +43,7 @@ async function start() {
       customFormatErrorFn: (err) => {
         console.log('err', err);
         console.log('req', req.body);
-        const isZod =
-          err.originalError && err.originalError.name === 'ZodError';
+        const isZod = err.originalError && err.originalError.name === 'ZodError';
         const code = isZod ? 'BAD_USER_INPUT' : 'INTERNAL_SERVER_ERROR';
         const message = isZod ? 'Validation failed' : err.message;
         const details = isZod ? err.originalError.issues : undefined;
@@ -61,7 +58,7 @@ async function start() {
           },
         };
       },
-    }))
+    })),
   );
 
   app.get('/', (_req, res) => {

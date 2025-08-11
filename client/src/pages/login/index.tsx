@@ -1,3 +1,25 @@
+/**
+ * Login Page – flow and state documentation
+ *
+ * Purpose
+ * - Authenticate an existing user and establish an application session.
+ *
+ * Form + validation
+ * - React Hook Form with Zod (`LoginSchema`).
+ * - mode: 'onChange' for realtime validation; `shouldFocusError` focuses first invalid field.
+ * - State used by UI: `errors`, `isSubmitting`.
+ *
+ * Transport (Apollo useMutation)
+ * - Mutation: LOGIN with variables `{ input: { email, password } }`.
+ * - On success: receive `{ token, user }` → store via `AuthContext.login`, show success toast, navigate `/`.
+ * - On error: show error toast and inline `<Alert>`.
+ * - `loading` disables inputs and submit button.
+ *
+ * Security & UX
+ * - Token is attached by Apollo authLink on subsequent requests.
+ * - Minimal layout with two fields and a primary action.
+ * - RHF DevTool enabled only in non‑production for debugging.
+ */
 import { useMutation } from '@apollo/client';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
