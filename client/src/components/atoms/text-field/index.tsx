@@ -23,7 +23,7 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
         {label && (
           <label htmlFor={controlId} className="form-label">
             {label}
-            {required ? ' *' : ''}
+            <span className="text-danger">{required ? ' *' : ''}</span>
           </label>
         )}
         <input id={controlId} ref={ref} className={classes} value={value} {...rest} />

@@ -1,5 +1,18 @@
 import React from 'react';
 
+function omitProps<T extends Record<string, unknown>, K extends readonly (keyof T)[]>(
+  obj: T,
+  keys: K,
+): Omit<T, K[number]> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (!keys.includes(key as keyof T)) {
+      result[key] = value;
+    }
+  }
+  return result as Omit<T, K[number]>;
+}
+
 type ButtonVariant =
   | 'primary'
   | 'secondary'
@@ -43,15 +56,11 @@ export default function Button(props: ButtonProps): JSX.Element {
   const classes = [base, size ? `btn-${size}` : undefined, className].filter(Boolean).join(' ');
 
   if (isLink) {
-    const {
-      href: linkHref,
-      variant: _variant,
-      outline: _outline,
-      size: _size,
-      className: _className,
-      children: _children,
-      ...anchorProps
-    } = props as ButtonAsLinkProps & CommonProps;
+    const linkHref = (props as ButtonAsLinkProps).href;
+    const anchorProps = omitProps(
+      props as ButtonAsLinkProps & CommonProps,
+      ['variant', 'outline', 'size', 'className', 'children', 'href'] as const,
+    ) as React.AnchorHTMLAttributes<HTMLAnchorElement>;
     return (
       <a href={linkHref} className={classes} {...anchorProps}>
         {children}
@@ -59,15 +68,10 @@ export default function Button(props: ButtonProps): JSX.Element {
     );
   }
 
-  const {
-    variant: _bVariant,
-    outline: _bOutline,
-    size: _bSize,
-    className: _bClassName,
-    children: _bChildren,
-    href: _bHref,
-    ...buttonProps
-  } = props as ButtonAsButtonProps & CommonProps;
+  const buttonProps = omitProps(
+    props as ButtonAsButtonProps & CommonProps,
+    ['variant', 'outline', 'size', 'className', 'children'] as const,
+  ) as React.ButtonHTMLAttributes<HTMLButtonElement>;
   return (
     <button className={classes} {...buttonProps}>
       {children}

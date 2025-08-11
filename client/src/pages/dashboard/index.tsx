@@ -4,12 +4,10 @@ import React from 'react';
 import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
 import BaseTemplate from '@/components/templates/base-templates';
-import { useAuthContext } from '@/context/AuthContext';
 import { GET_ME, GET_MEETINGS, type MeQueryData, type MeetingsQueryData } from '@/graphql/queries';
 import { formatJST } from '@/utils/date';
 
 export default function Dashboard(): JSX.Element {
-  const { logout } = useAuthContext();
   const { data: meData } = useQuery<MeQueryData>(GET_ME);
   const { data: meetingsData, loading } = useQuery<MeetingsQueryData>(GET_MEETINGS);
   console.log('meetingsData', meetingsData);

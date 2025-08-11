@@ -70,8 +70,11 @@ export default function Profile(): JSX.Element {
               <TextField label="Email" value={email} readOnly disabled />
 
               <div className="mb-3">
-                <label className="form-label">Profile picture</label>
+                <label className="form-label" htmlFor="profile-picture">
+                  Profile picture
+                </label>
                 <input
+                  id="profile-picture"
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"

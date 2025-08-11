@@ -24,7 +24,7 @@ const TextareaField = React.forwardRef<HTMLTextAreaElement, TextareaFieldProps>(
         {label && (
           <label htmlFor={controlId} className="form-label">
             {label}
-            {required ? ' *' : ''}
+            <span className="text-danger">{required ? ' *' : ''}</span>
           </label>
         )}
         <textarea

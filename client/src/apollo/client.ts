@@ -87,5 +87,10 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Apollo Client initialized:', apolloClient);
 
   // Make apolloClient available globally for debugging
-  (window as any).apolloClient = apolloClient;
+  declare global {
+    interface Window {
+      apolloClient: ApolloClient<unknown>;
+    }
+  }
+  window.apolloClient = apolloClient;
 }

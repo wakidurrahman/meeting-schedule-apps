@@ -10,38 +10,58 @@ import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
+// Global toasts are rendered at root; no page-local container needed
 import BaseTemplate from '@/components/templates/base-templates';
 import { REGISTER, type RegisterMutationData } from '@/graphql/mutations';
+import { useToast } from '@/hooks/use-toast';
 import type { UserRegisterInput } from '@/types/user';
-import { registerSchema } from '@/utils/validation';
+import { RegisterSchema } from '@/utils/validation';
 
 export default function Register(): JSX.Element {
   // navigate user to login page after successful registration
   const navigate = useNavigate();
+  // Toast
+  const { addSuccess, addError } = useToast();
   // Zod form values
-  type FormValues = z.infer<typeof registerSchema>;
+  type FormValues = z.infer<typeof RegisterSchema>;
 
+  // RHF instance
   const {
     register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(registerSchema),
-    mode: 'onChange',
-    criteriaMode: 'all',
-    shouldFocusError: true,
+    resolver: zodResolver(RegisterSchema),
+    mode: 'onChange', // validate on change
+    criteriaMode: 'all', // validate all fields
+    shouldFocusError: true, // focus on the first error
   });
   const [registerMutation, { loading, error }] = useMutation<
     RegisterMutationData,
     { input: UserRegisterInput }
   >(REGISTER, {
     onCompleted: () => {
+      addSuccess({
+        title: 'Registration Successful!',
+        subtitle: 'just now',
+        children: 'Account created successfully. Attempting auto-login...',
+        autohide: true,
+        delay: 3000,
+      });
       navigate('/login');
+    },
+    onError: (error) => {
+      addError({
+        title: 'Registration Failed!',
+        subtitle: 'just now',
+        children: error.message,
+      });
     },
   });
 
   const onSubmit = (values: FormValues) => {
+    console.log('register values', values);
     registerMutation({ variables: { input: values } });
   };
 
@@ -92,6 +112,8 @@ export default function Register(): JSX.Element {
           </div>
         </div>
       </div>
+
+      {/* Toasts handled globally */}
     </BaseTemplate>
   );
 }

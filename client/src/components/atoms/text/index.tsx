@@ -31,7 +31,7 @@ export default function Text<T extends keyof JSX.IntrinsicElements = 'p'>(
   const { as, align, transform, weight, color, truncate, className, children, ...rest } =
     props as TextProps;
 
-  const Element = (as || 'p') as any;
+  const Element = (as || 'p') as keyof JSX.IntrinsicElements;
   const classes = [
     className,
     align ? `text-${align}` : undefined,
@@ -44,7 +44,7 @@ export default function Text<T extends keyof JSX.IntrinsicElements = 'p'>(
     .join(' ');
 
   return (
-    <Element className={classes} {...(rest as any)}>
+    <Element className={classes} {...(rest as Record<string, unknown>)}>
       {children}
     </Element>
   );

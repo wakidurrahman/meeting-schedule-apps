@@ -8,14 +8,14 @@ import { GET_USERS, type UsersQueryData } from '@/graphql/queries';
 
 export default function UsersPage(): JSX.Element {
   const { data } = useQuery<UsersQueryData>(GET_USERS);
-  const users = data?.users ?? [];
+  const users = useMemo(() => data?.users ?? [], [data?.users]);
   const [page, setPage] = useState(1);
   const pageSize = 5; // controlled here (can be lifted to parent later)
   const pageCount = Math.max(1, Math.ceil(users.length / pageSize));
   const current = useMemo(() => {
     const start = (page - 1) * pageSize;
     return users.slice(start, start + pageSize);
-  }, [users, page]);
+  }, [page, pageSize, users]);
 
   return (
     <BaseTemplate>

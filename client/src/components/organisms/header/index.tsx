@@ -60,10 +60,9 @@ export default function Header(): JSX.Element {
             {isAuthenticated && (
               <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li className="nav-item dropdown">
-                  <a
-                    className="nav-link dropdown-toggle d-flex align-items-center"
-                    href="#"
-                    role="button"
+                  <button
+                    type="button"
+                    className="nav-link dropdown-toggle d-flex align-items-center btn btn-link"
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
@@ -77,7 +76,7 @@ export default function Header(): JSX.Element {
                       className="rounded-circle me-2"
                     />
                     {user?.name ?? 'User'}
-                  </a>
+                  </button>
                   <ul className="dropdown-menu dropdown-menu-end">
                     <li>
                       <NavLink
