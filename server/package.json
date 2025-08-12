@@ -1,8 +1,8 @@
 {
-  "name": "meeting-scheduler-server",
-  "version": "0.1.0",
+  "name": "meeting-scheduler-graphql-api-server",
+  "version": "0.1.1",
   "private": true,
-  "description": "Internal virtual meeting scheduler server (Express + GraphQL + Mongoose)",
+  "description": "This file boots an Express server that exposes a single GraphQL endpoint at `/graphql`. It wires security (Helmet), logging (Morgan), CORS, JSON body parsing, request id correlation,authentication middleware, schema creation, and a health check endpoint",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

@@ -1,8 +1,8 @@
 {
   "name": "meeting-scheduler-client",
   "private": true,
-  "version": "0.1.0",
-  "description": "Internal virtual meeting scheduler client (React + Vite + TS + Apollo)",
+  "version": "0.1.1",
+  "description": "This file boots a Vite-powered development server that serves the React client app at `http://localhost:5173`. It uses React Router for navigation, Apollo Client for GraphQL, and React Hook Form for form handling. The app is styled with Bootstrap and uses date-fns for date manipulation.",
   "engines": {
     "node": ">=22.14.0 <23.0.0",
     "npm": ">=10.0.0"
