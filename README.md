@@ -365,3 +365,64 @@ graph TB
   User -- "creator/attendee" --> Meeting
   Meeting -- "refs" --> User
 ```
+
+## Event & Booking GraphQL API (Design)
+
+```mermaid
+graph TD
+  subgraph Types
+    U["User"]
+    E["Event"]
+    B["Booking"]
+  end
+
+  U -- "createdBy" --> E
+  U -- "has many" --> B
+  B -- "event" --> E
+  B -- "user" --> U
+
+  subgraph Queries
+    Qevents["events(filter)"]
+    Qevent["event(id)"]
+    Qbookings["bookings"]
+  end
+
+  subgraph Mutations
+    McreateEvent["createEvent(eventInput)"]
+    MupdateEvent["updateEvent(id,eventInput)"]
+    MdeleteEvent["deleteEvent(id)"]
+    MbookEvent["bookEvent(eventId)"]
+    McancelBooking["cancelBooking(bookingId)"]
+  end
+
+  Qevents --> E
+  Qevent --> E
+  Qbookings --> B
+
+  McreateEvent --> E
+  MupdateEvent --> E
+  MdeleteEvent --> E
+  MbookEvent --> B
+  McancelBooking --> E
+```
+
+## Frontend flow: Events and Bookings
+
+```mermaid
+graph TD
+  User((User)) --> EventsPage["Events Page"]
+  EventsPage --> Filters["Filters: date/title/created-by-me"]
+  EventsPage --> EventsTable["Table: list + pagination"]
+  EventsPage --> CreateEvent["Create Event Page"]
+  CreateEvent --> EventsPage
+  EventsTable --> EditEvent["Edit Event Page"]
+  EditEvent --> EventsPage
+  EventsTable --> DeleteEvent["Delete Event (mutation)"]
+
+  User --> BookingsPage["Bookings Page"]
+  BookingsPage --> SelectEvent["Select Event"]
+  BookingsPage --> BookAction["Book (mutation)"]
+  BookAction --> BookingsTable["Bookings Table"]
+  BookingsTable --> CancelAction["Cancel Booking (mutation)"]
+  CancelAction --> BookingsTable
+```
