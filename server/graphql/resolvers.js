@@ -17,6 +17,10 @@ const {
   deleteMeetingIfOwner,
   // event helpers
   listAllEventsPopulated,
+  listEventsFiltered,
+  getEventByIdPopulated,
+  updateEventIfOwner,
+  deleteEventIfOwner,
   createEventDoc,
   // booking helpers
   listAllBookingsPopulated,
@@ -71,11 +75,10 @@ module.exports = {
   },
 
   meetings: async (_args, context) => {
-    const userId = requireAuth(context);
+    requireAuth(context);
     // For admin/testing: list all meetings. To scope to user, use listMeetingsForUserPopulated(userId)
     return listAllMeetingsPopulated();
   },
-  
   users: async (_args, context) => {
     requireAuth(context);
     const users = await listUsers();
@@ -221,9 +224,9 @@ module.exports = {
   },
 
   // Events
-  events: async (_args, context) => {
+  events: async ({ filter }, context) => {
     requireAuth(context);
-    const events = await listAllEventsPopulated();
+    const events = filter ? await listEventsFiltered(filter) : await listAllEventsPopulated();
     return events.map((e) => ({
       id: String(e._id),
       title: e.title,
@@ -234,6 +237,22 @@ module.exports = {
       createdAt: e.createdAt.toISOString(),
       updatedAt: e.updatedAt.toISOString(),
     }));
+  },
+
+  event: async ({ id }, context) => {
+    requireAuth(context);
+    const e = await getEventByIdPopulated(id);
+    if (!e) return null;
+    return {
+      id: String(e._id),
+      title: e.title,
+      description: e.description ?? '',
+      date: e.date,
+      price: e.price,
+      createdBy: e.createdBy,
+      createdAt: e.createdAt.toISOString(),
+      updatedAt: e.updatedAt.toISOString(),
+    };
   },
 
   createEvent: async ({ eventInput }, context) => {
@@ -249,6 +268,35 @@ module.exports = {
       createdAt: event.createdAt.toISOString(),
       updatedAt: event.updatedAt.toISOString(),
     };
+  },
+
+  updateEvent: async ({ id, eventInput }, context) => {
+    const userId = requireAuth(context);
+    const result = await updateEventIfOwner(id, userId, eventInput || {});
+    if (result.notFound)
+      throw new GraphQLError('Event not found', { extensions: { code: 'BAD_USER_INPUT' } });
+    if (result.forbidden)
+      throw new GraphQLError('Forbidden', { extensions: { code: 'FORBIDDEN' } });
+    const e = result.event;
+    return {
+      id: String(e._id),
+      title: e.title,
+      description: e.description ?? '',
+      date: e.date,
+      price: e.price,
+      createdBy: e.createdBy,
+      createdAt: e.createdAt.toISOString(),
+      updatedAt: e.updatedAt.toISOString(),
+    };
+  },
+
+  deleteEvent: async ({ id }, context) => {
+    const userId = requireAuth(context);
+    const result = await deleteEventIfOwner(id, userId);
+    if (result.notFound) return false;
+    if (result.forbidden)
+      throw new GraphQLError('Forbidden', { extensions: { code: 'FORBIDDEN' } });
+    return !!result.deleted;
   },
 
   // Bookings

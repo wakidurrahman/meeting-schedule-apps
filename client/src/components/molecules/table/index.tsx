@@ -6,22 +6,30 @@ type Column<T> = {
   render?: (row: T) => React.ReactNode;
 };
 
-type Action = {
+type Action<T> = {
   label: string;
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning';
-  onClick?: () => void;
+  onClick?: (row: T) => void;
 };
 
 type Props<T> = {
-  columns: Column<T>[];
-  data: T[];
-  actions?: Action[];
+  columns: Array<Column<T>>;
+  data: Array<T>;
+  /**
+   * Static actions applied to every row (deprecated). Use rowActions instead.
+   */
+  actions?: Array<Action<T>>;
+  /**
+   * A function that returns actions for a specific row.
+   */
+  rowActions?: (row: T) => Array<Action<T>>;
 };
 
 export default function BootstrapTable<T extends Record<string, unknown>>({
   columns,
   data,
   actions = [],
+  rowActions,
 }: Props<T>): JSX.Element {
   return (
     <div className="table-responsive">
@@ -33,7 +41,7 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
                 {col.header}
               </th>
             ))}
-            {actions.length > 0 && (
+            {(rowActions || actions.length > 0) && (
               <th scope="col" style={{ width: 180 }}>
                 Actions
               </th>
@@ -48,15 +56,15 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
                   {col.render ? col.render(row) : String(row[col.key] ?? '')}
                 </td>
               ))}
-              {actions.length > 0 && (
+              {(rowActions || actions.length > 0) && (
                 <td>
                   <div className="d-flex gap-2">
-                    {actions.map((a, i) => (
+                    {(rowActions ? rowActions(row) : actions).map((a, i) => (
                       <button
                         key={i}
                         type="button"
                         className={`btn btn-sm btn-${a.variant ?? 'primary'}`}
-                        onClick={a.onClick}
+                        onClick={() => a.onClick?.(row)}
                       >
                         {a.label}
                       </button>

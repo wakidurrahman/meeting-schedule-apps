@@ -106,6 +106,12 @@ module.exports = `
     price: Float!
   }
 
+  input EventFilterInput {
+    createdById: ID
+    dateFrom: DateTime
+    dateTo: DateTime
+  }
+
   # Queries
 
   type Query {
@@ -117,7 +123,8 @@ module.exports = `
     meetings: [Meeting!]!
     meeting(id: ID!): Meeting
     
-    events: [Event!]!
+    events(filter: EventFilterInput): [Event!]!
+    event(id: ID!): Event
     bookings: [Booking!]!
   }
 
@@ -132,6 +139,8 @@ module.exports = `
     deleteMeeting(id: ID!): Boolean!
 
     createEvent(eventInput: EventInput): Event
+    updateEvent(id: ID!, eventInput: EventInput): Event
+    deleteEvent(id: ID!): Boolean!
 
     bookEvent(eventId: ID!): Booking!
     cancelBooking(bookingId: ID!): Event!

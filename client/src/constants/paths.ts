@@ -13,6 +13,10 @@ export const paths = {
   users: '/users',
   profile: '/profile',
   createMeeting: '/meetings/new',
+  events: '/events',
+  eventCreate: '/events/new',
+  eventEdit: '/events/:id/edit',
+  bookings: '/bookings',
   login: '/login',
   register: '/register',
 } as const;
@@ -30,4 +34,6 @@ export const NAV_PATHS: NavPath[] = [
     userRole: 'USER',
     isAuth: true,
   },
+  { to: paths.events, label: 'Events', userRole: 'USER', isAuth: true },
+  { to: paths.bookings, label: 'Bookings', userRole: 'USER', isAuth: true },
 ];

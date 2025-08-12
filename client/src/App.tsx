@@ -3,9 +3,13 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { paths } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
+import BookingsPage from '@/pages/bookings';
 import CalendarPage from '@/pages/calendar';
 import CreateMeeting from '@/pages/create-meeting';
 import Dashboard from '@/pages/dashboard';
+import EventsPage from '@/pages/events';
+import CreateEventPage from '@/pages/events/create';
+import EditEventPage from '@/pages/events/edit';
 import Login from '@/pages/login';
 import Profile from '@/pages/profile';
 import Register from '@/pages/register';
@@ -54,6 +58,38 @@ export default function App(): JSX.Element {
         element={
           <PrivateRoute>
             <Profile />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.events}
+        element={
+          <PrivateRoute>
+            <EventsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.eventCreate}
+        element={
+          <PrivateRoute>
+            <CreateEventPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.eventEdit}
+        element={
+          <PrivateRoute>
+            <EditEventPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.bookings}
+        element={
+          <PrivateRoute>
+            <BookingsPage />
           </PrivateRoute>
         }
       />

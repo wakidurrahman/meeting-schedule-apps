@@ -64,10 +64,7 @@ const listUsers = async () => {
  * List all meetings (for testing/admin) populated and sorted by start time
  */
 const listAllMeetingsPopulated = async () => {
-  return Meeting.find({})
-    .sort({ startTime: 1 })
-    .populate('attendees')
-    .populate('createdBy');
+  return Meeting.find({}).sort({ startTime: 1 }).populate('attendees').populate('createdBy');
 };
 
 /**
@@ -78,7 +75,6 @@ const listMeetingsForUserPopulated = async (userId) => {
     .sort({ startTime: 1 })
     .populate('attendees')
     .populate('createdBy');
-
 };
 
 /**
@@ -128,17 +124,70 @@ const deleteMeetingIfOwner = async (meetingId, userId) => {
 
 // -------------------------
 // Event helpers
-// -------------------------    
+// -------------------------
 
 /**
  * List all events (for testing/admin) populated and sorted by date
  */
 const listAllEventsPopulated = async () => {
-  return Event.find({})
-    .sort({ date: 1 })
-    .populate('createdBy');
+  return Event.find({}).sort({ date: 1 }).populate('createdBy');
 };
 
+/**
+ * List events with optional filters. All filters are optional.
+ * - createdById: filter by creator id
+ * - dateFrom/dateTo: inclusive range on `date`
+ */
+const listEventsFiltered = async ({ createdById, dateFrom, dateTo } = {}) => {
+  const query = {};
+  if (createdById) query.createdBy = createdById;
+  if (dateFrom || dateTo) {
+    query.date = {};
+    if (dateFrom) query.date.$gte = new Date(dateFrom);
+    if (dateTo) query.date.$lte = new Date(dateTo);
+  }
+  return Event.find(query).sort({ date: 1 }).populate('createdBy');
+};
+
+/**
+ * Fetch a single event by id populated with creator
+ */
+const getEventByIdPopulated = async (id) => {
+  return Event.findById(id).populate('createdBy');
+};
+
+/**
+ * Update an event if the given user is the creator. Returns the updated event
+ * or a descriptor object when forbidden/notFound.
+ */
+const updateEventIfOwner = async (eventId, userId, update) => {
+  const event = await Event.findById(eventId);
+  if (!event) return { notFound: true };
+  if (String(event.createdBy) !== String(userId)) return { forbidden: true };
+  if (update.date) update.date = new Date(update.date);
+  const updated = await Event.findByIdAndUpdate(eventId, update, {
+    new: true,
+    runValidators: true,
+  }).populate('createdBy');
+  return { event: updated };
+};
+
+/**
+ * Delete an event if the given user is the creator.
+ */
+const deleteEventIfOwner = async (eventId, userId) => {
+  const event = await Event.findById(eventId);
+  if (!event) return { notFound: true };
+  if (String(event.createdBy) !== String(userId)) return { forbidden: true };
+  await event.deleteOne();
+  // Also unlink from user's createdEvents (best-effort)
+  try {
+    await User.findByIdAndUpdate(event.createdBy, { $pull: { createdEvents: event._id } });
+  } catch (_) {
+    // Best-effort unlink; ignore failures to keep delete idempotent
+  }
+  return { deleted: true };
+};
 /**
  * Create an event document and link it to the creator's `createdEvents`
  */
@@ -147,7 +196,9 @@ const createEventDoc = async ({ title, description, date, price, createdBy }) =>
   // Link event to user.createdEvents (best-effort; ignore if user not found)
   try {
     await User.findByIdAndUpdate(createdBy, { $addToSet: { createdEvents: event._id } });
-  } catch (_) {}
+  } catch (_) {
+    // Best-effort linking; ignore failures
+  }
   await event.populate('createdBy');
   return event;
 };
@@ -204,6 +255,10 @@ module.exports = {
   deleteMeetingIfOwner,
   // event
   listAllEventsPopulated,
+  listEventsFiltered,
+  getEventByIdPopulated,
+  updateEventIfOwner,
+  deleteEventIfOwner,
   createEventDoc,
   // booking
   listAllBookingsPopulated,
