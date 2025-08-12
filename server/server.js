@@ -45,6 +45,7 @@ async function start() {
    */
   await connectDB(process.env.MONGO_URI);
 
+  // Express app 
   const app = express();
 
   /**
@@ -104,12 +105,11 @@ async function start() {
   app.use(
     '/graphql',
     graphqlHTTP((req) => ({
-      schema,
+      schema: schema,
       rootValue: resolvers,
       context: { req },
       graphiql: process.env.NODE_ENV !== 'production',
-      // schema: schema,
-      // rootValue: resolvers,
+     
       /**
        * Provide a consistent error shape for clients and attach diagnostic metadata.
        * If a validation library (e.g., Zod) throws a typed error, surface a BAD_USER_INPUT code
