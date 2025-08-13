@@ -1,4 +1,9 @@
-// Centralized error/message catalog and status mapping
+/**
+ * Centralized error/message catalog and status mapping.
+ * @property {Object} HTTP_STATUS - HTTP status codes.
+ * @property {Object} ERROR_CODES - Error codes.
+ * @property {Object} MESSAGES - Error messages.
+ */
 
 const HTTP_STATUS = {
   BAD_REQUEST: 400,
@@ -43,6 +48,26 @@ const MESSAGES = {
   DB_CONNECTION_FAILED: 'Failed to connect to the database',
 };
 
-module.exports = { HTTP_STATUS, ERROR_CODES, MESSAGES };
+// Server-side validation message catalog (Zod)
+const VALIDATION_MESSAGES = {
+  nameRequired: 'Name is required',
+  nameMin: 'Name must be at least 2 characters',
+  nameMax: 'Name must be less than 50 characters',
+  namePattern: "Name can only contain letters, spaces, hyphens, and apostrophes",
+
+  emailInvalid: 'Invalid email format',
+
+  passwordMin: 'Password must be at least 8 characters',
+  passwordComplexity:
+    'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
+
+  invalidStartTime: 'Invalid startTime',
+  invalidEndTime: 'Invalid endTime',
+  invalidAttendeeId: 'Invalid attendee id',
+  startBeforeEnd: 'startTime must be before endTime',
+  invalidDob: 'Invalid dob',
+};
+
+module.exports = { HTTP_STATUS, ERROR_CODES, MESSAGES, VALIDATION_MESSAGES };
 
 

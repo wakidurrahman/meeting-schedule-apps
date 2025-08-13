@@ -1,27 +1,28 @@
 const { z } = require('zod');
 const mongoose = require('mongoose');
+const { VALIDATION_MESSAGES: VM } = require('../constants/messages');
+
+const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 
 const RegisterInputSchema = z.object({
   name: z
     .string()
-    .min(1, 'Name is required')
-    .min(2, 'Name must be at least 2 characters')
-    .max(50, 'Name must be less than 50 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes')
+    .min(1, VM.nameRequired)
+    .min(2, VM.nameMin)
+    .max(50, VM.nameMax)
+    .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
     .transform((str) => str.trim()),
-  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email format'),
+  email: z.string().regex(EmailRegex, VM.emailInvalid),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
-    ), // Example password base on the following regex: e.g. Zain123@, Min_123$
+    .min(8, VM.passwordMin)
+    .regex(PasswordRegex, VM.passwordComplexity), // Example password base on the following regex: e.g. Zain123@, Min_123$
 });
 
 const LoginInputSchema = z.object({
-  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'), // Example password base on the following regex: e.g. Zain123@, Min_123$
+  email: z.string().regex(EmailRegex, VM.emailInvalid),
+  password: z.string().min(8, VM.passwordMin), // Example password base on the following regex: e.g. Zain123@, Min_123$
 });
 
 const MeetingInputSchema = z
@@ -30,23 +31,20 @@ const MeetingInputSchema = z
     description: z.string().optional().default(''),
     startTime: z
       .string()
-      .refine((val) => !Number.isNaN(Date.parse(val)), 'Invalid startTime'),
+      .refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
     endTime: z
       .string()
-      .refine((val) => !Number.isNaN(Date.parse(val)), 'Invalid endTime'),
+      .refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
     attendeeIds: z
       .array(
         z
           .string()
-          .refine(
-            (id) => mongoose.Types.ObjectId.isValid(id),
-            'Invalid attendee id'
-          )
+          .refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId)
       )
       .default([]),
   })
   .refine((data) => new Date(data.startTime) < new Date(data.endTime), {
-    message: 'startTime must be before endTime',
+    message: VM.startBeforeEnd,
     path: ['endTime'],
   });
 
@@ -55,7 +53,7 @@ const UpdateProfileInputSchema = z.object({
   address: z.string().optional(),
   dob: z
     .string()
-    .refine((val) => !val || !Number.isNaN(Date.parse(val)), 'Invalid dob')
+    .refine((val) => !val || !Number.isNaN(Date.parse(val)), VM.invalidDob)
     .optional(),
   imageUrl: z.string().url().optional(),
 });

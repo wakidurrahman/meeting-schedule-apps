@@ -25,16 +25,23 @@ function normalizeError(err) {
   // GraphQL error with extensions
   if (err && err.extensions && err.extensions.code) {
     const code = err.extensions.code;
-    const status =
-      code === ERROR_CODES.BAD_USER_INPUT
-        ? HTTP_STATUS.BAD_REQUEST
-        : code === ERROR_CODES.UNAUTHENTICATED
-        ? HTTP_STATUS.UNAUTHORIZED
-        : code === ERROR_CODES.FORBIDDEN
-        ? HTTP_STATUS.FORBIDDEN
-        : code === ERROR_CODES.NOT_FOUND
-        ? HTTP_STATUS.NOT_FOUND
-        : HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    let status;
+    switch (code) {
+      case ERROR_CODES.BAD_USER_INPUT:
+        status = HTTP_STATUS.BAD_REQUEST;
+        break;
+      case ERROR_CODES.UNAUTHENTICATED:
+        status = HTTP_STATUS.UNAUTHORIZED;
+        break;
+      case ERROR_CODES.FORBIDDEN:
+        status = HTTP_STATUS.FORBIDDEN;
+        break;
+      case ERROR_CODES.NOT_FOUND:
+        status = HTTP_STATUS.NOT_FOUND;
+        break;
+      default:
+        status = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    }
     return {
       message: err.message || MESSAGES.INTERNAL_ERROR,
       status,
@@ -54,12 +61,15 @@ function normalizeError(err) {
 // Express error handler middleware
 function errorHandler(err, req, res, _next) {
   const n = normalizeError(err);
+  // Build the error response payload
   const payload = {
     error: n.message,
     code: n.code,
     requestId: req.id,
   };
+  // Add details if available
   if (n.details) payload.details = n.details;
+  // Send the error response
   res.status(n.status).json(payload);
 }
 
