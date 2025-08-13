@@ -50,12 +50,25 @@ async function start() {
 
   /**
    * Security headers.
-   * Note: GraphiQL uses inline scripts; Helmet's CSP blocks these by default.
+   * Note: GraphiQL uses inline scripts; Helmet's CSP(content security policy) blocks these by default.
    * We disable CSP outside production to allow GraphiQL to work in development.
    */
   app.use(
+    // Helmet for security headers (CSP, XSS, etc.)
     helmet({
       contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
+      xssFilter: true, // Enable X-XSS-Protection header
+      frameguard: { action: 'deny' }, // Prevent clickjacking
+      referrerPolicy: { policy: 'no-referrer' }, // Hide referrer info
+      crossOriginResourcePolicy: { policy: 'same-origin' }, // Restrict resource sharing
+    }),
+    // Rate limiting: limit each IP to 100 requests per 15 minutes
+    require('express-rate-limit')({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+      message: { error: 'Too many requests, please try again later.' }
     }),
   );
 
@@ -77,7 +90,7 @@ async function start() {
   /**
    * Cross-origin resource sharing. Allows the front-end app to call this API with credentials.
    */
-  app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+  app.use(cors({ origin: CLIENT_ORIGIN, credentials: true })); // Allow requests from the client app
 
   /**
    * JSON body parsing for GraphQL POST requests.
@@ -116,8 +129,7 @@ async function start() {
        * and include structured validation details; otherwise, default to INTERNAL_SERVER_ERROR.
        */
       customFormatErrorFn: (err) => {
-        console.log('err', err);
-        console.log('req', req.body);
+       
         const isZod = err.originalError && err.originalError.name === 'ZodError';
         const code = isZod ? 'BAD_USER_INPUT' : 'INTERNAL_SERVER_ERROR';
         const message = isZod ? 'Validation failed' : err.message;
