@@ -50,6 +50,8 @@ graph TD
   UserList --> Delete
 ```
 
+## Event and Booking Screen Flow
+
 ## Project structure
 
 ```text
