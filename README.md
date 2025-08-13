@@ -50,7 +50,70 @@ graph TD
   UserList --> Delete
 ```
 
+### Event and Booking Screen Flow
+
+```mermaid
+graph TD
+U["User"]
+L["Login"]
+CE["Create Event"]
+UE["Update Event"]
+DE["Delete Event"]
+VE["View Events"]
+F["Filter"]
+F1["created by"]
+F2["booked"]
+EV["Event"]
+ED["Event Detail"]
+BK["Book"]
+CB["Cancel Booking"]
+B["Booking"]
+
+U --> L --> U
+U --> CE --> EV
+U --> VE --> ED
+ED --> UE --> EV
+ED --> DE --> EV
+ED --> BK --> B
+B --> CB --> ED
+F1 --> F
+F2 --> F
+F --> VE
+```
+
 ## Event and Booking Screen Flow
+
+```mermaid
+graph TD
+U["User"]
+REG["Register"]
+LOG["Login"]
+DASH["Dashboard"]
+MEET["Meetings"]
+MEET_C["Create Meeting"]
+MEET_D["Delete Meeting"]
+EVL["Events"]
+EV_C["Create Event"]
+EV_U["Update Event"]
+EV_D["Delete Event"]
+EV_F["Filter (created by/booked)"]
+BK["Book Event"]
+CB["Cancel Booking"]
+PROF["Profile"]
+
+U --> REG --> LOG --> DASH
+U --> LOG --> DASH
+DASH --> MEET
+MEET --> MEET_C --> MEET
+MEET --> MEET_D --> MEET
+DASH --> EVL
+EVL --> EV_C --> EVL
+EVL --> EV_U --> EVL
+EVL --> EV_D --> EVL
+EVL --> EV_F --> EVL
+EVL --> BK --> CB --> EVL
+DASH --> PROF
+```
 
 ## Project structure
 
