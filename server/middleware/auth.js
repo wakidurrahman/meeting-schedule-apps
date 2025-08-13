@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { MESSAGES } = require('../constants/messages');
 
 function authMiddleware(req, _res, next) {
   const header = req.headers['authorization'] || '';
@@ -8,7 +9,7 @@ function authMiddleware(req, _res, next) {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
       req.userId = payload.userId;
     } catch (_e) {
-      // ignore invalid tokens
+      // ignore invalid tokens but clear userId
       req.userId = null;
     }
   }

@@ -34,6 +34,7 @@ const typeDefs = require('./graphql/typeDefs');
 const resolvers = require('./graphql/resolvers');
 const { connectDB } = require('./config/db');
 const { authMiddleware } = require('./middleware/auth');
+const { errorHandler, normalizeError } = require('./middleware/error');
 
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
@@ -129,19 +130,15 @@ async function start() {
        * and include structured validation details; otherwise, default to INTERNAL_SERVER_ERROR.
        */
       customFormatErrorFn: (err) => {
-       
-        const isZod = err.originalError && err.originalError.name === 'ZodError';
-        const code = isZod ? 'BAD_USER_INPUT' : 'INTERNAL_SERVER_ERROR';
-        const message = isZod ? 'Validation failed' : err.message;
-        const details = isZod ? err.originalError.issues : undefined;
+        const n = normalizeError(err.originalError || err);
         return {
-          message,
+          message: n.message,
           locations: err.locations,
           path: err.path,
           extensions: {
-            code,
+            code: n.code,
             requestId: req.id,
-            details,
+            details: n.details,
           },
         };
       },
@@ -162,6 +159,9 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);
   });
+
+  // Central error handler (must be last)
+  app.use(errorHandler);
 }
 
 
