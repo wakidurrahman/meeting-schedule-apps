@@ -1,5 +1,8 @@
 node_modules
 dist
 coverage
+__tests__
+__mocks__
+tests
 
 

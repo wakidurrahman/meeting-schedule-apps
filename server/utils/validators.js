@@ -48,9 +48,20 @@ const UpdateProfileInputSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
+const EventInputSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional().default(''),
+  startTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
+  endTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
+  attendeeIds: z
+    .array(z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId))
+    .default([]),
+});
+
 module.exports = {
   RegisterInputSchema,
   LoginInputSchema,
   MeetingInputSchema,
   UpdateProfileInputSchema,
+  EventInputSchema,
 };

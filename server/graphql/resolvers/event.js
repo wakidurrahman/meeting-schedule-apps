@@ -11,6 +11,7 @@ const {
   updateEventIfOwner,
   deleteEventIfOwner,
 } = require('../../utils/mongoose-methods');
+const { EventInputSchema } = require('../../utils/validators');
 
 /**
  * Event-related GraphQL resolvers
@@ -62,7 +63,11 @@ const eventResolvers = {
 
       // step 04: create the event
       const event = await createEventDoc({
-        ...eventInput,
+        title,
+        description,
+        startTime,
+        endTime,
+        attendeeIds,
         createdBy: userId,
       });
 
