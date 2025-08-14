@@ -43,7 +43,7 @@ function formatAuthUser(user) {
   }
 
   return {
-    id: String(user._id),
+    id: String(user._id) || user.id,
     name: user.name,
     email: user.email,
     imageUrl: user.imageUrl ?? null,

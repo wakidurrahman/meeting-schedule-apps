@@ -12,7 +12,7 @@ module.exports = `
     meetingUrl: String
     startTime: String!
     endTime: String!
-    attendees: [User!]! # This is a required field. An array of users.
+    attendees: [User!]! 
     createdBy: User!
     createdAt: String!
     updatedAt: String!

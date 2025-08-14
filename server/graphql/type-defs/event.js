@@ -26,6 +26,7 @@ module.exports = `
 
   input EventFilterInput {
     createdById: ID
+    bookedById: ID
     dateFrom: DateTime
     dateTo: DateTime
   }
