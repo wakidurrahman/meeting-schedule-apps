@@ -11,4 +11,15 @@ module.exports = `
     USER
     ADMIN
   }
+
+  enum LiftStatus {
+    OPEN
+    CLOSED
+    HOLD
+  }
+    
+  enum TrailStatus {
+    OPEN
+    CLOSED
+  }
 `;

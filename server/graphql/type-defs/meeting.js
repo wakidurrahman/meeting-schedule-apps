@@ -30,12 +30,14 @@ module.exports = `
   # Meeting Queries
   extend type Query {
     meetings: [Meeting!]!
-    meeting(id: ID!): Meeting
+    findMeetingById(id: ID!): Meeting
+    countMeetings: Int!
   }
 
   # Meeting Mutations
   extend type Mutation {
     createMeeting(input: MeetingInput!): Meeting!
+    updateMeeting(id: ID!, input: MeetingInput!): Boolean!
     deleteMeeting(id: ID!): Boolean!
   }
 

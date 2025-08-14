@@ -123,7 +123,13 @@ async function start() {
       schema,
       rootValue: resolvers,
       context: { req },
-      graphiql: process.env.NODE_ENV !== 'production',
+      // graphiql: process.env.NODE_ENV !== 'production',
+
+      // 👇 enable the header editor in the built-in GraphiQL UI
+      graphiql:
+        process.env.NODE_ENV !== 'production'
+          ? { headerEditorEnabled: true /* optional: shouldPersistHeaders: true */ }
+          : false,
 
       /**
        * Provide a consistent error shape for clients and attach diagnostic metadata.

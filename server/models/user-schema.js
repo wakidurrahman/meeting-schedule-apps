@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
  * The schema also includes timestamps for when the user was created and updated.
  */
 
-const EMAIL_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+// const EMAIL_REGEX = ;
 
 const userSchema = new mongoose.Schema(
   {
@@ -20,8 +20,8 @@ const userSchema = new mongoose.Schema(
       unique: true,
       dropDups: true,
       lowercase: true,
-      // Regexp to validate emails with more strict rules as added in tests/users.js which also conforms mostly with RFC2822 guide lines
-      match: [EMAIL_REGEX, 'Please enter a valid email'],
+      // Regexp to validate emails with RFC2822 compliant pattern
+      match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Please enter a valid email'],
     },
     password: { type: String, required: true },
     imageUrl: { type: String, default: null },

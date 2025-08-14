@@ -39,13 +39,18 @@ const userResolvers = {
   // Mutation resolvers
   register: async ({ input }, _context) => {
     try {
+      console.log('Register input:', input);
       // step 01: validate the input by Zod schema
       RegisterInputSchema.parse(input);
       // step 02: extract the input destructuring
       const { name, email, password } = input;
+      console.log('name', name);
+      console.log('email', email);
+      console.log('password', password);
 
       // step 03: check if the email is already in use
       const existing = await getUserByEmail(email);
+      console.log('existing', existing);
       // step 04: if the email is already in use, throw an error
       if (existing) {
         throw new GraphQLError(MESSAGES.EMAIL_IN_USE, {
@@ -56,11 +61,13 @@ const userResolvers = {
       // step 05: hash the password using bcryptjs salt rounds
       const hashed = await bcrypt.hash(password, 12);
       // step 06: create the user with the hashed password
+      console.log('hashed', hashed);
       const user = await createUser({ name, email, passwordHash: hashed });
-
+      console.log('user', user);
       // step 07: return the user
       return formatAuthUser(user);
     } catch (err) {
+      console.log('err---->', err);
       if (err.name === 'ZodError') {
         throw new GraphQLError(MESSAGES.VALIDATION_FAILED, {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT, details: err.issues },
