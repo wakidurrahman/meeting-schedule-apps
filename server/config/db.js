@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const { MESSAGES } = require('../constants/messages');
 const { logger } = require('../utils/logger');
 
@@ -8,7 +9,9 @@ const { logger } = require('../utils/logger');
  * @returns {Promise<mongoose.Connection>} The MongoDB connection.
  */
 async function connectDB(mongoUri) {
-  if (!mongoUri) throw new Error(MESSAGES.DB_URI_MISSING);
+  if (!mongoUri) {
+    throw new Error(MESSAGES.DB_URI_MISSING);
+  }
 
   mongoose.set('strictQuery', true);
   try {

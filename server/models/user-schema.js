@@ -1,11 +1,19 @@
 const mongoose = require('mongoose');
 
+/**
+ * User Schema
+ *
+ * This schema defines the structure of a user in the database.
+ * It includes fields for name, email, password, imageUrl, address, dob, role, and createdEvents.
+ * The schema also includes timestamps for when the user was created and updated.
+ */
+
+const EMAIL_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     email: {
-      
       type: String,
       required: [true, 'Please provide your email'],
       index: true,
@@ -13,10 +21,7 @@ const userSchema = new mongoose.Schema(
       dropDups: true,
       lowercase: true,
       // Regexp to validate emails with more strict rules as added in tests/users.js which also conforms mostly with RFC2822 guide lines
-      match: [
-        /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-        'Please enter a valid email',
-      ],
+      match: [EMAIL_REGEX, 'Please enter a valid email'],
     },
     password: { type: String, required: true },
     imageUrl: { type: String, default: null },
@@ -25,7 +30,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
     createdEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model('User', userSchema);

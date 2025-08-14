@@ -8,6 +8,94 @@ alwaysApply: true
 
 > Guidelines for Express.js, GraphQL, Mongoose, and backend development in the Meeting Scheduler App.
 
+## Code Quality and Linting
+
+### ESLint Configuration
+
+The server uses a comprehensive ESLint setup with automatic import sorting and security rules:
+
+```javascript
+// .eslintrc.cjs - Key features:
+// - Automatic import sorting by type (builtin → external → internal → relative)
+// - Node.js best practices
+// - Security vulnerability detection
+// - CommonJS module support
+// - Integration with Prettier
+
+module.exports = {
+  extends: [
+    'eslint:recommended',
+    'plugin:node/recommended',
+    'plugin:import/recommended',
+    'plugin:security/recommended',
+    'plugin:prettier/recommended',
+  ],
+  rules: {
+    // Import organization - automatically sorts on save
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin', // Node.js built-in modules (fs, path, etc.)
+          'external', // npm packages (express, mongoose, etc.)
+          'internal', // internal modules (../utils, ./models)
+          'parent', // parent directory imports (../)
+          'sibling', // same directory imports (./)
+        ],
+        'newlines-between': 'always',
+        alphabetize: { order: 'asc', caseInsensitive: true },
+      },
+    ],
+  },
+};
+```
+
+### Import Organization Pattern
+
+Follow this import order pattern (ESLint will automatically sort on save):
+
+```javascript
+// 1. Node.js built-in modules
+const fs = require('fs');
+const path = require('path');
+
+// 2. External packages (npm dependencies)
+const bcrypt = require('bcryptjs');
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const { z } = require('zod');
+
+// 3. Internal modules (utilities, config)
+const { MESSAGES, ERROR_CODES } = require('../constants/messages');
+const connectDB = require('../config/db');
+const logger = require('../utils/logger');
+
+// 4. Local modules (models, middleware)
+const authMiddleware = require('../middleware/auth');
+const User = require('../models/user-schema');
+const Meeting = require('../models/meeting-schema');
+```
+
+### Linting Scripts
+
+```bash
+# Check for linting errors
+npm run lint
+
+# Auto-fix linting errors (including import sorting)
+npm run lint:fix
+
+# Check code formatting
+npm run format:check
+
+# Auto-format code
+npm run format
+
+# Run both linting and formatting checks
+npm run check
+```
+
 ## Express.js Server Structure
 
 ### Main Server Setup
@@ -64,110 +152,234 @@ app.listen(PORT, () => {
 });
 ```
 
+## GraphQL Modular Structure
+
+The GraphQL implementation follows a modular architecture with domain-specific separation:
+
+```
+graphql/
+├── resolvers/           # Domain-specific resolver files
+│   ├── index.js        # Main resolver export
+│   ├── user.js         # User authentication & profile resolvers
+│   ├── meeting.js      # Meeting CRUD resolvers
+│   ├── event.js        # Event management resolvers
+│   └── booking.js      # Event booking resolvers
+├── type-defs/          # Domain-specific type definitions
+│   ├── index.js        # Main type definitions export
+│   ├── user.js         # User types, inputs, queries & mutations
+│   ├── meeting.js      # Meeting types, inputs, queries & mutations
+│   ├── event.js        # Event types, inputs, queries & mutations
+│   └── booking.js      # Booking types, queries & mutations
+└── shared/             # Shared utilities and types
+    ├── helpers.js      # Common resolver helper functions
+    └── scalars.js      # Shared scalar types and enums
+```
+
+### Benefits of Modular Structure
+
+- **Separation of Concerns**: Each domain has its own focused files
+- **Maintainability**: Easier to find and modify specific functionality
+- **Team Collaboration**: Multiple developers can work on different domains
+- **Scalability**: Easy to add new domains without affecting existing code
+- **Testing**: Domain-specific tests can be isolated
+- **Code Reuse**: Shared helpers and utilities prevent duplication
+
 ## GraphQL Schema Structure
+
+### Domain-Specific Development Patterns
+
+#### Adding a New Resolver
+
+To add a new resolver to an existing domain:
+
+```javascript
+// graphql/resolvers/user.js
+const userResolvers = {
+  // Existing resolvers...
+
+  // Add new resolver
+  userStats: async ({ id }, context) => {
+    try {
+      const userId = requireAuth(context);
+      const stats = await getUserStats(id);
+      return formatUserStats(stats);
+    } catch (err) {
+      handleUnexpectedError(err);
+    }
+  },
+};
+```
+
+#### Adding a New Domain
+
+1. **Create type definitions** (`graphql/type-defs/newdomain.js`):
+
+```javascript
+module.exports = `
+  type NewDomain {
+    id: ID!
+    name: String!
+  }
+
+  extend type Query {
+    newDomains: [NewDomain!]!
+  }
+
+  extend type Mutation {
+    createNewDomain(input: NewDomainInput!): NewDomain!
+  }
+`;
+```
+
+2. **Create resolvers** (`graphql/resolvers/newdomain.js`):
+
+```javascript
+const newDomainResolvers = {
+  newDomains: async (_args, context) => {
+    // Implementation
+  },
+  createNewDomain: async ({ input }, context) => {
+    // Implementation
+  },
+};
+
+module.exports = newDomainResolvers;
+```
+
+3. **Update index files** to include the new domain
+4. **Add shared helpers** in `graphql/shared/helpers.js` if needed
+
+#### Using Shared Helpers
+
+All resolvers should use the shared helper functions for consistency:
+
+```javascript
+const {
+  requireAuth, // Authentication validation
+  handleUnexpectedError, // Error handling
+  formatUser, // User data formatting
+  formatMeeting, // Meeting data formatting
+  formatEvent, // Event data formatting
+  formatBooking, // Booking data formatting
+} = require('../shared/helpers');
+
+// In resolver
+const userId = requireAuth(context);
+const user = await getUserById(userId);
+return formatUser(user);
+```
 
 ### Type Definitions
 
-```javascript
-// graphql/typeDefs.js
-const typeDefs = `
-  scalar Date
+#### Modular Type Definition Structure
 
+```javascript
+// graphql/type-defs/user.js - Domain-specific types
+module.exports = `
   type User {
     id: ID!
     name: String!
     email: String!
-    createdAt: Date!
   }
 
-  type Meeting {
-    id: ID!
-    title: String!
-    startTime: Date!
-    endTime: Date!
-    creator: User!
-    attendees: [User!]!
-    createdAt: Date!
-  }
-
-  type Event {
-    id: ID!
-    title: String!
-    description: String
-    startTime: Date!
-    endTime: Date!
-    createdBy: User!
-    bookings: [Booking!]!
-    createdAt: Date!
-  }
-
-  type Booking {
-    id: ID!
-    event: Event!
-    user: User!
-    bookedAt: Date!
-  }
-
-  type AuthPayload {
-    token: String!
-    user: User!
-  }
-
-  input RegisterInput {
-    name: String!
-    email: String!
-    password: String!
-  }
-
-  input LoginInput {
-    email: String!
-    password: String!
-  }
-
-  input CreateMeetingInput {
-    title: String!
-    startTime: Date!
-    endTime: Date!
-    attendeeIds: [ID!]!
-  }
-
-  input CreateEventInput {
-    title: String!
-    description: String
-    startTime: Date!
-    endTime: Date!
-  }
-
-  input EventFilterInput {
-    createdByMe: Boolean
-    booked: Boolean
-    dateFrom: Date
-    dateTo: Date
-  }
-
-  type Query {
-    me: User
-    meetings: [Meeting!]!
-    events(filter: EventFilterInput): [Event!]!
-    event(id: ID!): Event
-    bookings: [Booking!]!
-  }
-
-  type Mutation {
-    register(input: RegisterInput!): AuthPayload!
-    login(input: LoginInput!): AuthPayload!
-    createMeeting(input: CreateMeetingInput!): Meeting!
-    deleteMeeting(id: ID!): Boolean!
-    createEvent(input: CreateEventInput!): Event!
-    updateEvent(id: ID!, input: CreateEventInput!): Event!
-    deleteEvent(id: ID!): Boolean!
-    bookEvent(eventId: ID!): Booking!
-    cancelBooking(bookingId: ID!): Boolean!
+  extend type Query {
+    users: [User!]!
   }
 `;
 
-module.exports = typeDefs;
+// graphql/type-defs/index.js - Combines all domains
+const userTypeDefs = require('./user');
+const meetingTypeDefs = require('./meeting');
+
+module.exports = [scalars, baseTypes, userTypeDefs, meetingTypeDefs].join('\n');
 ```
+
+### File Organization Best Practices
+
+- **Keep domain files focused**: Each domain file should only contain types, inputs, queries, and mutations for that specific domain
+- **Use `extend type`**: Always extend the base Query, Mutation, and Subscription types rather than redefining them
+- **Shared types**: Put common scalars and enums in `shared/scalars.js`
+- **Helper functions**: Use `shared/helpers.js` for common formatting and validation logic
+- **Consistent naming**: Follow the same naming patterns across all domains
+
+## GraphQL Resolver Structure
+
+description: String
+startTime: Date!
+endTime: Date!
+createdBy: User!
+bookings: [Booking!]!
+createdAt: Date!
+}
+
+type Booking {
+id: ID!
+event: Event!
+user: User!
+bookedAt: Date!
+}
+
+type AuthPayload {
+token: String!
+user: User!
+}
+
+input RegisterInput {
+name: String!
+email: String!
+password: String!
+}
+
+input LoginInput {
+email: String!
+password: String!
+}
+
+input CreateMeetingInput {
+title: String!
+startTime: Date!
+endTime: Date!
+attendeeIds: [ID!]!
+}
+
+input CreateEventInput {
+title: String!
+description: String
+startTime: Date!
+endTime: Date!
+}
+
+input EventFilterInput {
+createdByMe: Boolean
+booked: Boolean
+dateFrom: Date
+dateTo: Date
+}
+
+type Query {
+me: User
+meetings: [Meeting!]!
+events(filter: EventFilterInput): [Event!]!
+event(id: ID!): Event
+bookings: [Booking!]!
+}
+
+type Mutation {
+register(input: RegisterInput!): AuthPayload!
+login(input: LoginInput!): AuthPayload!
+createMeeting(input: CreateMeetingInput!): Meeting!
+deleteMeeting(id: ID!): Boolean!
+createEvent(input: CreateEventInput!): Event!
+updateEvent(id: ID!, input: CreateEventInput!): Event!
+deleteEvent(id: ID!): Boolean!
+bookEvent(eventId: ID!): Booking!
+cancelBooking(bookingId: ID!): Boolean!
+}
+`;
+
+module.exports = typeDefs;
+
+````
 
 ## GraphQL Resolvers Structure
 
@@ -341,7 +553,7 @@ const resolvers = {
 };
 
 module.exports = resolvers;
-```
+````
 
 ## Mongoose Schema Patterns
 

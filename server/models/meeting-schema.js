@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+/**
+ * Meeting Schema
+ *
+ * This schema defines the structure of a meeting in the database.
+ * It includes fields for title, description, startTime, endTime, attendees, and createdBy.
+ * The schema also includes timestamps for when the meeting was created and updated.
+ */
 const meetingSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
@@ -13,7 +20,7 @@ const meetingSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model('Meeting', meetingSchema);

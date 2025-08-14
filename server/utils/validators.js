@@ -1,5 +1,6 @@
-const { z } = require('zod');
 const mongoose = require('mongoose');
+const { z } = require('zod');
+
 const { VALIDATION_MESSAGES: VM } = require('../constants/messages');
 
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

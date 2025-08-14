@@ -5,11 +5,11 @@
  * on validation, authorization, and data shaping.
  */
 
-const User = require('../models/user-schema');
-const Meeting = require('../models/meeting-schema');
-const Event = require('../models/event-schema');
-const Booking = require('../models/booking-schema');
 const { MESSAGES } = require('../constants/messages');
+const Booking = require('../models/booking-schema');
+const Event = require('../models/event-schema');
+const Meeting = require('../models/meeting-schema');
+const User = require('../models/user-schema');
 
 // -------------------------
 // User helpers
@@ -93,7 +93,10 @@ const listUsers = async () => {
  */
 const listAllMeetingsPopulated = async () => {
   try {
-    return await Meeting.find({}).sort({ startTime: 1 }).populate('attendees').populate('createdBy');
+    return await Meeting.find({})
+      .sort({ startTime: 1 })
+      .populate('attendees')
+      .populate('createdBy');
   } catch (err) {
     throw err;
   }
@@ -159,7 +162,9 @@ const createMeetingDoc = async ({
 const deleteMeetingIfOwner = async (meetingId, userId) => {
   try {
     const meeting = await Meeting.findById(meetingId);
-    if (!meeting) return { deleted: false, notFound: true };
+    if (!meeting) {
+      return { deleted: false, notFound: true };
+    }
     if (String(meeting.createdBy) !== String(userId)) {
       return { deleted: false, forbidden: true };
     }
@@ -193,11 +198,17 @@ const listAllEventsPopulated = async () => {
 const listEventsFiltered = async ({ createdById, dateFrom, dateTo } = {}) => {
   try {
     const query = {};
-    if (createdById) query.createdBy = createdById;
+    if (createdById) {
+      query.createdBy = createdById;
+    }
     if (dateFrom || dateTo) {
       query.date = {};
-      if (dateFrom) query.date.$gte = new Date(dateFrom);
-      if (dateTo) query.date.$lte = new Date(dateTo);
+      if (dateFrom) {
+        query.date.$gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        query.date.$lte = new Date(dateTo);
+      }
     }
     return await Event.find(query).sort({ date: 1 }).populate('createdBy');
   } catch (err) {
@@ -223,9 +234,15 @@ const getEventByIdPopulated = async (id) => {
 const updateEventIfOwner = async (eventId, userId, update) => {
   try {
     const event = await Event.findById(eventId);
-    if (!event) return { notFound: true };
-    if (String(event.createdBy) !== String(userId)) return { forbidden: true };
-    if (update.date) update.date = new Date(update.date);
+    if (!event) {
+      return { notFound: true };
+    }
+    if (String(event.createdBy) !== String(userId)) {
+      return { forbidden: true };
+    }
+    if (update.date) {
+      update.date = new Date(update.date);
+    }
     const updated = await Event.findByIdAndUpdate(eventId, update, {
       new: true,
       runValidators: true,
@@ -242,8 +259,12 @@ const updateEventIfOwner = async (eventId, userId, update) => {
 const deleteEventIfOwner = async (eventId, userId) => {
   try {
     const event = await Event.findById(eventId);
-    if (!event) return { notFound: true };
-    if (String(event.createdBy) !== String(userId)) return { forbidden: true };
+    if (!event) {
+      return { notFound: true };
+    }
+    if (String(event.createdBy) !== String(userId)) {
+      return { forbidden: true };
+    }
     await event.deleteOne();
     // Also unlink from user's createdEvents (best-effort)
     try {
@@ -261,7 +282,13 @@ const deleteEventIfOwner = async (eventId, userId) => {
  */
 const createEventDoc = async ({ title, description, date, price, createdBy }) => {
   try {
-    const event = await Event.create({ title, description, date: new Date(date), price, createdBy });
+    const event = await Event.create({
+      title,
+      description,
+      date: new Date(date),
+      price,
+      createdBy,
+    });
     // Link event to user.createdEvents (best-effort; ignore if user not found)
     try {
       await User.findByIdAndUpdate(createdBy, { $addToSet: { createdEvents: event._id } });
@@ -296,7 +323,9 @@ const listAllBookingsPopulated = async () => {
 const createBookingDoc = async ({ eventId, userId }) => {
   try {
     const event = await Event.findById(eventId);
-    if (!event) return null;
+    if (!event) {
+      return null;
+    }
     const booking = await Booking.create({ event: eventId, user: userId });
     await booking.populate('event');
     await booking.populate('user');
@@ -312,8 +341,12 @@ const createBookingDoc = async ({ eventId, userId }) => {
 const cancelBookingDoc = async ({ bookingId, userId }) => {
   try {
     const booking = await Booking.findById(bookingId).populate('event').populate('user');
-    if (!booking) return { notFound: true };
-    if (String(booking.user._id) !== String(userId)) return { forbidden: true };
+    if (!booking) {
+      return { notFound: true };
+    }
+    if (String(booking.user._id) !== String(userId)) {
+      return { forbidden: true };
+    }
     const event = booking.event;
     await booking.deleteOne();
     return { event };

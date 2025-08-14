@@ -14,6 +14,7 @@
  * - Provide a GraphiQL IDE in non-production environments
  * - Normalize GraphQL errors with a consistent `extensions` shape
  * - Expose a lightweight health check at `/`
+ * - Error handling middleware
  *
  * Environment variables (consumed here)
  * - PORT: Port number to listen on (default: 4000)
@@ -21,18 +22,18 @@
  * - MONGO_URI: MongoDB connection string (required by `connectDB`)
  * - NODE_ENV: Environment name; when not `production`, GraphiQL and relaxed CSP are enabled
  */
-const express = require('express');
 const cors = require('cors');
+const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
+const { buildSchema } = require('graphql');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const { v4: uuidv4 } = require('uuid');
-const { graphqlHTTP } = require('express-graphql');
-const { buildSchema, GraphQLError } = require('graphql');
 require('dotenv').config();
 
-const typeDefs = require('./graphql/typeDefs');
-const resolvers = require('./graphql/resolvers');
 const { connectDB } = require('./config/db');
+const resolvers = require('./graphql/resolvers');
+const typeDefs = require('./graphql/type-defs');
 const { authMiddleware } = require('./middleware/auth');
 const { errorHandler, normalizeError } = require('./middleware/error');
 
@@ -119,7 +120,7 @@ async function start() {
   app.use(
     '/graphql',
     graphqlHTTP((req) => ({
-      schema: schema,
+      schema,
       rootValue: resolvers,
       context: { req },
       graphiql: process.env.NODE_ENV !== 'production',
@@ -166,5 +167,5 @@ async function start() {
 
 start().catch((err) => {
   console.error('Failed to start server:', err);
-  process.exit(1);
+  throw err;
 });

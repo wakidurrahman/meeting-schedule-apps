@@ -68,11 +68,11 @@ function errorHandler(err, req, res, _next) {
     requestId: req.id,
   };
   // Add details if available
-  if (n.details) payload.details = n.details;
+  if (n.details) {
+    payload.details = n.details;
+  }
   // Send the error response
   res.status(n.status).json(payload);
 }
 
 module.exports = { errorHandler, normalizeError };
-
-
