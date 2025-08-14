@@ -125,7 +125,7 @@ DASH --> PROF
 │   │   ├── images/
 │   │   ├── icons/
 │   │   └── scss/
-│   │       └── _variables.scss
+│   │       ├── _variables.scss
 │   │       └── main.scss
 │   ├── components/
 │   │   ├── atoms/
@@ -135,10 +135,10 @@ DASH --> PROF
 │   │   ├── mutations.ts
 │   │   └── queries.ts
 │   ├── pages/
-│   │   ├── create-meeting
-│   │   ├── dashboard
-│   │   ├── login
-│   │   └── register
+│   │   ├── create-meeting/
+│   │   ├── dashboard/
+│   │   ├── login/
+│   │   └── register/
 │   ├── hooks/
 │   ├── context/
 │   │   └── AuthContext.tsx
@@ -148,52 +148,100 @@ DASH --> PROF
 │   ├── App.tsx
 │   └── index.tsx
 ├── index.html
-├── README.md
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
 ├── .env
 ├── .env.example
-├── .prettierrc
-├── .prettierignore
-├── .eslintrc.json
+└── README.md
 
 /server
 ├── config/
 │   └── db.js
-├── models/
-│   ├── User.js
-│   └── Meeting.js
+├── constants/
+│   └── messages.js
 ├── graphql/
-│   ├── typeDefs.js
-│   └── resolvers.js
+│   ├── resolvers/
+│   │   ├── index.js
+│   │   ├── user.js
+│   │   ├── meeting.js
+│   │   ├── event.js
+│   │   └── booking.js
+│   ├── type-defs/
+│   │   ├── index.js
+│   │   ├── user.js
+│   │   ├── meeting.js
+│   │   ├── event.js
+│   │   └── booking.js
+│   └── shared/
+│       ├── helpers.js
+│       └── scalars.js
 ├── middleware/
-│   └── auth.js
+│   ├── auth.js
+│   └── error.js
+├── models/
+│   ├── user-schema.js
+│   ├── meeting-schema.js
+│   ├── event-schema.js
+│   └── booking-schema.js
 ├── utils/
 │   ├── validators.js
-│   └── dateUtils.js
+│   ├── dateUtils.js
+│   ├── mongoose-methods.js
+│   └── logger.js
 ├── server.js
-└── package.json
-├── .env
-├── .env.example
-├── .prettierrc
-├── .prettierignore
-├── .eslintrc.json
+├── package.json
+├── .eslintrc.cjs
+├── .eslintignore
+├── .prettierrc.json
+└── .prettierignore
 
 /README.md
-
 ```
 
-## Coding Guidelines!
+## Coding Guidelines
 
 ```text
 .rules/
-├── coding-guideline.mdc          # 📋 Main overview & index (187 lines)
-├── client-guidelines.mdc         # 📱 React/TypeScript/Apollo Client (450+ lines)
-├── server-guidelines.mdc         # 🚀 Express/GraphQL/Mongoose (400+ lines)
-└── shared-conventions.mdc        # 🔧 Common patterns & conventions (500+ lines)
-
+├── coding-guideline.mdc          # 📋 Main overview & index
+├── client-guidelines.mdc         # 📱 React/TypeScript/Apollo Client
+├── server-guidelines.mdc         # 🚀 Express/GraphQL/Mongoose
+└── shared-conventions.mdc        # 🔧 Common patterns & conventions
 ```
+
+## Server development
+
+### GraphQL modular structure
+
+The server uses a modular GraphQL setup:
+
+- Type definitions split by domain under `server/graphql/type-defs/` and combined by `index.js`
+- Resolvers split by domain under `server/graphql/resolvers/` and combined by `index.js`
+- Shared helpers and scalars under `server/graphql/shared/`
+
+### Tooling: linting and formatting
+
+From `server/`:
+
+- Lint: `npm run lint`
+- Lint (auto-fix): `npm run lint:fix`
+- Prettier check: `npm run format:check`
+- Prettier write: `npm run format`
+- Combined check: `npm run check`
+
+ESLint highlights:
+
+- Extends: `eslint:recommended`, `plugin:node/recommended`, `plugin:import/recommended`, `plugin:security/recommended`, `plugin:prettier/recommended`
+- Enforces sorted imports with `import/order` (builtin → external → internal → parent → sibling), newlines between groups, and alphabetical ordering
+- Common quality rules enabled (e.g., `curly`, `eqeqeq`, `no-unused-vars`, `require-await`)
+
+Prettier:
+
+- Configured via `.prettierrc.json` and integrated with ESLint via `plugin:prettier/recommended`
+
+Node versions (server):
+
+- Engines: Node >= 22.14.0 < 23, npm >= 10 (see `server/package.json`)
 
 ## Run locally
 
