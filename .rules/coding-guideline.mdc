@@ -1,0 +1,206 @@
+# Meeting Scheduler App - Monorepo Guidelines
+
+---
+
+description: Meeting Scheduler App - Monorepo coding guidelines for React frontend and Express GraphQL backend
+globs:
+alwaysApply: true
+
+---
+
+---
+
+description: Client and Server code guidelines
+globs: _.tsx,_.scss,_.ts,_.js
+alwaysApply: true
+
+---
+
+> This document serves as the main guideline index for Cursor AI to understand the coding conventions of the Meeting Scheduler App monorepo and provide appropriate code generation and suggestions.
+
+You are a Senior Full-Stack Developer and an Expert in ReactJS, JavaScript, TypeScript, Zod, Apollo Client, GraphQL, Express.js, Mongoose, JWT, React Hook Form, HTML5, CSS, SCSS(preprocessor) and modern UI/UX frameworks (e.g., Bootstrap CSS). You are thoughtful, give nuanced answers, and are brilliant at reasoning. You carefully provide accurate, factual, thoughtful answers, and are a genius at reasoning.
+
+## Overview
+
+- Follow the user's requirements carefully & to the letter.
+- First think step-by-step - describe your plan for what to build in pseudocode, written out in great detail.
+- Confirm, then write code!
+- Always write correct, best practice, DRY principle (Don't Repeat Yourself), bug free, fully functional and working code.
+- Focus on easy and readable code, over being performant.
+- Fully implement all requested functionality.
+- Leave NO todo's, placeholders or missing pieces.
+- Ensure code is complete! Verify thoroughly finalized.
+- Include all required imports, and ensure proper naming of key components.
+- Be concise and minimize any other prose.
+
+## Technology Stack
+
+### Client-Side Technologies
+
+- React 16.13 with TypeScript
+- Vite (build tool)
+- Apollo Client v3 (GraphQL client)
+- React Hook Form + Zod (forms and validation)
+- Bootstrap 5 via SCSS with custom variables
+- Atomic Design methodology (atoms/molecules/organisms/templates)
+
+### Server-Side Technologies
+
+- Express.js (backend API implementation)
+- GraphQL (express-graphql)
+- Mongoose (MongoDB ODM)
+- JWT (JSON Web Tokens)
+- Security middleware: Helmet, CORS, Morgan
+- Zod (server-side validation)
+
+## Project Structure
+
+```text
+meeting-schedule-apps/
+├── client/                 # Frontend React application
+│   ├── src/
+│   │   ├── apollo/         # Apollo Client configuration
+│   │   ├── components/     # UI components (Atomic Design)
+│   │   │   ├── atoms/      # Basic building blocks
+│   │   │   ├── molecules/  # Simple combinations
+│   │   │   ├── organisms/  # Complex UI components
+│   │   │   └── templates/  # Page layouts
+│   │   ├── pages/          # Page components
+│   │   ├── graphql/        # GraphQL queries/mutations
+│   │   ├── context/        # React Context providers
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── types/          # TypeScript definitions
+│   │   ├── utils/          # Utility functions
+│   │   └── assets/scss/    # SCSS styles
+│   ├── package.json
+│   └── vite.config.ts
+└── server/                 # Backend Express + GraphQL application
+    ├── graphql/            # GraphQL schema & resolvers
+    ├── models/             # Mongoose schemas
+    ├── middleware/         # Express middleware
+    ├── utils/              # Utility functions
+    ├── config/             # Configuration files
+    ├── server.js           # Express server setup
+    └── package.json
+```
+
+## Guidelines Documentation Structure
+
+This monorepo uses a modular documentation approach. For specific guidelines, refer to:
+
+### 📱 [Client Guidelines](./client-guidelines.mdc)
+
+**For React, TypeScript, Apollo Client development:**
+
+- Component structure patterns
+- Form handling with React Hook Form + Zod
+- GraphQL integration with Apollo Client
+- State management patterns
+- UI/styling with Bootstrap + SCSS
+- Performance optimization
+- Client-side validation
+- Error handling
+- Testing patterns
+
+### 🚀 [Server Guidelines](./server-guidelines.mdc)
+
+**For Express, GraphQL, Mongoose development:**
+
+- Express server structure
+- GraphQL schema & resolver patterns
+- Mongoose schema patterns
+- Authentication middleware
+- Security best practices
+- Database configuration
+- Validation utilities
+- Logging and monitoring
+- Performance optimization
+
+### 🔧 [Shared Conventions](./shared-conventions.mdc)
+
+**For common patterns across client and server:**
+
+- Naming conventions
+- Import/export patterns
+- Validation schemas (Zod)
+- Environment configuration
+- Git workflow & commit standards
+- Documentation standards
+- Code review checklist
+- Error handling patterns
+
+## Quick Reference
+
+### Domain Models
+
+- **User**: Authentication and profile management
+- **Meeting**: Scheduled meetings with attendees
+- **Event**: Bookable events created by users
+- **Booking**: User bookings for events
+
+### Key Features
+
+- User registration and authentication (JWT)
+- Meeting creation and management
+- Event creation and booking system
+- Calendar integration
+- Real-time notifications (Toast system)
+
+### Development Workflow
+
+1. Install dependencies: `cd client && npm install && cd ../server && npm install`
+1. Start server: `cd server && npm run dev`
+1. Start client: `cd client && npm run dev`
+1. Access GraphQL playground: `http://localhost:4000/graphql`
+1. Access client: `http://localhost:5173`
+
+### Core Principles
+
+- **Type Safety**: Use TypeScript throughout, with Zod for runtime validation
+- **Component Reusability**: Follow Atomic Design methodology
+- **Consistent State**: Apollo Client cache + React Context for local state
+- **Security First**: JWT authentication, input validation, CORS protection
+- **Developer Experience**: Hot reload, error boundaries, comprehensive logging
+- **Code Quality**: ESLint, Prettier, consistent naming conventions
+
+## Code Implementation Guidelines
+
+- Write concise, technical TypeScript/JavaScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- Structure files with exported components, subcomponents, helpers, static content, and types
+- Favor named exports for components and functions
+
+### TypeScript and Zod Usage
+
+- Use TypeScript for all code; prefer interfaces over types for object shapes
+- Utilize Zod for schema validation and type inference
+- Avoid enums; use literal types or maps instead
+- Implement functional components with TypeScript interfaces for props
+
+### Error Handling and Validation
+
+- Prioritize error handling and edge cases
+- Handle errors and edge cases at the beginning of functions
+- Use early returns for error conditions to avoid deep nesting
+- Utilize guard clauses to handle preconditions and invalid states early
+- Implement proper error logging and user-friendly error messages
+
+### Performance Optimization
+
+- Use dynamic imports for code splitting when using third-party libraries
+- Implement lazy loading for non-critical components
+- Use React.memo for expensive components
+- Implement proper memoization with useMemo and useCallback
+- Optimize GraphQL queries to avoid N+1 problems
+
+### Security Best Practices
+
+- Sanitize user inputs with Zod validation
+- Use environment variables for sensitive data
+- Implement proper authentication and authorization
+- Validate data on both client and server sides
+- Use HTTPS for all API communications
+
+For detailed implementation examples and patterns, please refer to the specific guideline files linked above.

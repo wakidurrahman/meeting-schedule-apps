@@ -1,0 +1,710 @@
+---
+description: Client-side development guidelines for React + TypeScript + Apollo Client
+globs: *.tsx,*.ts,*.scss
+alwaysApply: true
+---
+
+# Client-Side Development Guidelines
+
+> Guidelines for React, TypeScript, Apollo Client, and frontend development in the Meeting Scheduler App.
+
+## Component Structure Patterns
+
+### Standard Component Structure
+
+```typescript
+interface ComponentProps {
+  // Props definition with JSDoc
+  /** The user object to display */
+  user: User;
+  /** Callback when user is edited */
+  onEdit: (user: User) => void;
+  /** Optional CSS class name */
+  className?: string;
+}
+
+function ComponentName({ user, onEdit, className }: ComponentProps) {
+  // 1. Hooks (state, queries, mutations)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { data, isLoading, error } = useQuery(GET_USER_DETAILS, {
+    variables: { id: user.id },
+  });
+
+  // 2. Effects
+  useEffect(() => {
+    // Side effects
+  }, [dependency]);
+
+  // 3. Event handlers
+  const handleEdit = useCallback(() => {
+    onEdit(user);
+  }, [user, onEdit]);
+
+  const handleToggle = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
+
+  // 4. Computed values
+  const displayName = useMemo(() => {
+    return `${user.firstName} ${user.lastName}`;
+  }, [user.firstName, user.lastName]);
+
+  // 5. Early returns
+  if (isLoading) return <Spinner />;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!user) return null;
+
+  // 6. Render
+  return (
+    <div className={`${styles.component} ${className}`}>
+      {/* Component JSX */}
+    </div>
+  );
+}
+
+export { ComponentName };
+```
+
+## Form Handling Patterns
+
+### React Hook Form + Zod Integration
+
+```typescript
+// Schema definition
+const userSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+});
+
+type UserFormData = z.infer<typeof userSchema>;
+
+// Form component
+function UserForm({ onSubmit }: UserFormProps) {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<UserFormData>({
+    resolver: zodResolver(userSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+    },
+  });
+
+  const handleFormSubmit = async (data: UserFormData) => {
+    try {
+      await onSubmit(data);
+      reset();
+    } catch (error) {
+      console.error('Form submission failed:', error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(handleFormSubmit)}>{/* Form fields */}</form>
+  );
+}
+```
+
+## GraphQL Integration Patterns
+
+### Apollo Client Setup
+
+```typescript
+// apollo/client.ts
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  from,
+} from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+
+const httpLink = createHttpLink({
+  uri: '/graphql',
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('ms_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+export const apolloClient = new ApolloClient({
+  link: from([authLink, httpLink]),
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      errorPolicy: 'all',
+    },
+    query: {
+      errorPolicy: 'all',
+    },
+  },
+});
+```
+
+### GraphQL Operations
+
+```typescript
+// graphql/queries.ts
+import { gql } from '@apollo/client';
+
+export const GET_ME = gql`
+  query GetMe {
+    me {
+      id
+      name
+      email
+      createdAt
+    }
+  }
+`;
+
+export const GET_MEETINGS = gql`
+  query GetMeetings {
+    meetings {
+      id
+      title
+      startTime
+      endTime
+      creator {
+        id
+        name
+      }
+      attendees {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_EVENTS = gql`
+  query GetEvents($filter: EventFilterInput) {
+    events(filter: $filter) {
+      id
+      title
+      description
+      startTime
+      endTime
+      createdBy {
+        id
+        name
+      }
+    }
+  }
+`;
+```
+
+### GraphQL Mutations
+
+```typescript
+// graphql/mutations.ts
+import { gql } from '@apollo/client';
+
+export const REGISTER_USER = gql`
+  mutation RegisterUser($input: RegisterInput!) {
+    register(input: $input) {
+      token
+      user {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const CREATE_MEETING = gql`
+  mutation CreateMeeting($input: CreateMeetingInput!) {
+    createMeeting(input: $input) {
+      id
+      title
+      startTime
+      endTime
+      creator {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const BOOK_EVENT = gql`
+  mutation BookEvent($eventId: ID!) {
+    bookEvent(eventId: $eventId) {
+      id
+      event {
+        id
+        title
+      }
+      user {
+        id
+        name
+      }
+      bookedAt
+    }
+  }
+`;
+```
+
+### Apollo Client Hooks Usage
+
+```typescript
+// Using queries
+import { useQuery } from '@apollo/client';
+import { GET_ME, GET_MEETINGS } from '../graphql/queries';
+
+function UserProfile() {
+  const { data, loading, error } = useQuery(GET_ME);
+
+  if (loading) return <Spinner />;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <h1>{data?.me?.name}</h1>
+      <p>{data?.me?.email}</p>
+    </div>
+  );
+}
+
+// Using mutations
+import { useMutation } from '@apollo/client';
+import { CREATE_MEETING } from '../graphql/mutations';
+
+function CreateMeetingForm() {
+  const [createMeeting, { loading, error }] = useMutation(CREATE_MEETING, {
+    refetchQueries: [{ query: GET_MEETINGS }],
+    onCompleted: (data) => {
+      console.log('Meeting created:', data.createMeeting);
+    },
+    onError: (error) => {
+      console.error('Error creating meeting:', error);
+    },
+  });
+
+  const handleSubmit = async (formData: CreateMeetingInput) => {
+    try {
+      await createMeeting({
+        variables: { input: formData },
+      });
+    } catch (err) {
+      // Error handling is done in onError callback
+    }
+  };
+
+  return <form onSubmit={handleSubmit}>{/* Form fields */}</form>;
+}
+```
+
+## State Management Patterns
+
+### Apollo Client Cache (Primary State Management)
+
+```typescript
+// Apollo Client handles most application state through its cache
+// Local state is managed through React Context and hooks
+
+// For authentication state
+interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  login: (token: string, userData: User) => void;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const client = useApolloClient();
+
+  const login = useCallback((token: string, userData: User) => {
+    localStorage.setItem('ms_token', token);
+    setUser(userData);
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('ms_token');
+    setUser(null);
+    client.clearStore(); // Clear Apollo cache on logout
+  }, [client]);
+
+  const isAuthenticated = useMemo(() => user !== null, [user]);
+
+  return (
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+```
+
+### Toast Context for UI State
+
+```typescript
+// For transient UI state like notifications
+interface ToastContextType {
+  showToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  hideToast: (id: string) => void;
+}
+
+export const ToastContext = createContext<ToastContextType | undefined>(
+  undefined
+);
+
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const showToast = useCallback(
+    (message: string, type: 'success' | 'error' | 'info') => {
+      const id = Date.now().toString();
+      const newToast = { id, message, type };
+      setToasts((prev) => [...prev, newToast]);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        hideToast(id);
+      }, 5000);
+    },
+    []
+  );
+
+  const hideToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ showToast, hideToast }}>
+      {children}
+      <ToastContainer toasts={toasts} onHide={hideToast} />
+    </ToastContext.Provider>
+  );
+}
+```
+
+### Apollo Cache Policies
+
+```typescript
+// Configure cache policies for specific types
+export const apolloClient = new ApolloClient({
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          meetings: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
+          events: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+      User: {
+        fields: {
+          meetings: {
+            merge(existing = [], incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+    },
+  }),
+});
+```
+
+## UI and Styling Guidelines
+
+### SCSS Structure
+
+```scss
+// Component-specific styles using BEM methodology
+.user-card {
+  display: flex;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  &__content {
+    flex: 1;
+    padding: 0 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &--highlighted {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+  }
+
+  &--compact {
+    padding: 0.5rem;
+
+    .user-card__title {
+      font-size: 1rem;
+    }
+  }
+}
+```
+
+### Bootstrap Integration
+
+```typescript
+// Use Bootstrap classes with custom SCSS variables
+function UserCard({
+  user,
+  variant = 'default',
+  size = 'normal',
+}: UserCardProps) {
+  const cardClasses = [
+    'card',
+    'shadow-sm',
+    variant === 'primary' && 'border-primary',
+    size === 'small' && 'card-sm',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div className={cardClasses}>
+      <div className="card-body">
+        <h5 className="card-title">{user.name}</h5>
+        <p className="card-text text-muted">{user.email}</p>
+        <div className="d-flex gap-2">
+          <Button variant="primary" size="sm">
+            Edit
+          </Button>
+          <Button variant="outline-secondary" size="sm">
+            View
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## Performance Optimization
+
+### React Optimization
+
+```typescript
+// Use React.memo for expensive components
+const UserCard = React.memo(
+  ({ user, onEdit }: UserCardProps) => {
+    // Component implementation
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison function if needed
+    return prevProps.user.id === nextProps.user.id;
+  }
+);
+
+// Use useMemo for expensive calculations
+const sortedUsers = useMemo(() => {
+  return users.sort((a, b) => a.name.localeCompare(b.name));
+}, [users]);
+
+// Use useCallback for event handlers
+const handleUserEdit = useCallback(
+  (userId: string) => {
+    // Handler implementation
+  },
+  [
+    /* dependencies */
+  ]
+);
+```
+
+### Code Splitting
+
+```typescript
+// Lazy load components
+const EventsPage = lazy(() => import('../pages/events'));
+const BookingsPage = lazy(() => import('../pages/bookings'));
+
+// Use in router
+function App() {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <Routes>
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/bookings" element={<BookingsPage />} />
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+## Client-Side Validation
+
+### Form Validation with Zod
+
+```typescript
+// Shared validation schemas
+export const eventSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
+    description: z.string().optional(),
+    startTime: z.string().datetime('Invalid start time'),
+    endTime: z.string().datetime('Invalid end time'),
+  })
+  .refine(
+    (data) => {
+      return new Date(data.startTime) < new Date(data.endTime);
+    },
+    {
+      message: 'End time must be after start time',
+      path: ['endTime'],
+    }
+  );
+
+// Use in form
+function CreateEventForm() {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(eventSchema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <TextField
+        name="title"
+        control={control}
+        label="Event Title"
+        error={errors.title?.message}
+        required
+      />
+      {/* Other fields */}
+    </form>
+  );
+}
+```
+
+## Error Handling
+
+### GraphQL Error Handling
+
+```typescript
+function useErrorHandler() {
+  const { showToast } = useToast();
+
+  const handleGraphQLError = useCallback(
+    (error: ApolloError) => {
+      if (error.networkError) {
+        showToast('Network error occurred', 'error');
+      } else if (error.graphQLErrors.length > 0) {
+        error.graphQLErrors.forEach(({ message, extensions }) => {
+          if (extensions?.code === 'UNAUTHENTICATED') {
+            // Redirect to login
+            window.location.href = '/login';
+          } else {
+            showToast(message, 'error');
+          }
+        });
+      }
+    },
+    [showToast]
+  );
+
+  return { handleGraphQLError };
+}
+
+// Use in components
+function MyComponent() {
+  const { handleGraphQLError } = useErrorHandler();
+
+  const [createMeeting] = useMutation(CREATE_MEETING, {
+    onError: handleGraphQLError,
+  });
+}
+```
+
+## Testing Patterns
+
+### Component Testing
+
+```typescript
+// Using React Testing Library
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MockedProvider } from '@apollo/client/testing';
+import UserCard from './UserCard';
+
+const mockUser = {
+  id: '1',
+  name: 'John Doe',
+  email: 'john@example.com',
+};
+
+const mocks = [
+  {
+    request: {
+      query: GET_USER_DETAILS,
+      variables: { id: '1' },
+    },
+    result: {
+      data: {
+        user: mockUser,
+      },
+    },
+  },
+];
+
+test('renders user card with user information', async () => {
+  render(
+    <MockedProvider mocks={mocks}>
+      <UserCard user={mockUser} onEdit={jest.fn()} />
+    </MockedProvider>
+  );
+
+  expect(screen.getByText('John Doe')).toBeInTheDocument();
+  expect(screen.getByText('john@example.com')).toBeInTheDocument();
+});
+```

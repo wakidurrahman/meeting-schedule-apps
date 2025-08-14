@@ -3,6 +3,7 @@
  * @property {Object} HTTP_STATUS - HTTP status codes.
  * @property {Object} ERROR_CODES - Error codes.
  * @property {Object} MESSAGES - Error messages.
+ * @property {Object} VALIDATION_MESSAGES - Validation messages.
  */
 
 const HTTP_STATUS = {
@@ -53,7 +54,7 @@ const VALIDATION_MESSAGES = {
   nameRequired: 'Name is required',
   nameMin: 'Name must be at least 2 characters',
   nameMax: 'Name must be less than 50 characters',
-  namePattern: "Name can only contain letters, spaces, hyphens, and apostrophes",
+  namePattern: 'Name can only contain letters, spaces, hyphens, and apostrophes',
 
   emailInvalid: 'Invalid email format',
 
@@ -69,5 +70,3 @@ const VALIDATION_MESSAGES = {
 };
 
 module.exports = { HTTP_STATUS, ERROR_CODES, MESSAGES, VALIDATION_MESSAGES };
-
-

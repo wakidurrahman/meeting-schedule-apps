@@ -1,0 +1,859 @@
+---
+description: Server-side development guidelines for Express + GraphQL + Mongoose
+globs: *.js
+alwaysApply: true
+---
+
+# Server-Side Development Guidelines
+
+> Guidelines for Express.js, GraphQL, Mongoose, and backend development in the Meeting Scheduler App.
+
+## Express.js Server Structure
+
+### Main Server Setup
+
+```javascript
+// server.js - Main server entry point
+const express = require('express');
+const { graphqlHTTP } = require('express-graphql');
+const mongoose = require('mongoose');
+const helmet = require('helmet');
+const cors = require('cors');
+const morgan = require('morgan');
+const { v4: uuidv4 } = require('uuid');
+
+const typeDefs = require('./graphql/typeDefs');
+const resolvers = require('./graphql/resolvers');
+const authMiddleware = require('./middleware/auth');
+const { customFormatErrorFn } = require('./middleware/error');
+
+const app = express();
+
+// Security and middleware pipeline
+app.use(helmet());
+app.use((req, res, next) => {
+  req.requestId = uuidv4();
+  next();
+});
+app.use(morgan('combined'));
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN,
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(authMiddleware);
+
+// GraphQL endpoint
+app.use(
+  '/graphql',
+  graphqlHTTP((req) => ({
+    schema: buildSchema(typeDefs),
+    rootValue: resolvers,
+    context: { req },
+    graphiql: process.env.NODE_ENV !== 'production',
+    customFormatErrorFn,
+  }))
+);
+
+// Start server
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}/graphql`);
+});
+```
+
+## GraphQL Schema Structure
+
+### Type Definitions
+
+```javascript
+// graphql/typeDefs.js
+const typeDefs = `
+  scalar Date
+
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+    createdAt: Date!
+  }
+
+  type Meeting {
+    id: ID!
+    title: String!
+    startTime: Date!
+    endTime: Date!
+    creator: User!
+    attendees: [User!]!
+    createdAt: Date!
+  }
+
+  type Event {
+    id: ID!
+    title: String!
+    description: String
+    startTime: Date!
+    endTime: Date!
+    createdBy: User!
+    bookings: [Booking!]!
+    createdAt: Date!
+  }
+
+  type Booking {
+    id: ID!
+    event: Event!
+    user: User!
+    bookedAt: Date!
+  }
+
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
+  input RegisterInput {
+    name: String!
+    email: String!
+    password: String!
+  }
+
+  input LoginInput {
+    email: String!
+    password: String!
+  }
+
+  input CreateMeetingInput {
+    title: String!
+    startTime: Date!
+    endTime: Date!
+    attendeeIds: [ID!]!
+  }
+
+  input CreateEventInput {
+    title: String!
+    description: String
+    startTime: Date!
+    endTime: Date!
+  }
+
+  input EventFilterInput {
+    createdByMe: Boolean
+    booked: Boolean
+    dateFrom: Date
+    dateTo: Date
+  }
+
+  type Query {
+    me: User
+    meetings: [Meeting!]!
+    events(filter: EventFilterInput): [Event!]!
+    event(id: ID!): Event
+    bookings: [Booking!]!
+  }
+
+  type Mutation {
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+    createMeeting(input: CreateMeetingInput!): Meeting!
+    deleteMeeting(id: ID!): Boolean!
+    createEvent(input: CreateEventInput!): Event!
+    updateEvent(id: ID!, input: CreateEventInput!): Event!
+    deleteEvent(id: ID!): Boolean!
+    bookEvent(eventId: ID!): Booking!
+    cancelBooking(bookingId: ID!): Boolean!
+  }
+`;
+
+module.exports = typeDefs;
+```
+
+## GraphQL Resolvers Structure
+
+### Resolver Implementation
+
+```javascript
+// graphql/resolvers.js
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { z } = require('zod');
+const User = require('../models/user-schema');
+const Meeting = require('../models/meeting-schema');
+const Event = require('../models/event-schema');
+const Booking = require('../models/booking-schema');
+
+// Validation schemas
+const registerSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+const createMeetingSchema = z.object({
+  title: z.string().min(1),
+  startTime: z.string().datetime(),
+  endTime: z.string().datetime(),
+  attendeeIds: z.array(z.string()),
+});
+
+const resolvers = {
+  Query: {
+    me: async (parent, args, { req }) => {
+      if (!req.userId) {
+        throw new Error('Not authenticated');
+      }
+      return await User.findById(req.userId);
+    },
+
+    meetings: async (parent, args, { req }) => {
+      if (!req.userId) {
+        throw new Error('Not authenticated');
+      }
+      return await Meeting.find({
+        $or: [{ creator: req.userId }, { attendees: req.userId }],
+      }).populate('creator attendees');
+    },
+
+    events: async (parent, { filter }, { req }) => {
+      if (!req.userId) {
+        throw new Error('Not authenticated');
+      }
+
+      let query = {};
+
+      if (filter?.createdByMe) {
+        query.createdBy = req.userId;
+      }
+
+      if (filter?.booked) {
+        const userBookings = await Booking.find({ user: req.userId });
+        const bookedEventIds = userBookings.map((b) => b.event);
+        query._id = { $in: bookedEventIds };
+      }
+
+      if (filter?.dateFrom || filter?.dateTo) {
+        query.startTime = {};
+        if (filter.dateFrom) query.startTime.$gte = new Date(filter.dateFrom);
+        if (filter.dateTo) query.startTime.$lte = new Date(filter.dateTo);
+      }
+
+      return await Event.find(query).populate('createdBy');
+    },
+  },
+
+  Mutation: {
+    register: async (parent, { input }) => {
+      const validatedData = registerSchema.parse(input);
+
+      const existingUser = await User.findOne({ email: validatedData.email });
+      if (existingUser) {
+        throw new Error('User already exists');
+      }
+
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      const user = new User({
+        ...validatedData,
+        password: hashedPassword,
+      });
+
+      await user.save();
+
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      });
+
+      return { token, user };
+    },
+
+    login: async (parent, { input }) => {
+      const validatedData = loginSchema.parse(input);
+
+      const user = await User.findOne({ email: validatedData.email });
+      if (!user) {
+        throw new Error('Invalid credentials');
+      }
+
+      const isValid = await bcrypt.compare(
+        validatedData.password,
+        user.password
+      );
+      if (!isValid) {
+        throw new Error('Invalid credentials');
+      }
+
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+      });
+
+      return { token, user };
+    },
+
+    createMeeting: async (parent, { input }, { req }) => {
+      if (!req.userId) {
+        throw new Error('Not authenticated');
+      }
+
+      const validatedData = createMeetingSchema.parse(input);
+
+      if (
+        new Date(validatedData.startTime) >= new Date(validatedData.endTime)
+      ) {
+        throw new Error('Start time must be before end time');
+      }
+
+      const meeting = new Meeting({
+        ...validatedData,
+        creator: req.userId,
+        startTime: new Date(validatedData.startTime),
+        endTime: new Date(validatedData.endTime),
+      });
+
+      await meeting.save();
+      await meeting.populate('creator attendees');
+
+      return meeting;
+    },
+
+    deleteEvent: async (parent, { id }, { req }) => {
+      if (!req.userId) {
+        throw new Error('Not authenticated');
+      }
+
+      const event = await Event.findById(id);
+      if (!event) {
+        throw new Error('Event not found');
+      }
+
+      if (event.createdBy.toString() !== req.userId) {
+        throw new Error('Not authorized to delete this event');
+      }
+
+      await Event.findByIdAndDelete(id);
+      return true;
+    },
+  },
+};
+
+module.exports = resolvers;
+```
+
+## Mongoose Schema Patterns
+
+### User Schema
+
+```javascript
+// models/user-schema.js
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Remove password from JSON output
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
+};
+
+// Indexes for performance
+userSchema.index({ email: 1 });
+
+module.exports = mongoose.model('User', userSchema);
+```
+
+### Meeting Schema
+
+```javascript
+// models/meeting-schema.js
+const mongoose = require('mongoose');
+
+const meetingSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    startTime: {
+      type: Date,
+      required: true,
+    },
+    endTime: {
+      type: Date,
+      required: true,
+    },
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    attendees: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Validate start time is before end time
+meetingSchema.pre('save', function (next) {
+  if (this.startTime >= this.endTime) {
+    next(new Error('Start time must be before end time'));
+  } else {
+    next();
+  }
+});
+
+// Indexes for performance
+meetingSchema.index({ creator: 1, startTime: 1 });
+meetingSchema.index({ attendees: 1 });
+
+module.exports = mongoose.model('Meeting', meetingSchema);
+```
+
+### Event Schema
+
+```javascript
+// models/event-schema.js
+const mongoose = require('mongoose');
+
+const eventSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    startTime: {
+      type: Date,
+      required: true,
+    },
+    endTime: {
+      type: Date,
+      required: true,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Virtual for bookings
+eventSchema.virtual('bookings', {
+  ref: 'Booking',
+  localField: '_id',
+  foreignField: 'event',
+});
+
+// Ensure virtuals are included in JSON
+eventSchema.set('toJSON', { virtuals: true });
+
+// Indexes
+eventSchema.index({ createdBy: 1, startTime: 1 });
+eventSchema.index({ startTime: 1, endTime: 1 });
+
+module.exports = mongoose.model('Event', eventSchema);
+```
+
+## Middleware Patterns
+
+### Authentication Middleware
+
+```javascript
+// middleware/auth.js
+const jwt = require('jsonwebtoken');
+
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.get('Authorization');
+
+  if (!authHeader) {
+    req.isAuth = false;
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+  if (!token || token === '') {
+    req.isAuth = false;
+    return next();
+  }
+
+  try {
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    req.isAuth = true;
+    req.userId = decodedToken.userId;
+  } catch (err) {
+    req.isAuth = false;
+  }
+
+  next();
+};
+
+module.exports = authMiddleware;
+```
+
+### Error Handling Middleware
+
+```javascript
+// middleware/error.js
+const { ZodError } = require('zod');
+
+const customFormatErrorFn = (error) => {
+  const { message, locations, path } = error;
+
+  // Add request ID for tracing
+  const requestId = error.source?.requestId || 'unknown';
+
+  const formattedError = {
+    message,
+    locations,
+    path,
+    extensions: {
+      requestId,
+    },
+  };
+
+  // Handle Zod validation errors
+  if (error.originalError instanceof ZodError) {
+    formattedError.extensions.code = 'BAD_USER_INPUT';
+    formattedError.extensions.details = error.originalError.issues;
+  } else if (error.message === 'Not authenticated') {
+    formattedError.extensions.code = 'UNAUTHENTICATED';
+  } else if (error.message.includes('Not authorized')) {
+    formattedError.extensions.code = 'FORBIDDEN';
+  } else {
+    formattedError.extensions.code = 'INTERNAL_SERVER_ERROR';
+  }
+
+  return formattedError;
+};
+
+module.exports = { customFormatErrorFn };
+```
+
+## Database Configuration
+
+### MongoDB Connection
+
+```javascript
+// config/db.js
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    process.exit(1);
+  }
+};
+
+// Handle connection events
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB disconnected');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+module.exports = connectDB;
+```
+
+## Security Best Practices
+
+### Password Hashing
+
+```javascript
+const bcrypt = require('bcryptjs');
+
+// Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+```
+
+### JWT Token Management
+
+```javascript
+// utils/auth.js
+const jwt = require('jsonwebtoken');
+
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+};
+
+const verifyToken = (token) => {
+  try {
+    return jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
+
+module.exports = { generateToken, verifyToken };
+```
+
+## Validation Utilities
+
+### Server-Side Validation
+
+```javascript
+// utils/validators.js
+const { z } = require('zod');
+
+const objectIdSchema = z
+  .string()
+  .regex(/^[0-9a-fA-F]{24}$/, 'Invalid ObjectId');
+
+const emailSchema = z.string().email('Invalid email format');
+
+const passwordSchema = z
+  .string()
+  .min(6, 'Password must be at least 6 characters');
+
+const dateTimeSchema = z.string().datetime('Invalid datetime format');
+
+// Meeting validation
+const createMeetingSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
+    startTime: dateTimeSchema,
+    endTime: dateTimeSchema,
+    attendeeIds: z.array(objectIdSchema).optional(),
+  })
+  .refine(
+    (data) => {
+      return new Date(data.startTime) < new Date(data.endTime);
+    },
+    {
+      message: 'End time must be after start time',
+      path: ['endTime'],
+    }
+  );
+
+// Event validation
+const createEventSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
+    description: z.string().max(500, 'Description too long').optional(),
+    startTime: dateTimeSchema,
+    endTime: dateTimeSchema,
+  })
+  .refine(
+    (data) => {
+      return new Date(data.startTime) < new Date(data.endTime);
+    },
+    {
+      message: 'End time must be after start time',
+      path: ['endTime'],
+    }
+  );
+
+module.exports = {
+  objectIdSchema,
+  emailSchema,
+  passwordSchema,
+  createMeetingSchema,
+  createEventSchema,
+};
+```
+
+## Logging and Monitoring
+
+### Logger Setup
+
+```javascript
+// utils/logger.js
+const winston = require('winston');
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.json()
+  ),
+  defaultMeta: { service: 'meeting-scheduler-api' },
+  transports: [
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'logs/combined.log' }),
+  ],
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    })
+  );
+}
+
+module.exports = logger;
+```
+
+## Testing Patterns
+
+### Resolver Testing
+
+```javascript
+// tests/resolvers/user.test.js
+const { createTestClient } = require('apollo-server-testing');
+const { ApolloServer } = require('apollo-server-express');
+const typeDefs = require('../../graphql/typeDefs');
+const resolvers = require('../../graphql/resolvers');
+
+describe('User Resolvers', () => {
+  let server;
+  let query, mutate;
+
+  beforeEach(() => {
+    server = new ApolloServer({
+      typeDefs,
+      resolvers,
+      context: () => ({ req: { userId: 'test-user-id' } }),
+    });
+
+    const testClient = createTestClient(server);
+    query = testClient.query;
+    mutate = testClient.mutate;
+  });
+
+  test('should get current user', async () => {
+    const GET_ME = `
+      query {
+        me {
+          id
+          name
+          email
+        }
+      }
+    `;
+
+    const result = await query({ query: GET_ME });
+    expect(result.errors).toBeUndefined();
+    expect(result.data.me).toBeDefined();
+  });
+});
+```
+
+## Performance Optimization
+
+### Database Optimization
+
+```javascript
+// Efficient querying with projections
+const getUsers = async (fields = {}) => {
+  return User.find({}, fields).lean(); // .lean() for better performance
+};
+
+// Pagination
+const getMeetingsPaginated = async (page = 1, limit = 10, userId) => {
+  const skip = (page - 1) * limit;
+
+  const meetings = await Meeting.find({
+    $or: [{ creator: userId }, { attendees: userId }],
+  })
+    .populate('creator', 'name email')
+    .populate('attendees', 'name email')
+    .sort({ startTime: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const total = await Meeting.countDocuments({
+    $or: [{ creator: userId }, { attendees: userId }],
+  });
+
+  return {
+    meetings,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  };
+};
+```
+
+### Caching Strategies
+
+```javascript
+// Simple in-memory cache for frequently accessed data
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: 300 }); // 5 minutes
+
+const getCachedUser = async (userId) => {
+  const cacheKey = `user:${userId}`;
+  let user = cache.get(cacheKey);
+
+  if (!user) {
+    user = await User.findById(userId).lean();
+    cache.set(cacheKey, user);
+  }
+
+  return user;
+};
+```

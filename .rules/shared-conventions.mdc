@@ -1,0 +1,618 @@
+---
+description: Shared conventions and patterns for both client and server development
+globs: *.tsx,*.ts,*.js,*.scss
+alwaysApply: true
+---
+
+# Shared Conventions and Patterns
+
+> Common naming conventions, validation patterns, environment configuration, and development workflows used across both client and server.
+
+## Naming Conventions
+
+### Files and Directories
+
+- **Components**: kebab-case
+  - Examples: `user-card.tsx`, `meeting-list.tsx`, `navigation-menu.tsx`
+- **Pages**: kebab-case
+  - Examples: `user-profile.tsx`, `event-dashboard.tsx`
+- **Hooks**: kebab-case with `use-` prefix
+  - Examples: `use-local-storage.ts`, `use-auth.ts`
+- **Utils**: kebab-case
+  - Examples: `date-utils.ts`, `validation-helpers.ts`
+- **Services**: kebab-case
+  - Examples: `user-service.ts`, `auth-service.ts`
+- **Schemas (Mongoose)**: kebab-case with `-schema` suffix
+  - Examples: `user-schema.js`, `meeting-schema.js`
+
+### Variables and Functions
+
+#### Client-Side (TypeScript)
+
+```typescript
+// Variables - camelCase
+const userData = {};
+const isLoading = false;
+const hasError = true;
+const itemCount = 0;
+
+// Constants - SCREAMING_SNAKE_CASE
+const API_BASE_URL = 'http://localhost:4000/graphql';
+const AUTH_TOKEN_KEY = 'ms_token';
+const MAX_RETRY_ATTEMPTS = 3;
+const DEFAULT_PAGE_SIZE = 20;
+
+// Functions - camelCase with verb + noun pattern
+const fetchUserData = () => {};
+const getUserById = (id: string) => {};
+const validateEmailFormat = (email: string) => {};
+const transformApiResponse = (data: unknown) => {};
+
+// Event Handlers
+const handleSubmit = () => {};
+const handleUserClick = () => {};
+const onFormChange = () => {};
+const onModalClose = () => {};
+```
+
+#### Server-Side (JavaScript)
+
+```javascript
+// Variables - camelCase
+const userData = {};
+const isAuthenticated = false;
+const hasPermission = true;
+const requestCount = 0;
+
+// Constants - SCREAMING_SNAKE_CASE
+const JWT_SECRET = process.env.JWT_SECRET;
+const DATABASE_URL = process.env.MONGO_URI;
+const TOKEN_EXPIRY = '7d';
+const BCRYPT_ROUNDS = 10;
+
+// Functions - camelCase
+const authenticateUser = () => {};
+const hashPassword = (password) => {};
+const generateToken = (userId) => {};
+const validateInput = (data) => {};
+
+// Middleware functions
+const authMiddleware = (req, res, next) => {};
+const errorHandler = (error, req, res, next) => {};
+```
+
+### Hooks and Queries
+
+```typescript
+// Custom hooks - camelCase with 'use' prefix
+const useUserData = () => {};
+const useLocalStorage = () => {};
+const useToggle = () => {};
+const useDebounce = () => {};
+
+// GraphQL hooks - specific naming pattern
+const useGetUsers = () => useQuery(GET_USERS);
+const useGetUserById = (id: string) =>
+  useQuery(GET_USER_BY_ID, { variables: { id } });
+const useCreateUser = () => useMutation(CREATE_USER);
+const useUpdateUser = () => useMutation(UPDATE_USER);
+const useDeleteUser = () => useMutation(DELETE_USER);
+```
+
+### Types and Interfaces
+
+```typescript
+// Interface names - PascalCase
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface Meeting {
+  id: string;
+  title: string;
+  startTime: Date;
+  endTime: Date;
+}
+
+// Props interfaces - Component name + 'Props'
+interface UserCardProps {
+  user: User;
+  onEdit: () => void;
+}
+
+interface MeetingListProps {
+  meetings: Meeting[];
+  onMeetingSelect: (meeting: Meeting) => void;
+}
+
+// Type definitions - PascalCase + 'Type' suffix
+type ButtonVariantType = 'primary' | 'secondary' | 'danger';
+type UserRoleType = 'admin' | 'user' | 'guest';
+
+// Generic types
+type ApiResponse<T> = {
+  data: T;
+  message: string;
+  success: boolean;
+};
+
+type PaginatedResponse<T> = {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+};
+```
+
+### Component Names
+
+```typescript
+// Components - PascalCase
+const UserCard = () => {};
+const NavigationMenu = () => {};
+const MeetingList = () => {};
+const EventForm = () => {};
+
+// HOCs - 'with' prefix
+const withAuth = () => {};
+const withLoading = () => {};
+const withErrorBoundary = () => {};
+```
+
+## Import/Export Conventions
+
+### Import Order (Client-Side)
+
+```typescript
+// 1. React imports
+import React from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+// 2. Third-party libraries
+import { useQuery, useMutation } from '@apollo/client';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+// 3. GraphQL operations
+import { GET_USERS, CREATE_USER } from '../graphql/queries';
+import { LOGIN_USER } from '../graphql/mutations';
+
+// 4. Internal utilities and services
+import { validateEmail } from '../utils/validation';
+import { formatDate } from '../utils/date';
+
+// 5. Components
+import { Button } from '../components/atoms';
+import { UserCard } from '../components/molecules';
+import { Header } from '../components/organisms';
+
+// 6. Context and hooks
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../hooks/use-toast';
+
+// 7. Types
+import type { User, UserFormData } from '../types';
+
+// 8. Styles (always last)
+import styles from './UserProfile.module.scss';
+```
+
+### Import Order (Server-Side)
+
+```javascript
+// 1. Node.js built-in modules
+const path = require('path');
+const fs = require('fs');
+
+// 2. Third-party libraries
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { z } = require('zod');
+
+// 3. Internal modules
+const User = require('../models/user-schema');
+const authMiddleware = require('../middleware/auth');
+const { validateInput } = require('../utils/validators');
+const logger = require('../utils/logger');
+
+// 4. Constants and config
+const { JWT_SECRET, BCRYPT_ROUNDS } = require('../config/constants');
+```
+
+### Export Patterns
+
+```typescript
+// Named exports (preferred for utilities, components)
+export const UserCard = () => {};
+export const useUserData = () => {};
+export const validateEmail = () => {};
+
+// Default exports (for pages, main components, schemas)
+export default function UserProfilePage() {}
+
+// Module exports (server-side)
+module.exports = UserSchema;
+module.exports = { authMiddleware, errorHandler };
+
+// Re-exports (barrel exports)
+export { UserCard } from './user-card';
+export { MeetingList } from './meeting-list';
+export type { User, Meeting } from './types';
+```
+
+## Validation Patterns
+
+### Shared Zod Schemas
+
+```typescript
+// Basic field validations
+const email = z.string().email('Invalid email format');
+const password = z.string().min(6, 'Password must be at least 6 characters');
+const name = z.string().min(2, 'Name must be at least 2 characters');
+const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid ID format');
+
+// Date validations
+const dateString = z.string().datetime('Invalid date format');
+const futureDate = z
+  .string()
+  .datetime()
+  .refine((date) => {
+    return new Date(date) > new Date();
+  }, 'Date must be in the future');
+
+// User schemas
+const registerSchema = z.object({
+  name,
+  email,
+  password,
+});
+
+const loginSchema = z.object({
+  email,
+  password,
+});
+
+// Meeting schemas
+const createMeetingSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
+    startTime: dateString,
+    endTime: dateString,
+    attendeeIds: z.array(objectId).optional(),
+  })
+  .refine(
+    (data) => {
+      return new Date(data.startTime) < new Date(data.endTime);
+    },
+    {
+      message: 'End time must be after start time',
+      path: ['endTime'],
+    }
+  );
+
+// Event schemas
+const createEventSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(100, 'Title too long'),
+    description: z.string().max(500, 'Description too long').optional(),
+    startTime: futureDate,
+    endTime: futureDate,
+  })
+  .refine(
+    (data) => {
+      return new Date(data.startTime) < new Date(data.endTime);
+    },
+    {
+      message: 'End time must be after start time',
+      path: ['endTime'],
+    }
+  );
+```
+
+### Validation Usage Patterns
+
+```typescript
+// Client-side form validation
+function CreateMeetingForm() {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(createMeetingSchema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Form fields with error handling */}
+    </form>
+  );
+}
+
+// Server-side validation
+const createMeeting = async (parent, { input }, { req }) => {
+  try {
+    const validatedData = createMeetingSchema.parse(input);
+    // Process validated data
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new GraphQLError('Validation failed', {
+        extensions: {
+          code: 'BAD_USER_INPUT',
+          details: error.issues,
+        },
+      });
+    }
+    throw error;
+  }
+};
+```
+
+## Environment Configuration
+
+### Client Environment Variables
+
+```bash
+# client/.env
+VITE_GRAPHQL_URL=http://localhost:4000/graphql
+VITE_ENV=development
+VITE_APP_NAME=Meeting Scheduler
+VITE_VERSION=1.0.0
+```
+
+### Server Environment Variables
+
+```bash
+# server/.env
+PORT=4000
+MONGO_URI=mongodb://localhost:27017/meeting_scheduler
+JWT_SECRET=your_jwt_secret_here
+CLIENT_ORIGIN=http://localhost:5173
+NODE_ENV=development
+LOG_LEVEL=info
+BCRYPT_ROUNDS=10
+```
+
+### Configuration Management
+
+```typescript
+// client/src/config/app-config.ts
+export const appConfig = {
+  graphqlUrl: import.meta.env.VITE_GRAPHQL_URL || '/graphql',
+  environment: import.meta.env.VITE_ENV || 'development',
+  appName: import.meta.env.VITE_APP_NAME || 'Meeting Scheduler',
+  version: import.meta.env.VITE_VERSION || '1.0.0',
+  isDevelopment: import.meta.env.VITE_ENV === 'development',
+  isProduction: import.meta.env.VITE_ENV === 'production',
+};
+```
+
+```javascript
+// server/config/env.js
+module.exports = {
+  port: process.env.PORT || 4000,
+  mongoUri:
+    process.env.MONGO_URI || 'mongodb://localhost:27017/meeting_scheduler',
+  jwtSecret: process.env.JWT_SECRET || 'fallback_secret',
+  clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
+  nodeEnv: process.env.NODE_ENV || 'development',
+  logLevel: process.env.LOG_LEVEL || 'info',
+  bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS) || 10,
+  isDevelopment: process.env.NODE_ENV === 'development',
+  isProduction: process.env.NODE_ENV === 'production',
+};
+```
+
+## Git Workflow & Commit Standards
+
+### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Commit Types
+
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools
+
+### Examples
+
+```
+feat(auth): add user login functionality
+fix(ui): resolve button alignment issue in mobile view
+docs(api): update user service documentation
+style(components): format code with prettier
+refactor(utils): optimize date formatting function
+test(hooks): add unit tests for useAuth hook
+chore(deps): update apollo client to v3.8.0
+```
+
+### Branch Naming
+
+- Feature branches: `feature/user-authentication`
+- Bug fixes: `fix/login-error-handling`
+- Hotfixes: `hotfix/security-vulnerability`
+- Releases: `release/v1.2.0`
+
+## Documentation Standards
+
+### JSDoc Comments
+
+````typescript
+/**
+ * Fetches user data by ID
+ * @param userId - The unique identifier for the user
+ * @returns Promise<User> - User object or throws error
+ * @throws {Error} When user is not found
+ * @example
+ * ```typescript
+ * const user = await getUserById('123');
+ * console.log(user.name);
+ * ```
+ */
+async function getUserById(userId: string): Promise<User> {
+  // Implementation
+}
+````
+
+### Component Documentation
+
+````typescript
+/**
+ * UserCard component displays user information in a card format
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <UserCard
+ *   user={userData}
+ *   onEdit={handleEdit}
+ *   className="custom-class"
+ * />
+ * ```
+ */
+interface UserCardProps {
+  /** The user object to display */
+  user: User;
+  /** Callback function when edit button is clicked */
+  onEdit?: (user: User) => void;
+  /** Additional CSS class name */
+  className?: string;
+}
+````
+
+## Monorepo Development Guidelines
+
+### Development Workflow
+
+1. **Install dependencies for both client and server:**
+
+```bash
+cd client && npm install
+cd ../server && npm install
+```
+
+2. **Start development servers:**
+
+```bash
+# Terminal 1 - Start server
+cd server && npm run dev
+
+# Terminal 2 - Start client
+cd client && npm run dev
+```
+
+3. **Development proxy configuration:**
+
+```typescript
+// client/vite.config.ts
+export default defineConfig({
+  server: {
+    proxy: {
+      '/graphql': 'http://localhost:4000',
+    },
+  },
+});
+```
+
+### Code Organization Principles
+
+- **Shared types**: Define TypeScript interfaces that can be shared between client and server
+- **Consistent naming**: Use the same entity names in both GraphQL schema and TypeScript types
+- **Error handling**: Implement consistent error handling patterns across both client and server
+- **Validation**: Use Zod schemas that can be shared between client and server when possible
+- **Environment variables**: Keep similar naming patterns for related config across client/server
+
+### Database Development Guidelines
+
+- Use MongoDB with Mongoose for data modeling
+- Define clear schema relationships using Mongoose refs
+- Implement proper indexing for performance
+- Use Mongoose middleware for data validation and transformation
+- Follow consistent collection naming (lowercase, plural)
+
+## Code Review Checklist
+
+### Code Quality
+
+- [ ] Code follows naming conventions
+- [ ] Functions are pure and focused on single responsibility
+- [ ] No code duplication (DRY principle)
+- [ ] Proper error handling implemented
+- [ ] TypeScript/JSDoc types are properly defined
+- [ ] Consistent import/export patterns
+
+### Performance
+
+- [ ] Unnecessary re-renders are avoided (React)
+- [ ] Proper memoization is used where needed
+- [ ] Database queries are optimized with proper indexes
+- [ ] GraphQL queries avoid N+1 problems
+
+### Security
+
+- [ ] User inputs are validated and sanitized
+- [ ] Authentication is properly implemented
+- [ ] Environment variables are used for sensitive data
+- [ ] API endpoints are secured with proper authorization
+
+### Testing
+
+- [ ] Unit tests cover critical functionality
+- [ ] Integration tests cover user workflows
+- [ ] Edge cases are tested
+- [ ] Mocks are properly implemented
+
+### Accessibility (Client-side)
+
+- [ ] Semantic HTML is used
+- [ ] ARIA labels are provided where necessary
+- [ ] Keyboard navigation works
+- [ ] Color contrast meets standards
+
+## Error Handling Patterns
+
+### Consistent Error Codes
+
+```typescript
+// Shared error codes between client and server
+const ERROR_CODES = {
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+  FORBIDDEN: 'FORBIDDEN',
+  BAD_USER_INPUT: 'BAD_USER_INPUT',
+  NOT_FOUND: 'NOT_FOUND',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+} as const;
+
+type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
+```
+
+### Error Response Format
+
+```typescript
+// Consistent error response format
+interface ErrorResponse {
+  message: string;
+  code: ErrorCode;
+  details?: any;
+  requestId?: string;
+}
+```

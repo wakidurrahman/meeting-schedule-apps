@@ -184,6 +184,17 @@ DASH --> PROF
 
 ```
 
+## Coding Guidelines!
+
+```text
+.rules/
+├── coding-guideline.mdc          # 📋 Main overview & index (187 lines)
+├── client-guidelines.mdc         # 📱 React/TypeScript/Apollo Client (450+ lines)
+├── server-guidelines.mdc         # 🚀 Express/GraphQL/Mongoose (400+ lines)
+└── shared-conventions.mdc        # 🔧 Common patterns & conventions (500+ lines)
+
+```
+
 ## Run locally
 
 1. Create `server/.env` (example values)
