@@ -46,7 +46,7 @@ async function start() {
    */
   await connectDB(process.env.MONGO_URI);
 
-  // Express app 
+  // Express app
   const app = express();
 
   /**
@@ -69,7 +69,7 @@ async function start() {
       max: 100, // limit each IP to 100 requests per windowMs
       standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-      message: { error: 'Too many requests, please try again later.' }
+      message: { error: 'Too many requests, please try again later.' },
     }),
   );
 
@@ -123,7 +123,7 @@ async function start() {
       rootValue: resolvers,
       context: { req },
       graphiql: process.env.NODE_ENV !== 'production',
-     
+
       /**
        * Provide a consistent error shape for clients and attach diagnostic metadata.
        * If a validation library (e.g., Zod) throws a typed error, surface a BAD_USER_INPUT code
@@ -163,7 +163,6 @@ async function start() {
   // Central error handler (must be last)
   app.use(errorHandler);
 }
-
 
 start().catch((err) => {
   console.error('Failed to start server:', err);

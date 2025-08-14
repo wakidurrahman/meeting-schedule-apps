@@ -14,10 +14,7 @@ const RegisterInputSchema = z.object({
     .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
     .transform((str) => str.trim()),
   email: z.string().regex(EmailRegex, VM.emailInvalid),
-  password: z
-    .string()
-    .min(8, VM.passwordMin)
-    .regex(PasswordRegex, VM.passwordComplexity), // Example password base on the following regex: e.g. Zain123@, Min_123$
+  password: z.string().min(8, VM.passwordMin).regex(PasswordRegex, VM.passwordComplexity), // Example password base on the following regex: e.g. Zain123@, Min_123$
 });
 
 const LoginInputSchema = z.object({
@@ -29,18 +26,10 @@ const MeetingInputSchema = z
   .object({
     title: z.string().min(1),
     description: z.string().optional().default(''),
-    startTime: z
-      .string()
-      .refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
-    endTime: z
-      .string()
-      .refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
+    startTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
+    endTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
     attendeeIds: z
-      .array(
-        z
-          .string()
-          .refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId)
-      )
+      .array(z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId))
       .default([]),
   })
   .refine((data) => new Date(data.startTime) < new Date(data.endTime), {
