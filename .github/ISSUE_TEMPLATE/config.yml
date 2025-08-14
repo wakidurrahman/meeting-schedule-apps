@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentation
-    url: https://github.com/wakidurrahman/meeting-schedule-apps/blob/main/README.md
-    about: Check the project documentation for setup and usage information
-  - name: 💬 Discussions
-    url: https://github.com/wakidurrahman/meeting-schedule-apps/discussions
-    about: Ask questions and discuss ideas with the community
-  - name: 🔧 Coding Guidelines
-    url: https://github.com/wakidurrahman/meeting-schedule-apps/tree/main/.rules
-    about: Review the coding guidelines and conventions
+    url: https://github.com/your-username/meeting-schedule-apps/blob/main/README.md
+    about: Check out our comprehensive documentation including testing framework details
+  - name: 💬 Discussion
+    url: https://github.com/your-username/meeting-schedule-apps/discussions
+    about: Ask questions, share ideas, or discuss features with the community
+  - name: 🔒 Security Issues
+    url: https://github.com/your-username/meeting-schedule-apps/security/advisories
+    about: Report security vulnerabilities privately
