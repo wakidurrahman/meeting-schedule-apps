@@ -245,7 +245,7 @@ Node versions (server):
 
 ## Testing Framework
 
-The server includes a comprehensive testing suite built with Jest, covering all GraphQL resolvers, Mongoose models, middleware, and utilities. Tests ensure code quality, reliability, and maintain high coverage standards.
+The server includes a comprehensive testing suite built with Jest, covering all GraphQL `resolvers`, Mongoose `models`, `middleware`, and `utilities`. Tests ensure code quality, reliability, and maintain high coverage standards.
 
 ### Test Structure
 
@@ -348,7 +348,7 @@ Comprehensive testing of all GraphQL resolvers with mocked dependencies:
 **Event Resolver (`event.test.js`)**
 
 - ✅ Event CRUD operations
-- ✅ Event filtering and pagination
+- ✅ Event filtering
 - ✅ Owner-based permissions
 - ✅ Date and price validation
 - ✅ Database error handling
