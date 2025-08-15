@@ -48,6 +48,34 @@ const UpdateProfileInputSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
+// User management schemas
+const CreateUserInputSchema = z.object({
+  name: z
+    .string()
+    .min(1, VM.nameRequired)
+    .min(2, VM.nameMin)
+    .max(50, VM.nameMax)
+    .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
+    .transform((str) => str.trim()),
+  email: z.string().regex(EmailRegex, VM.emailInvalid),
+  imageUrl: z.string().url().optional().or(z.literal('')),
+  role: z.enum(['USER', 'ADMIN']).default('USER'),
+});
+
+const UpdateUserInputSchema = z.object({
+  name: z
+    .string()
+    .min(1, VM.nameRequired)
+    .min(2, VM.nameMin)
+    .max(50, VM.nameMax)
+    .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
+    .transform((str) => str.trim())
+    .optional(),
+  email: z.string().regex(EmailRegex, VM.emailInvalid).optional(),
+  imageUrl: z.string().url().optional().or(z.literal('')),
+  role: z.enum(['USER', 'ADMIN']).optional(),
+});
+
 const EventInputSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional().default(''),
@@ -64,4 +92,6 @@ module.exports = {
   MeetingInputSchema,
   UpdateProfileInputSchema,
   EventInputSchema,
+  CreateUserInputSchema,
+  UpdateUserInputSchema,
 };

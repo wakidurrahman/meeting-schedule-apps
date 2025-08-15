@@ -16,12 +16,17 @@ const {
   findUserDocByEmail,
   createUser,
   updateUserById,
-  listUsers,
+  listUsersFiltered,
+  createUserWithRole,
+  updateUserWithRole,
+  deleteUserById,
 } = require('../../utils/mongoose-methods');
 const {
   RegisterInputSchema,
   LoginInputSchema,
   UpdateProfileInputSchema,
+  CreateUserInputSchema,
+  UpdateUserInputSchema,
 } = require('../../utils/validators');
 
 /**
@@ -180,14 +185,18 @@ const userResolvers = {
     }
   },
 
-  users: async (_args, context) => {
+  users: async ({ where, orderBy, pagination }, context) => {
     try {
       // step 01: validate the user by requireAuth
       requireAuth(context);
-      // step 02: get the users
-      const users = await listUsers();
-      // step 03: return the users
-      return users.map(formatUser);
+      // step 02: get the users with filtering, sorting, and pagination
+      const result = await listUsersFiltered({ where, orderBy, pagination });
+      // step 03: format and return the result
+      return {
+        nodes: result.nodes.map(formatUser),
+        total: result.total,
+        hasMore: result.hasMore,
+      };
     } catch (err) {
       handleUnexpectedError(err);
     }
@@ -223,6 +232,90 @@ const userResolvers = {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT, details: err.issues },
         });
       }
+      handleUnexpectedError(err);
+    }
+  },
+
+  /**
+   * User Management CRUD operations
+   */
+
+  createUser: async ({ input }, context) => {
+    try {
+      // step 01: validate the user by requireAuth
+      requireAuth(context);
+      // step 02: validate the input by Zod schema
+      CreateUserInputSchema.parse(input);
+      // step 03: check if the email is already in use
+      const existing = await getUserByEmail(input.email);
+      if (existing) {
+        throw new GraphQLError(MESSAGES.EMAIL_IN_USE, {
+          extensions: { code: ERROR_CODES.BAD_USER_INPUT },
+        });
+      }
+      // step 04: create the user
+      const user = await createUserWithRole(input);
+      // step 05: return the formatted user
+      return formatUser(user);
+    } catch (err) {
+      if (err.name === 'ZodError') {
+        throw new GraphQLError(MESSAGES.VALIDATION_FAILED, {
+          extensions: { code: ERROR_CODES.BAD_USER_INPUT, details: err.issues },
+        });
+      }
+      handleUnexpectedError(err);
+    }
+  },
+
+  updateUser: async ({ id, input }, context) => {
+    try {
+      // step 01: validate the user by requireAuth
+      requireAuth(context);
+      // step 02: validate the input by Zod schema
+      UpdateUserInputSchema.parse(input);
+      // step 03: check if email is being changed and already exists
+      if (input.email) {
+        const existing = await getUserByEmail(input.email);
+        if (existing && existing.id !== id) {
+          throw new GraphQLError(MESSAGES.EMAIL_IN_USE, {
+            extensions: { code: ERROR_CODES.BAD_USER_INPUT },
+          });
+        }
+      }
+      // step 04: update the user
+      const user = await updateUserWithRole(id, input);
+      if (!user) {
+        throw new GraphQLError(MESSAGES.USER_NOT_FOUND, {
+          extensions: { code: ERROR_CODES.NOT_FOUND },
+        });
+      }
+      // step 05: return the formatted user
+      return formatUser(user);
+    } catch (err) {
+      if (err.name === 'ZodError') {
+        throw new GraphQLError(MESSAGES.VALIDATION_FAILED, {
+          extensions: { code: ERROR_CODES.BAD_USER_INPUT, details: err.issues },
+        });
+      }
+      handleUnexpectedError(err);
+    }
+  },
+
+  deleteUser: async ({ id }, context) => {
+    try {
+      // step 01: validate the user by requireAuth
+      requireAuth(context);
+      // step 02: check if user exists
+      const user = await getUserById(id);
+      if (!user) {
+        throw new GraphQLError(MESSAGES.USER_NOT_FOUND, {
+          extensions: { code: ERROR_CODES.NOT_FOUND },
+        });
+      }
+      // step 03: delete the user
+      const success = await deleteUserById(id);
+      return success;
+    } catch (err) {
       handleUnexpectedError(err);
     }
   },

@@ -12,6 +12,11 @@ module.exports = `
     ADMIN
   }
 
+  enum SortOrder {
+    ASC
+    DESC
+  }
+
   enum LiftStatus {
     OPEN
     CLOSED

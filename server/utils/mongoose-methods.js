@@ -68,6 +68,103 @@ const updateUserById = (id, update) =>
  */
 const listUsers = () => User.find({}).sort({ name: 1 }).populate('createdEvents').lean();
 
+/**
+ * Enhanced users list with search, filtering, sorting, and pagination
+ */
+const listUsersFiltered = async ({ where = {}, orderBy = {}, pagination = {} } = {}) => {
+  try {
+    const { search, role } = where;
+    const { field = 'NAME', direction = 'ASC' } = orderBy;
+    const { limit = 10, offset = 0 } = pagination;
+
+    // Build query conditions
+    const query = {};
+
+    // Search by name OR email (case-insensitive)
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    // Filter by role
+    if (role) {
+      query.role = role;
+    }
+
+    // Build sort object
+    const sortMap = {
+      NAME: 'name',
+      CREATED_AT: 'createdAt',
+      UPDATED_AT: 'updatedAt',
+    };
+    const sortField = sortMap[field] || 'name';
+    const sortDirection = direction === 'DESC' ? -1 : 1;
+    const sort = {};
+    sort[sortField] = sortDirection;
+
+    // Execute queries
+    const [nodes, total] = await Promise.all([
+      User.find(query).sort(sort).skip(offset).limit(limit).lean(),
+      User.countDocuments(query),
+    ]);
+
+    const hasMore = offset + limit < total;
+
+    return { nodes, total, hasMore };
+  } catch (err) {
+    err.message = err.message || MESSAGES.INTERNAL_ERROR;
+    throw err;
+  }
+};
+
+/**
+ * Create a new user with role support
+ */
+const createUserWithRole = async ({ name, email, imageUrl, role = 'USER' }) => {
+  try {
+    const userData = { name, email, role };
+    if (imageUrl) {
+      userData.imageUrl = imageUrl;
+    }
+
+    return await User.create(userData);
+  } catch (err) {
+    err.message = err.message || MESSAGES.INTERNAL_ERROR;
+    throw err;
+  }
+};
+
+/**
+ * Update user by ID with role support
+ */
+const updateUserWithRole = async (id, update) => {
+  try {
+    return await User.findByIdAndUpdate(
+      id,
+      { ...update, updatedAt: new Date() },
+      { new: true, runValidators: true },
+    ).lean();
+  } catch (err) {
+    err.message = err.message || MESSAGES.INTERNAL_ERROR;
+    throw err;
+  }
+};
+
+/**
+ * Delete user by ID (hard delete)
+ */
+const deleteUserById = async (id) => {
+  try {
+    const result = await User.findByIdAndDelete(id);
+    return !!result; // Return boolean indicating success
+  } catch (err) {
+    err.message = err.message || MESSAGES.INTERNAL_ERROR;
+    throw err;
+  }
+};
+
 // -------------------------
 // Meeting helpers
 // -------------------------
@@ -280,6 +377,10 @@ module.exports = {
   createUser,
   updateUserById,
   listUsers,
+  listUsersFiltered,
+  createUserWithRole,
+  updateUserWithRole,
+  deleteUserById,
   // meeting
   listAllMeetingsPopulated,
   listMeetingsForUserPopulated,

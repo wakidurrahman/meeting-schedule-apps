@@ -50,12 +50,50 @@ module.exports = `
     imageUrl: String
   }
 
+  # User Management Inputs
+  input CreateUserInput {
+    name: String!
+    email: String!
+    imageUrl: String
+    role: Role = USER
+  }
+
+  input UpdateUserInput {
+    name: String
+    email: String
+    imageUrl: String
+    role: Role
+  }
+
+  input UsersWhere {
+    search: String        # matches name OR email
+    role: Role
+  }
+
+  enum UserOrderField { NAME CREATED_AT UPDATED_AT }
+  
+  input UsersOrderBy {
+    field: UserOrderField = NAME
+    direction: SortOrder = ASC
+  }
+
+  input Pagination {
+    limit: Int = 10
+    offset: Int = 0
+  }
+
+  type UsersResult {
+    nodes: [User!]!
+    total: Int!
+    hasMore: Boolean!
+  }
+
   # User Queries
   extend type Query {
     me: AuthUser
     myProfile: User
     user(id: ID!): User
-    users: [User!]!
+    users(where: UsersWhere, orderBy: UsersOrderBy, pagination: Pagination): UsersResult!
   }
 
   # User Mutations
@@ -63,5 +101,8 @@ module.exports = `
     register(input: RegisterInput!): AuthUser!
     login(input: LoginInput!): AuthPayload!
     updateMyProfile(input: UpdateProfileInput!): User!
+    createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: UpdateUserInput!): User!
+    deleteUser(id: ID!): Boolean!
   }
 `;
