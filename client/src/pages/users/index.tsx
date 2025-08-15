@@ -1,44 +1,278 @@
 import { useQuery } from '@apollo/client';
-import React, { useMemo, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
+import Button from '@/components/atoms/button';
+import Heading from '@/components/atoms/heading';
+import SelectField from '@/components/atoms/select-field';
+import Spinner from '@/components/atoms/spinner';
+import TextField from '@/components/atoms/text-field';
 import Pagination from '@/components/molecules/pagination';
 import Table from '@/components/molecules/table';
 import BaseTemplate from '@/components/templates/base-templates';
-import { GET_USERS, type UsersQueryData } from '@/graphql/queries';
+import { paths } from '@/constants/paths';
+import { GET_USERS, type UsersQueryData, type UsersQueryVars } from '@/graphql/user/queries';
+import type { UserProfile } from '@/types/user';
+import { UserSearchSchema } from '@/utils/validation';
+
+interface UserSearchForm {
+  search?: string;
+  role?: 'ALL' | 'ADMIN' | 'USER';
+  sortField?: 'NAME' | 'CREATED_AT' | 'UPDATED_AT';
+  sortDirection?: 'ASC' | 'DESC';
+  page?: number;
+}
 
 export default function UsersPage(): JSX.Element {
-  const { data } = useQuery<UsersQueryData>(GET_USERS);
-  const users = useMemo(() => data?.users ?? [], [data?.users]);
-  const [page, setPage] = useState(1);
-  const pageSize = 5; // controlled here (can be lifted to parent later)
-  const pageCount = Math.max(1, Math.ceil(users.length / pageSize));
-  const current = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return users.slice(start, start + pageSize);
-  }, [page, pageSize, users]);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [currentSort, setCurrentSort] = useState<{
+    field: 'NAME' | 'CREATED_AT' | 'UPDATED_AT';
+    direction: 'ASC' | 'DESC';
+  }>({
+    field: 'NAME',
+    direction: 'ASC',
+  });
+
+  // Form state for search and filters
+  const { control, watch, setValue } = useForm<UserSearchForm>({
+    resolver: zodResolver(UserSearchSchema),
+    defaultValues: {
+      search: searchParams.get('search') || '',
+      role: (searchParams.get('role') as 'ALL' | 'ADMIN' | 'USER') || 'ALL',
+      sortField: (searchParams.get('sortField') as 'NAME' | 'CREATED_AT' | 'UPDATED_AT') || 'NAME',
+      sortDirection: (searchParams.get('sortDirection') as 'ASC' | 'DESC') || 'ASC',
+      page: parseInt(searchParams.get('page') || '1', 10),
+    },
+  });
+
+  const formValues = useWatch({ control });
+  const [page, setPage] = useState(formValues.page || 1);
+  const limit = 10;
+
+  // Build GraphQL variables
+  const variables: UsersQueryVars = useMemo(() => {
+    return {
+      where: {
+        search: formValues.search || undefined,
+        role: formValues.role === 'ALL' ? undefined : formValues.role,
+      },
+      orderBy: {
+        field: currentSort.field,
+        direction: currentSort.direction,
+      },
+      pagination: {
+        limit,
+        offset: (page - 1) * limit,
+      },
+    };
+  }, [formValues.search, formValues.role, currentSort, page]);
+
+  // GraphQL query
+  const { data, loading, error } = useQuery<UsersQueryData, UsersQueryVars>(GET_USERS, {
+    variables,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const users = useMemo(() => data?.users?.nodes ?? [], [data?.users?.nodes]);
+  const total = useMemo(() => data?.users?.total ?? 0, [data?.users?.total]);
+  const totalPages = Math.ceil(total / limit);
+
+  // Update URL search params when form changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (formValues.search) params.set('search', formValues.search);
+    if (formValues.role && formValues.role !== 'ALL') params.set('role', formValues.role);
+    if (currentSort.field !== 'NAME') params.set('sortField', currentSort.field);
+    if (currentSort.direction !== 'ASC') params.set('sortDirection', currentSort.direction);
+    if (page !== 1) params.set('page', page.toString());
+    setSearchParams(params, { replace: true });
+  }, [formValues.search, formValues.role, currentSort, page, setSearchParams]);
+
+  // Handle sort by column header click
+  const handleSort = useCallback((field: 'NAME' | 'CREATED_AT' | 'UPDATED_AT') => {
+    setCurrentSort((prev) => ({
+      field,
+      direction: prev.field === field && prev.direction === 'ASC' ? 'DESC' : 'ASC',
+    }));
+    setPage(1); // Reset to first page on sort change
+  }, []);
+
+  // Handle page change
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+  }, []);
+
+  // Table configuration
+  const columns = [
+    {
+      key: 'name',
+      header: (
+        <button
+          type="button"
+          className="btn btn-link p-0 text-decoration-none fw-bold"
+          onClick={() => handleSort('NAME')}
+        >
+          Name{' '}
+          {currentSort.field === 'NAME' && (
+            <span>{currentSort.direction === 'ASC' ? '↑' : '↓'}</span>
+          )}
+        </button>
+      ),
+    },
+    { key: 'email', header: 'Email' },
+    { key: 'role', header: 'Role' },
+    {
+      key: 'createdAt',
+      header: (
+        <button
+          type="button"
+          className="btn btn-link p-0 text-decoration-none fw-bold"
+          onClick={() => handleSort('CREATED_AT')}
+        >
+          Created{' '}
+          {currentSort.field === 'CREATED_AT' && (
+            <span>{currentSort.direction === 'ASC' ? '↑' : '↓'}</span>
+          )}
+        </button>
+      ),
+      render: (user: UserProfile) => new Date(user.createdAt).toLocaleDateString(),
+    },
+  ];
+
+  const actions = [
+    {
+      label: 'View',
+      variant: 'primary' as const,
+      onClick: (user: UserProfile) => navigate(`/users/${user.id}`),
+    },
+    {
+      label: 'Edit',
+      variant: 'secondary' as const,
+      onClick: (user: UserProfile) => navigate(`/users/${user.id}/edit`),
+    },
+  ];
+
+  if (error) {
+    return (
+      <BaseTemplate>
+        <div className="container-fluid">
+          <div className="alert alert-danger">Error loading users: {error.message}</div>
+        </div>
+      </BaseTemplate>
+    );
+  }
 
   return (
     <BaseTemplate>
-      <div className="container">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2 className="mb-0">Users</h2>
+      <div className="container-fluid">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <Heading level={1}>Users Management</Heading>
+          <Link to={paths.userCreate || '/users/create'}>
+            <Button variant="primary">Create User</Button>
+          </Link>
         </div>
 
-        <Table
-          columns={[
-            { key: 'name', header: 'Name' },
-            { key: 'email', header: 'Email' },
-          ]}
-          data={current}
-          actions={[
-            { label: 'Edit', variant: 'secondary' },
-            { label: 'Delete', variant: 'danger' },
-          ]}
-        />
-
-        <div className="mt-3">
-          <Pagination currentPage={page} pageCount={pageCount} onPageChange={setPage} />
+        {/* Search and Filters */}
+        <div className="row mb-4">
+          <div className="col-md-6">
+            <Controller
+              name="search"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Search by name or email"
+                  placeholder="Enter name or email..."
+                />
+              )}
+            />
+          </div>
+          <div className="col-md-3">
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <SelectField
+                  {...field}
+                  label="Filter by role"
+                  options={[
+                    { value: 'ALL', label: 'All Roles' },
+                    { value: 'ADMIN', label: 'Admin' },
+                    { value: 'USER', label: 'User' },
+                  ]}
+                />
+              )}
+            />
+          </div>
+          <div className="col-md-3 d-flex align-items-end">
+            <Button
+              variant="outline-secondary"
+              onClick={() => {
+                setValue('search', '');
+                setValue('role', 'ALL');
+                setCurrentSort({ field: 'NAME', direction: 'ASC' });
+                setPage(1);
+              }}
+            >
+              Clear Filters
+            </Button>
+          </div>
         </div>
+
+        {/* Results Summary */}
+        <div className="mb-3">
+          <p className="text-muted">
+            Showing {users.length} of {total} users
+            {formValues.search && ` matching "${formValues.search}"`}
+            {formValues.role && formValues.role !== 'ALL' && ` with role "${formValues.role}"`}
+          </p>
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-4">
+            <Spinner />
+          </div>
+        )}
+
+        {/* Table */}
+        {!loading && (
+          <>
+            <Table data={users} columns={columns} actions={actions} />
+
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination
+                  currentPage={page}
+                  pageCount={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Empty State */}
+        {!loading && users.length === 0 && (
+          <div className="text-center py-5">
+            <p className="text-muted">No users found.</p>
+            {(formValues.search || (formValues.role && formValues.role !== 'ALL')) && (
+              <Button
+                variant="outline-primary"
+                onClick={() => {
+                  setValue('search', '');
+                  setValue('role', 'ALL');
+                  setPage(1);
+                }}
+              >
+                Clear filters to see all users
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </BaseTemplate>
   );

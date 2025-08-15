@@ -4,7 +4,8 @@ import React from 'react';
 import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
 import BaseTemplate from '@/components/templates/base-templates';
-import { GET_ME, GET_MEETINGS, type MeQueryData, type MeetingsQueryData } from '@/graphql/queries';
+import { GET_ME, type MeQueryData } from '@/graphql/auth/queries';
+import { GET_MEETINGS, type MeetingsQueryData } from '@/graphql/meeting/queries';
 import { formatJST } from '@/utils/date';
 
 export default function Dashboard(): JSX.Element {

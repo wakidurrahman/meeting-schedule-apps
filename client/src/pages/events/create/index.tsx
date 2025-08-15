@@ -8,7 +8,7 @@ import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
 import BaseTemplate from '@/components/templates/base-templates';
-import { CREATE_EVENT } from '@/graphql/mutations';
+import { CREATE_EVENT } from '@/graphql/event/mutations';
 import type { EventInput } from '@/types/event';
 
 export default function CreateEventPage(): JSX.Element {

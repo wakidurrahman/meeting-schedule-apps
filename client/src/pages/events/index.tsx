@@ -13,8 +13,8 @@ import Table from '@/components/molecules/table';
 import BaseTemplate from '@/components/templates/base-templates';
 import { paths } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
-import { DELETE_EVENT } from '@/graphql/mutations';
-import { GET_EVENTS } from '@/graphql/queries';
+import { DELETE_EVENT } from '@/graphql/event/mutations';
+import { GET_EVENTS } from '@/graphql/event/queries';
 import type { Event } from '@/types/event';
 
 function computeDateRange(filter: string): { dateFrom?: string; dateTo?: string } | undefined {

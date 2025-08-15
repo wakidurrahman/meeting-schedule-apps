@@ -47,7 +47,7 @@ import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
 import BaseTemplate from '@/components/templates/base-templates';
-import { REGISTER, type RegisterMutationData } from '@/graphql/mutations';
+import { REGISTER, type RegisterMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
 import type { UserRegisterInput } from '@/types/user';
 import { RegisterSchema } from '@/utils/validation';
@@ -145,9 +145,9 @@ export default function Register(): JSX.Element {
                   {/* Error message from server state */}
                   {error && <Alert variant="danger">{error.message}</Alert>}
                   {/* Submit button */}
-                  <div className="d-flex justify-content-center">
+                  <div className="d-flex justify-content-center mt-5">
                     <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
-                      {loading ? 'Loading...' : 'Create account'}
+                      {loading ? 'Loading...' : 'Sign up'}
                     </Button>
                   </div>
                 </form>

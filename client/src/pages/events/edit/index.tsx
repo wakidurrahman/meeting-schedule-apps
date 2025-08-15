@@ -8,8 +8,8 @@ import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
 import BaseTemplate from '@/components/templates/base-templates';
-import { UPDATE_EVENT } from '@/graphql/mutations';
-import { GET_EVENT } from '@/graphql/queries';
+import { UPDATE_EVENT } from '@/graphql/event/mutations';
+import { GET_EVENT } from '@/graphql/event/queries';
 import type { EventInput } from '@/types/event';
 
 export default function EditEventPage(): JSX.Element {

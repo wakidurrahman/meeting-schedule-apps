@@ -34,7 +34,7 @@ import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
 import BaseTemplate from '@/components/templates/base-templates';
 import { useAuthContext } from '@/context/AuthContext';
-import { LOGIN, type LoginMutationData } from '@/graphql/mutations';
+import { LOGIN, type LoginMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
 import type { UserLoginInput } from '@/types/user';
 import { LoginSchema } from '@/utils/validation';
@@ -115,9 +115,9 @@ export default function Login(): JSX.Element {
                     {...register('password')}
                   />
                   {error && <Alert variant="danger">{error.message}</Alert>}
-                  <div className="d-flex justify-content-center">
+                  <div className="d-flex justify-content-center mt-5">
                     <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
-                      Login
+                      {loading ? 'Loading...' : 'Log In'}
                     </Button>
                   </div>
                 </form>

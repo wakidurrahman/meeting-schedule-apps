@@ -3,17 +3,20 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { paths } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
+import Login from '@/pages/auth/login';
+import Register from '@/pages/auth/register';
 import BookingsPage from '@/pages/bookings';
 import CalendarPage from '@/pages/calendar';
-import CreateMeeting from '@/pages/create-meeting';
 import Dashboard from '@/pages/dashboard';
 import EventsPage from '@/pages/events';
 import CreateEventPage from '@/pages/events/create';
 import EditEventPage from '@/pages/events/edit';
-import Login from '@/pages/login';
+import CreateMeeting from '@/pages/meeting/create';
 import Profile from '@/pages/profile';
-import Register from '@/pages/register';
 import UsersPage from '@/pages/users';
+import UserDetailPage from '@/pages/users/[id]';
+import EditUserPage from '@/pages/users/[id]/edit';
+import CreateUserPage from '@/pages/users/create';
 
 const pathsLink = paths;
 
@@ -98,6 +101,30 @@ export default function App(): JSX.Element {
         element={
           <PrivateRoute>
             <UsersPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.userCreate}
+        element={
+          <PrivateRoute>
+            <CreateUserPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.userEdit}
+        element={
+          <PrivateRoute>
+            <EditUserPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path={pathsLink.userDetail}
+        element={
+          <PrivateRoute>
+            <UserDetailPage />
           </PrivateRoute>
         }
       />

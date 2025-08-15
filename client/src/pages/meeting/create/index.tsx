@@ -40,8 +40,8 @@ import {
   CREATE_MEETING,
   type CreateMeetingMutationData,
   type CreateMeetingMutationVariables,
-} from '@/graphql/mutations';
-import { GET_USERS, type UsersQueryData } from '@/graphql/queries';
+} from '@/graphql/meeting/mutations';
+import { GET_USERS, type UsersQueryData } from '@/graphql/user/queries';
 
 const isValidObjectId = (value: string): boolean => /^[0-9a-fA-F]{24}$/.test(value);
 

@@ -8,8 +8,10 @@ import SelectField from '@/components/atoms/select-field';
 import Spinner from '@/components/atoms/spinner';
 import Table from '@/components/molecules/table';
 import BaseTemplate from '@/components/templates/base-templates';
-import { BOOK_EVENT, CANCEL_BOOKING } from '@/graphql/mutations';
-import { GET_BOOKINGS, GET_EVENTS, GET_USERS } from '@/graphql/queries';
+import { BOOK_EVENT, CANCEL_BOOKING } from '@/graphql/booking/mutations';
+import { GET_BOOKINGS } from '@/graphql/booking/queries';
+import { GET_EVENTS } from '@/graphql/event/queries';
+import { GET_USERS } from '@/graphql/user/queries';
 import type { Booking } from '@/types/booking';
 
 export default function BookingsPage(): JSX.Element {
