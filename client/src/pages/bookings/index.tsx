@@ -79,12 +79,11 @@ export default function BookingsPage(): JSX.Element {
             <SelectField
               label="Users"
               value={''}
-              disabled
-              options={[{ value: '', label: `${usersData?.users?.length ?? 0} users fetched` }]}
+              options={[{ value: '', label: `${usersData?.users?.total ?? 0} users fetched` }]}
             />
           </div>
-          <div className="col-auto">
-            <Button variant="primary" disabled={loading || !watch('eventId')} type="submit">
+          <div className="col-auto mb-3">
+            <Button outline variant="primary" disabled={loading || !watch('eventId')} type="submit">
               Book
             </Button>
           </div>

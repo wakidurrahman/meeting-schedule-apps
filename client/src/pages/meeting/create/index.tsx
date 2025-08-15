@@ -104,7 +104,7 @@ export default function CreateMeeting(): JSX.Element {
     });
   };
 
-  const userOptions = (usersData?.users ?? []).map((u) => ({
+  const userOptions = (usersData?.users?.nodes ?? []).map((u) => ({
     value: u.id,
     label: u.name,
   }));

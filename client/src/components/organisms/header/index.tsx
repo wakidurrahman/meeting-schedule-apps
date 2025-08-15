@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
-import { NAV_PATHS, paths, type NavPath } from '@/constants/paths';
+import { NAV_PATHS, paths, pathsWithAuth, type NavPath } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
 
 /**
@@ -14,7 +14,7 @@ export default function Header(): JSX.Element {
   const visiblePaths = NAV_PATHS.filter((p: NavPath) => (isAuthenticated ? p.isAuth : !p.isAuth));
   return (
     <header>
-      <nav className="navbar navbar-expand-lg bg-body-tertiary mb-4">
+      <nav className="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
         <div className="container">
           <Link to={paths.home} className="navbar-brand d-flex align-items-center">
             <img
@@ -83,24 +83,10 @@ export default function Header(): JSX.Element {
                         className={({ isActive }: { isActive: boolean }) =>
                           `dropdown-item${isActive ? ' active' : ''}`
                         }
-                        to={paths.profile}
+                        to={pathsWithAuth.profile}
                         end
                       >
                         Profile
-                      </NavLink>
-                    </li>
-                    <li>
-                      <hr className="dropdown-divider" />
-                    </li>
-                    <li>
-                      <NavLink
-                        className={({ isActive }: { isActive: boolean }) =>
-                          `dropdown-item${isActive ? ' active' : ''}`
-                        }
-                        to={paths.createMeeting}
-                        end
-                      >
-                        Create Meeting
                       </NavLink>
                     </li>
                     <li>

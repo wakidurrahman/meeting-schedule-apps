@@ -2,7 +2,7 @@ import React from 'react';
 
 type Column<T> = {
   key: keyof T;
-  header: string;
+  header: React.ReactNode;
   render?: (row: T) => React.ReactNode;
 };
 
@@ -33,7 +33,7 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
 }: Props<T>): JSX.Element {
   return (
     <div className="table-responsive">
-      <table className="table table-striped table-bordered">
+      <table className="table table-hover align-middle">
         <thead className="table-light">
           <tr>
             {columns.map((col) => (

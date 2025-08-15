@@ -14,7 +14,7 @@ export const paths = {
   userCreate: '/users/create',
   userEdit: '/users/:id/edit',
   userDetail: '/users/:id',
-  profile: '/profile',
+
   createMeeting: '/meetings/new',
   events: '/events',
   eventCreate: '/events/new',
@@ -24,16 +24,21 @@ export const paths = {
   register: '/register',
 } as const;
 
+export const pathsWithAuth = {
+  profile: '/profile',
+  logout: '/logout',
+};
+
 export const NAV_PATHS: NavPath[] = [
   { to: paths.home, label: 'Home', userRole: 'USER', isAuth: true },
   { to: paths.calendar, label: 'Calendar', userRole: 'USER', isAuth: true },
   { to: paths.users, label: 'Users', userRole: 'ADMIN', isAuth: true },
-  { to: paths.profile, label: 'Profile', userRole: 'USER', isAuth: true },
+
   { to: paths.login, label: 'Login', userRole: 'GUEST', isAuth: false },
   { to: paths.register, label: 'Register', userRole: 'GUEST', isAuth: false },
   {
     to: paths.createMeeting,
-    label: 'Create Meeting',
+    label: 'Meeting',
     userRole: 'USER',
     isAuth: true,
   },

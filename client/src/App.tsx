@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { paths } from '@/constants/paths';
+import { paths, pathsWithAuth } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
 import Login from '@/pages/auth/login';
 import Register from '@/pages/auth/register';
@@ -57,7 +57,7 @@ export default function App(): JSX.Element {
       <Route path={pathsLink.login} element={<Login />} />
       <Route path={pathsLink.register} element={<Register />} />
       <Route
-        path={pathsLink.profile}
+        path={pathsWithAuth.profile}
         element={
           <PrivateRoute>
             <Profile />

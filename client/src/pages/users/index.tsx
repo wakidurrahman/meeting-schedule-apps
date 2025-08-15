@@ -4,10 +4,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
+import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import SelectField from '@/components/atoms/select-field';
 import Spinner from '@/components/atoms/spinner';
+import Text from '@/components/atoms/text';
 import TextField from '@/components/atoms/text-field';
 import Pagination from '@/components/molecules/pagination';
 import Table from '@/components/molecules/table';
@@ -37,7 +39,7 @@ export default function UsersPage(): JSX.Element {
   });
 
   // Form state for search and filters
-  const { control, watch, setValue } = useForm<UserSearchForm>({
+  const { control, setValue } = useForm<UserSearchForm>({
     resolver: zodResolver(UserSearchSchema),
     defaultValues: {
       search: searchParams.get('search') || '',
@@ -50,13 +52,24 @@ export default function UsersPage(): JSX.Element {
 
   const formValues = useWatch({ control });
   const [page, setPage] = useState(formValues.page || 1);
+  const [debouncedSearch, setDebouncedSearch] = useState(formValues.search || '');
   const limit = 10;
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(formValues.search || '');
+      setPage(1); // Reset to first page on search change
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [formValues.search]);
 
   // Build GraphQL variables
   const variables: UsersQueryVars = useMemo(() => {
     return {
       where: {
-        search: formValues.search || undefined,
+        search: debouncedSearch || undefined,
         role: formValues.role === 'ALL' ? undefined : formValues.role,
       },
       orderBy: {
@@ -68,7 +81,7 @@ export default function UsersPage(): JSX.Element {
         offset: (page - 1) * limit,
       },
     };
-  }, [formValues.search, formValues.role, currentSort, page]);
+  }, [debouncedSearch, formValues.role, currentSort, page]);
 
   // GraphQL query
   const { data, loading, error } = useQuery<UsersQueryData, UsersQueryVars>(GET_USERS, {
@@ -83,13 +96,13 @@ export default function UsersPage(): JSX.Element {
   // Update URL search params when form changes
   useEffect(() => {
     const params = new URLSearchParams();
-    if (formValues.search) params.set('search', formValues.search);
+    if (debouncedSearch) params.set('search', debouncedSearch);
     if (formValues.role && formValues.role !== 'ALL') params.set('role', formValues.role);
     if (currentSort.field !== 'NAME') params.set('sortField', currentSort.field);
     if (currentSort.direction !== 'ASC') params.set('sortDirection', currentSort.direction);
     if (page !== 1) params.set('page', page.toString());
     setSearchParams(params, { replace: true });
-  }, [formValues.search, formValues.role, currentSort, page, setSearchParams]);
+  }, [debouncedSearch, formValues.role, currentSort, page, setSearchParams]);
 
   // Handle sort by column header click
   const handleSort = useCallback((field: 'NAME' | 'CREATED_AT' | 'UPDATED_AT') => {
@@ -108,7 +121,7 @@ export default function UsersPage(): JSX.Element {
   // Table configuration
   const columns = [
     {
-      key: 'name',
+      key: 'name' as keyof UserProfile,
       header: (
         <button
           type="button"
@@ -117,15 +130,21 @@ export default function UsersPage(): JSX.Element {
         >
           Name{' '}
           {currentSort.field === 'NAME' && (
-            <span>{currentSort.direction === 'ASC' ? '↑' : '↓'}</span>
+            <span>
+              {currentSort.direction === 'ASC' ? (
+                <i className="bi bi-arrow-up-short" />
+              ) : (
+                <i className="bi bi-arrow-down-short" />
+              )}
+            </span>
           )}
         </button>
       ),
     },
-    { key: 'email', header: 'Email' },
-    { key: 'role', header: 'Role' },
+    { key: 'email' as keyof UserProfile, header: 'Email' },
+    { key: 'role' as keyof UserProfile, header: 'Role' },
     {
-      key: 'createdAt',
+      key: 'createdAt' as keyof UserProfile,
       header: (
         <button
           type="button"
@@ -158,8 +177,10 @@ export default function UsersPage(): JSX.Element {
   if (error) {
     return (
       <BaseTemplate>
-        <div className="container-fluid">
-          <div className="alert alert-danger">Error loading users: {error.message}</div>
+        <div className="container">
+          <Alert variant="danger" className="mb-4">
+            Error loading users: {error.message}
+          </Alert>
         </div>
       </BaseTemplate>
     );
@@ -167,7 +188,7 @@ export default function UsersPage(): JSX.Element {
 
   return (
     <BaseTemplate>
-      <div className="container-fluid">
+      <div className="container">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <Heading level={1}>Users Management</Heading>
           <Link to={paths.userCreate || '/users/create'}>
@@ -207,9 +228,10 @@ export default function UsersPage(): JSX.Element {
               )}
             />
           </div>
-          <div className="col-md-3 d-flex align-items-end">
+          <div className="col-md-3 d-flex align-items-end mb-3">
             <Button
-              variant="outline-secondary"
+              variant="primary"
+              outline
               onClick={() => {
                 setValue('search', '');
                 setValue('role', 'ALL');
@@ -224,17 +246,17 @@ export default function UsersPage(): JSX.Element {
 
         {/* Results Summary */}
         <div className="mb-3">
-          <p className="text-muted">
+          <Text color="body" weight="medium">
             Showing {users.length} of {total} users
-            {formValues.search && ` matching "${formValues.search}"`}
+            {debouncedSearch && ` matching "${debouncedSearch}"`}
             {formValues.role && formValues.role !== 'ALL' && ` with role "${formValues.role}"`}
-          </p>
+          </Text>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="text-center py-4">
-            <Spinner />
+            <Spinner size="sm" />
           </div>
         )}
 
@@ -244,7 +266,7 @@ export default function UsersPage(): JSX.Element {
             <Table data={users} columns={columns} actions={actions} />
 
             {totalPages > 1 && (
-              <div className="d-flex justify-content-center mt-4">
+              <div className="d-flex justify-content-end mt-4">
                 <Pagination
                   currentPage={page}
                   pageCount={totalPages}
@@ -259,9 +281,10 @@ export default function UsersPage(): JSX.Element {
         {!loading && users.length === 0 && (
           <div className="text-center py-5">
             <p className="text-muted">No users found.</p>
-            {(formValues.search || (formValues.role && formValues.role !== 'ALL')) && (
+            {(debouncedSearch || (formValues.role && formValues.role !== 'ALL')) && (
               <Button
-                variant="outline-primary"
+                variant="primary"
+                outline
                 onClick={() => {
                   setValue('search', '');
                   setValue('role', 'ALL');
