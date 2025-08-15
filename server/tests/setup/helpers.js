@@ -11,7 +11,8 @@ const { ObjectId } = require('mongoose').Types;
  * Generate a valid MongoDB ObjectId string
  */
 const generateObjectId = () => new ObjectId().toString();
-
+const testPassword = 'password123';
+const hashedPassword = 'Hashed@Password123';
 /**
  * Create a test user object
  */
@@ -19,7 +20,7 @@ const createTestUser = (overrides = {}) => ({
   _id: generateObjectId(),
   name: 'Test User',
   email: 'test@example.com',
-  password: 'hashedpassword123',
+  password: hashedPassword,
   role: 'USER',
   createdEvents: [],
   ...overrides,
@@ -65,7 +66,7 @@ const createTestBooking = (overrides = {}) => ({
 /**
  * Hash a password for testing
  */
-const hashPassword = async (password = 'password123') => {
+const hashPassword = async (password = testPassword) => {
   return await bcrypt.hash(password, 10);
 };
 
@@ -73,7 +74,7 @@ const hashPassword = async (password = 'password123') => {
  * Generate a JWT token for testing
  */
 const generateTestToken = (userId = generateObjectId()) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
 };
 
 /**

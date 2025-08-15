@@ -59,7 +59,9 @@ const graphqlRequest = (app, query, variables = {}, token = null) => {
  */
 const authenticatedRequest = (app, query, variables = {}, userId = 'test-user-id') => {
   const jwt = require('jsonwebtoken');
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRATION,
+  });
 
   return graphqlRequest(app, query, variables, token);
 };

@@ -304,82 +304,85 @@ module.exports = [scalars, baseTypes, userTypeDefs, meetingTypeDefs].join('\n');
 
 ## GraphQL Resolver Structure
 
-description: String
-startTime: Date!
-endTime: Date!
-createdBy: User!
-bookings: [Booking!]!
-createdAt: Date!
+```javascript
+
+type Event {
+  description: String
+  startTime: Date!
+  endTime: Date!
+  createdBy: User!
+  bookings: [Booking!]!
+  createdAt: Date!
 }
 
 type Booking {
-id: ID!
-event: Event!
-user: User!
-bookedAt: Date!
+  id: ID!
+  event: Event!
+  user: User!
+  bookedAt: Date!
 }
 
 type AuthPayload {
-token: String!
-user: User!
+  token: String!
+  user: User!
 }
 
 input RegisterInput {
-name: String!
-email: String!
-password: String!
+  name: String!
+  email: String!
+  password: String!
 }
 
 input LoginInput {
-email: String!
-password: String!
+  email: String!
+  password: String!
 }
 
 input CreateMeetingInput {
-title: String!
-startTime: Date!
-endTime: Date!
-attendeeIds: [ID!]!
+  title: String!
+  startTime: Date!
+  endTime: Date!
+  attendeeIds: [ID!]!
 }
 
 input CreateEventInput {
-title: String!
-description: String
-startTime: Date!
-endTime: Date!
+  title: String!
+  description: String
+  startTime: Date!
+  endTime: Date!
 }
 
 input EventFilterInput {
-createdByMe: Boolean
-booked: Boolean
-dateFrom: Date
-dateTo: Date
+  createdByMe: Boolean
+  booked: Boolean
+  dateFrom: Date
+  dateTo: Date
 }
 
 type Query {
-me: User
-meetings: [Meeting!]!
-events(filter: EventFilterInput): [Event!]!
-event(id: ID!): Event
-bookings: [Booking!]!
+  me: User
+  meetings: [Meeting!]!
+  events(filter: EventFilterInput): [Event!]!
+  event(id: ID!): Event
+  bookings: [Booking!]!
 }
 
 type Mutation {
-register(input: RegisterInput!): AuthPayload!
-login(input: LoginInput!): AuthPayload!
-createMeeting(input: CreateMeetingInput!): Meeting!
-deleteMeeting(id: ID!): Boolean!
-createEvent(input: CreateEventInput!): Event!
-updateEvent(id: ID!, input: CreateEventInput!): Event!
-deleteEvent(id: ID!): Boolean!
-bookEvent(eventId: ID!): Booking!
-cancelBooking(bookingId: ID!): Boolean!
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  createMeeting(input: CreateMeetingInput!): Meeting!
+  deleteMeeting(id: ID!): Boolean!
+  createEvent(input: CreateEventInput!): Event!
+  updateEvent(id: ID!, input: CreateEventInput!): Event!
+  deleteEvent(id: ID!): Boolean!
+  bookEvent(eventId: ID!): Booking!
+  cancelBooking(bookingId: ID!): Boolean!
 }
-`;
+
 
 module.exports = typeDefs;
 
-````
+```
 
 ## GraphQL Resolvers Structure
 
@@ -553,7 +556,7 @@ const resolvers = {
 };
 
 module.exports = resolvers;
-````
+```
 
 ## Mongoose Schema Patterns
 

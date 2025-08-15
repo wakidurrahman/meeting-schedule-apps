@@ -19,7 +19,7 @@ const connectTestDB = async () => {
         version: '7.0.0', // Use a stable version
       },
       instance: {
-        dbName: 'meeting-scheduler-test',
+        dbName: process.env.TEST_DB_NAME,
       },
     });
 

@@ -5,8 +5,8 @@ Monorepo containing a React (Vite + TS) client and an Express + GraphQL + Mongoo
 ## Tech stack
 
 - Client:
-  - React 16.13
-  - TypeScript
+  - React v16
+  - TypeScript v5
   - Vite
   - Apollo Client v3
   - React Router
@@ -50,6 +50,8 @@ graph TD
   UserList --> Delete
 ```
 
+---
+
 ### Event and Booking Screen Flow
 
 ```mermaid
@@ -61,7 +63,7 @@ UE["Update Event"]
 DE["Delete Event"]
 VE["View Events"]
 F["Filter"]
-F1["created by"]
+F1["createdBy"]
 F2["booked"]
 EV["Event"]
 ED["Event Detail"]
@@ -81,7 +83,7 @@ F2 --> F
 F --> VE
 ```
 
-## Event and Booking Screen Flow
+## User, Meeting, Event and Booking Screen Flow
 
 ```mermaid
 graph TD
