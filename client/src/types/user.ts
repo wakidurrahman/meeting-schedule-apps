@@ -38,3 +38,13 @@ export type UserLoginInput = {
   email: string;
   password: string;
 };
+
+export type UserRole = 'USER' | 'ADMIN' | 'ALL';
+
+export type UserSortBy = 'NAME' | 'CREATED_AT' | 'UPDATED_AT';
+
+export type UserSortDirection = 'ASC' | 'DESC';
+
+export type UserSearch = {
+  search: string;
+};

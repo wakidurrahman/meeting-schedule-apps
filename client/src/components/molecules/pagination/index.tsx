@@ -16,27 +16,28 @@ export default function Pagination({
   const isFirst = currentPage <= 1;
   const isLast = currentPage >= pageCount;
 
-  const goTo = (n: number) => {
-    const next = Math.min(Math.max(1, n), Math.max(1, pageCount));
+  const goTo = (item: number) => {
+    const next = Math.min(Math.max(1, item), Math.max(1, pageCount));
+    console.log('next', next);
     if (next !== currentPage) onPageChange(next);
   };
 
   return (
-    <nav aria-label={ariaLabel}>
+    <nav aria-label={ariaLabel || 'Page navigation'}>
       <ul className="pagination">
         <li className={`page-item ${isFirst ? 'disabled' : ''}`}>
           <button className="page-link" onClick={() => goTo(currentPage - 1)}>
             Previous
           </button>
         </li>
-        {Array.from({ length: Math.max(1, pageCount) }, (_, i) => i + 1).map((n) => (
-          <li key={n} className={`page-item ${n === currentPage ? 'active' : ''}`}>
+        {Array.from({ length: Math.max(1, pageCount) }, (_, i) => i + 1).map((item) => (
+          <li key={item} className={`page-item ${item === currentPage ? 'active' : ''}`}>
             <button
               className="page-link"
-              aria-current={n === currentPage ? 'page' : undefined}
-              onClick={() => goTo(n)}
+              aria-current={item === currentPage ? 'page' : undefined}
+              onClick={() => goTo(item)}
             >
-              {n}
+              {item}
             </button>
           </li>
         ))}

@@ -3,20 +3,25 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
+import Badge from '@/components/atoms/badge';
+import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
-import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
+import Card from '@/components/molecules/card';
+import { UserCardSkeleton } from '@/components/molecules/skeleton';
+import Modal from '@/components/organisms/modal';
 import BaseTemplate from '@/components/templates/base-templates';
 import { paths } from '@/constants/paths';
 import { DELETE_USER, type DeleteUserData } from '@/graphql/user/mutations';
 import { GET_USER, GET_USERS, type UserQueryData } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
+import { formatJST } from '@/utils/date';
 
 export default function UserDetailPage(): JSX.Element {
   const navigate = useNavigate();
   const params = useParams();
-  const { showToast } = useToast();
+  const { addSuccess, addError } = useToast();
   const userId = params.id!;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -36,17 +41,21 @@ export default function UserDetailPage(): JSX.Element {
     {
       refetchQueries: [{ query: GET_USERS }],
       onCompleted: () => {
-        showToast({
-          type: 'success',
-          message: `User "${data?.user?.name}" deleted successfully!`,
+        addSuccess({
+          title: 'User Deleted!',
+          subtitle: 'just now',
+          children: `User "${data?.user?.name}" deleted successfully!`,
         });
+        setShowDeleteModal(false);
         navigate(paths.users || '/users');
       },
       onError: (error) => {
-        showToast({
-          type: 'error',
-          message: `Failed to delete user: ${error.message}`,
+        addError({
+          title: 'User Deletion Failed!',
+          subtitle: 'just now',
+          children: `Failed to delete user: ${error.message}`,
         });
+        setShowDeleteModal(false);
       },
     },
   );
@@ -56,211 +65,166 @@ export default function UserDetailPage(): JSX.Element {
       await deleteUser({ variables: { id: userId } });
     } catch (err) {
       console.error('Error deleting user:', err);
-    } finally {
-      setShowDeleteModal(false);
     }
   };
 
-  if (loadingUser) {
-    return (
-      <BaseTemplate>
-        <div className="container-fluid">
-          <div className="text-center py-5">
-            <Spinner />
-            <p className="mt-2">Loading user details...</p>
-          </div>
-        </div>
-      </BaseTemplate>
-    );
-  }
-
-  if (userError) {
-    return (
-      <BaseTemplate>
-        <div className="container-fluid">
-          <Alert type="error">Error loading user: {userError.message}</Alert>
-        </div>
-      </BaseTemplate>
-    );
-  }
-
-  if (!data?.user) {
-    return (
-      <BaseTemplate>
-        <div className="container-fluid">
-          <Alert type="error">User not found</Alert>
-        </div>
-      </BaseTemplate>
-    );
-  }
-
-  const user = data.user;
+  // Prepare data for rendering
+  const user = data?.user;
+  const breadcrumbItems = user
+    ? [
+        { label: 'Users', href: paths.users || '/users' },
+        { label: user.name, active: true },
+      ]
+    : [
+        { label: 'Users', href: paths.users || '/users' },
+        { label: 'User Details', active: true },
+      ];
 
   return (
     <BaseTemplate>
-      <div className="container-fluid">
+      <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-8 col-lg-6">
-            {/* Header */}
-            <div className="d-flex justify-content-between align-items-start mb-4">
-              <div>
-                <Heading level={1}>User Details</Heading>
-                <Text className="text-muted">View and manage user information</Text>
-              </div>
-              <div className="d-flex gap-2">
-                <Button
-                  variant="outline-primary"
-                  onClick={() => navigate(`/users/${userId}/edit`)}
-                  disabled={deleting}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="outline-danger"
-                  onClick={() => setShowDeleteModal(true)}
-                  disabled={deleting}
-                >
-                  Delete
-                </Button>
-              </div>
+          <div className="col-12 col-md-8 col-lg-6">
+            {/* Page Header */}
+            <div className="mb-4">
+              <Heading level={1}>User Details</Heading>
+              <Text className="text-muted">View and manage user information.</Text>
             </div>
 
-            {/* User Card */}
-            <div className="card">
-              <div className="card-body">
-                <div className="row">
-                  {/* Profile Image */}
-                  {user.imageUrl && (
-                    <div className="col-md-4 text-center mb-3">
-                      <img
-                        src={user.imageUrl}
-                        alt={user.name}
-                        className="img-fluid rounded-circle"
-                        style={{ maxWidth: '150px', maxHeight: '150px' }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
+            {/* Loading State */}
+            {loadingUser && (
+              <div className="mb-4">
+                <UserCardSkeleton />
+              </div>
+            )}
 
-                  {/* User Information */}
-                  <div className={user.imageUrl ? 'col-md-8' : 'col-12'}>
-                    <div className="row g-3">
-                      <div className="col-12">
-                        <strong>Name:</strong>
-                        <br />
-                        <Text>{user.name}</Text>
-                      </div>
+            {/* Error State */}
+            {userError && (
+              <div className="mb-4">
+                <Alert variant="danger">
+                  <strong>Error loading user:</strong> {userError.message}
+                </Alert>
+              </div>
+            )}
 
-                      <div className="col-12">
-                        <strong>Email:</strong>
-                        <br />
-                        <Text>
-                          <a href={`mailto:${user.email}`} className="text-decoration-none">
-                            {user.email}
-                          </a>
-                        </Text>
-                      </div>
+            {/* User Not Found */}
+            {!loadingUser && !userError && !user && (
+              <div className="mb-4">
+                <Alert variant="warning">
+                  <strong>User not found</strong>
+                  <br />
+                  The user you&apos;re looking for doesn&apos;t exist or may have been deleted.
+                </Alert>
+              </div>
+            )}
 
-                      <div className="col-12">
-                        <strong>Role:</strong>
-                        <br />
-                        <span
-                          className={`badge ${user.role === 'ADMIN' ? 'bg-danger' : 'bg-primary'}`}
-                        >
-                          {user.role}
-                        </span>
-                      </div>
+            {/* User Data */}
+            {!loadingUser && !userError && user && (
+              <Card shadow="sm" className="mb-4">
+                {/* Profile Image */}
+                {user.imageUrl ? (
+                  <Card.Image
+                    src={user.imageUrl}
+                    alt={user.name}
+                    position="top"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <Card.Image
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name ?? 'U')}&background=random`}
+                    alt={user.name}
+                    position="top"
+                  />
+                )}
 
-                      {user.address && (
-                        <div className="col-12">
-                          <strong>Address:</strong>
-                          <br />
-                          <Text>{user.address}</Text>
-                        </div>
-                      )}
+                <Card.Body>
+                  <Card.Title level={5}>{user.name}</Card.Title>
+                  <Card.Text>
+                    <strong>Email:</strong> {user.email}
+                  </Card.Text>
+                  <Card.Text>
+                    <strong>Role:</strong>{' '}
+                    <Badge variant={user.role === 'ADMIN' ? 'danger' : 'primary'} pill>
+                      {user.role}
+                    </Badge>
+                  </Card.Text>
+                  <Card.Text>
+                    <strong>Address:</strong> {user.address || '-'}
+                  </Card.Text>
+                  <Card.Text>
+                    <strong>Date of Birth:</strong>{' '}
+                    {user.dob ? formatJST(user.dob, 'yyyy-MM-dd') : '-'}
+                  </Card.Text>
+                  <Card.Text className="text-muted">
+                    <strong>Created:</strong> {formatJST(user.createdAt, 'yyyy-MM-dd HH:mm')}
+                  </Card.Text>
+                  <Card.Text className="text-muted">
+                    <strong>Updated:</strong> {formatJST(user.updatedAt, 'yyyy-MM-dd HH:mm')}
+                  </Card.Text>
+                </Card.Body>
 
-                      {user.dob && (
-                        <div className="col-12">
-                          <strong>Date of Birth:</strong>
-                          <br />
-                          <Text>{new Date(user.dob).toLocaleDateString()}</Text>
-                        </div>
-                      )}
-
-                      <div className="col-sm-6">
-                        <strong>Created:</strong>
-                        <br />
-                        <Text className="text-muted">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </Text>
-                      </div>
-
-                      <div className="col-sm-6">
-                        <strong>Last Updated:</strong>
-                        <br />
-                        <Text className="text-muted">
-                          {new Date(user.updatedAt).toLocaleDateString()}
-                        </Text>
-                      </div>
-                    </div>
+                <Card.Footer variant="light">
+                  <div className="d-flex gap-2 justify-content-end">
+                    <Button variant="primary" outline href={`/users/${userId}/edit`}>
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      outline
+                      onClick={() => setShowDeleteModal(true)}
+                      disabled={deleting}
+                    >
+                      Delete
+                    </Button>
                   </div>
-                </div>
-              </div>
-            </div>
+                </Card.Footer>
+              </Card>
+            )}
 
-            {/* Navigation */}
-            <div className="mt-4">
-              <Button variant="outline-secondary" onClick={() => navigate(paths.users || '/users')}>
-                ← Back to Users
-              </Button>
-            </div>
+            {/* Breadcrumb Navigation */}
+            <Breadcrumb items={breadcrumbItems} className="mb-3 mt-5" />
           </div>
         </div>
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
-          <div
-            className="modal show d-block"
-            tabIndex={-1}
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Confirm Delete</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    aria-label="Close"
-                    onClick={() => setShowDeleteModal(false)}
-                    disabled={deleting}
-                  />
-                </div>
-                <div className="modal-body">
-                  <p>
-                    Are you sure you want to delete user <strong>{user.name}</strong>?
-                  </p>
-                  <p className="text-danger">This action cannot be undone.</p>
-                </div>
-                <div className="modal-footer">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setShowDeleteModal(false)}
-                    disabled={deleting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button variant="danger" onClick={handleDelete} disabled={deleting}>
-                    {deleting ? 'Deleting...' : 'Delete User'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Delete Confirmation Modal - Only show if user exists */}
+      {user && (
+        <Modal
+          show={showDeleteModal}
+          onHide={() => setShowDeleteModal(false)}
+          centered
+          backdrop="static"
+        >
+          <Modal.Header closeButton onClose={() => setShowDeleteModal(false)}>
+            <Modal.Title>Confirm Delete</Modal.Title>
+          </Modal.Header>
+
+          <Modal.Body>
+            <Text className="mb-3">
+              Are you sure you want to delete user <strong>{user.name}</strong>?
+            </Text>
+            <Alert variant="warning">
+              <i className="bi bi-exclamation-triangle-fill me-2" />
+              This action cannot be undone.
+            </Alert>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button
+              variant="secondary"
+              onClick={() => setShowDeleteModal(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete User'}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
     </BaseTemplate>
   );
 }

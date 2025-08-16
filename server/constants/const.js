@@ -25,9 +25,15 @@ const USER_SORT_BY = {
   UPDATED_AT: 'updatedAt',
 };
 
+const USER_ROLE = {
+  USER: 'USER',
+  ADMIN: 'ADMIN',
+};
+
 module.exports = {
   DEFAULT_PAGINATION,
   DEFAULT_SORT,
   DEFAULT_WHERE,
   USER_SORT_BY,
+  USER_ROLE,
 };

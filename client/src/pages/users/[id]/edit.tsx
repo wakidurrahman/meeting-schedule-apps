@@ -5,12 +5,16 @@ import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
+import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import SelectField from '@/components/atoms/select-field';
-import Spinner from '@/components/atoms/spinner';
+import Text from '@/components/atoms/text';
 import TextField from '@/components/atoms/text-field';
+import Card from '@/components/molecules/card';
+import { FormSkeleton } from '@/components/molecules/skeleton';
 import BaseTemplate from '@/components/templates/base-templates';
+import { paths } from '@/constants/paths';
 import { UPDATE_USER, type UpdateUserData, type UpdateUserInput } from '@/graphql/user/mutations';
 import { GET_USER, GET_USERS, type UserQueryData } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +23,7 @@ import { UpdateUserSchema } from '@/utils/validation';
 export default function EditUserPage(): JSX.Element {
   const navigate = useNavigate();
   const params = useParams();
-  const { showToast } = useToast();
+  const { addSuccess, addError } = useToast();
   const userId = params.id!;
 
   // Form setup
@@ -67,16 +71,18 @@ export default function EditUserPage(): JSX.Element {
   >(UPDATE_USER, {
     refetchQueries: [{ query: GET_USERS }, { query: GET_USER, variables: { id: userId } }],
     onCompleted: (data) => {
-      showToast({
-        type: 'success',
-        message: `User "${data.updateUser.name}" updated successfully!`,
+      addSuccess({
+        title: 'User Updated!',
+        subtitle: 'just now',
+        children: `User "${data.updateUser.name}" updated successfully!`,
       });
       navigate(`/users/${userId}`);
     },
     onError: (error) => {
-      showToast({
-        type: 'error',
-        message: `Failed to update user: ${error.message}`,
+      addError({
+        title: 'Update Failed!',
+        subtitle: 'just now',
+        children: `Failed to update user: ${error.message}`,
       });
     },
   });
@@ -94,174 +100,194 @@ export default function EditUserPage(): JSX.Element {
     }
   };
 
-  if (loadingUser) {
-    return (
-      <BaseTemplate>
-        <div className="container-fluid">
-          <div className="text-center py-5">
-            <Spinner />
-            <p className="mt-2">Loading user data...</p>
-          </div>
-        </div>
-      </BaseTemplate>
-    );
-  }
-
-  if (userError) {
-    return (
-      <BaseTemplate>
-        <div className="container-fluid">
-          <Alert type="error">Error loading user: {userError.message}</Alert>
-        </div>
-      </BaseTemplate>
-    );
-  }
-
-  if (!data?.user) {
-    return (
-      <BaseTemplate>
-        <div className="container-fluid">
-          <Alert type="error">User not found</Alert>
-        </div>
-      </BaseTemplate>
-    );
-  }
-
+  // Prepare data for rendering
+  const user = data?.user;
+  const breadcrumbItems = user
+    ? [
+        { label: 'Users', href: paths.users || '/users' },
+        { label: user.name, active: true },
+      ]
+    : [
+        { label: 'Users', href: paths.users || '/users' },
+        { label: 'User Details', active: true },
+      ];
   return (
     <BaseTemplate>
-      <div className="container-fluid">
+      <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-8 col-lg-6">
+          <div className="col-12 col-md-8 col-lg-6">
+            {/* Page Header */}
             <div className="mb-4">
-              <Heading level={1}>Edit User</Heading>
-              <p className="text-muted">Update user information</p>
+              <Heading level={1}>Update Information</Heading>
+              <Text className="text-muted">Update user information</Text>
             </div>
 
-            {updateError && (
-              <Alert type="error" className="mb-4">
-                {updateError.message}
-              </Alert>
-            )}
+            <Card shadow="sm" className="mb-4">
+              <Card.Body>
+                <Card.Title className="mb-3" level={5}>
+                  {user?.name}
+                </Card.Title>
+                {/* Loading State */}
+                {loadingUser && (
+                  <div className="mb-4">
+                    <FormSkeleton fields={4} />
+                  </div>
+                )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="needs-validation" noValidate>
-              <div className="row g-3">
-                {/* Name Field */}
-                <div className="col-12">
-                  <Controller
-                    name="name"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Full Name"
-                        placeholder="Enter full name"
-                        required
-                        error={errors.name?.message}
+                {/* Error State */}
+                {userError && (
+                  <div className="mb-4">
+                    <Alert variant="danger">
+                      <strong>Error loading user:</strong> {userError.message}
+                    </Alert>
+                  </div>
+                )}
+
+                {/* User Not Found */}
+                {!loadingUser && !userError && !user && (
+                  <div className="mb-4">
+                    <Alert variant="warning">
+                      <strong>User not found</strong>
+                      <br />
+                      The user you&apos;re trying to edit doesn&apos;t exist or may have been
+                      deleted.
+                    </Alert>
+                  </div>
+                )}
+
+                {/* Update Error */}
+                {updateError && (
+                  <Alert variant="danger" className="mb-4">
+                    <strong>Update failed:</strong> {updateError.message}
+                  </Alert>
+                )}
+
+                {/* Edit Form */}
+                {!loadingUser && !userError && user && (
+                  <form onSubmit={handleSubmit(onSubmit)} className="needs-validation" noValidate>
+                    <div className="row g-3">
+                      {/* Name Field */}
+                      <div className="col-12">
+                        <Controller
+                          name="name"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              label="Full Name"
+                              placeholder="Enter full name"
+                              required
+                              error={errors.name?.message}
+                              disabled={updating || isSubmitting}
+                            />
+                          )}
+                        />
+                      </div>
+
+                      {/* Email Field */}
+                      <div className="col-12">
+                        <Controller
+                          name="email"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type="email"
+                              label="Email Address"
+                              placeholder="Enter email address"
+                              required
+                              error={errors.email?.message}
+                              disabled={updating || isSubmitting}
+                            />
+                          )}
+                        />
+                      </div>
+
+                      {/* Role Field */}
+                      <div className="col-12">
+                        <Controller
+                          name="role"
+                          control={control}
+                          render={({ field }) => (
+                            <SelectField
+                              {...field}
+                              label="Role"
+                              required
+                              error={errors.role?.message}
+                              disabled={updating || isSubmitting}
+                              options={[
+                                { value: 'USER', label: 'User' },
+                                { value: 'ADMIN', label: 'Administrator' },
+                              ]}
+                            />
+                          )}
+                        />
+                      </div>
+
+                      {/* Image URL Field */}
+                      <div className="col-12">
+                        <Controller
+                          name="imageUrl"
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type="url"
+                              label="Profile Image URL"
+                              placeholder="https://example.com/avatar.jpg (optional)"
+                              error={errors.imageUrl?.message}
+                              disabled={updating || isSubmitting}
+                              helpText="Optional: Provide a URL for the user's profile image"
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="d-flex gap-3 mt-4">
+                      <Button
+                        type="submit"
+                        variant="primary"
                         disabled={updating || isSubmitting}
-                      />
-                    )}
-                  />
-                </div>
+                        className="flex-grow-1"
+                      >
+                        {updating || isSubmitting ? 'Updating...' : 'Update User'}
+                      </Button>
 
-                {/* Email Field */}
-                <div className="col-12">
-                  <Controller
-                    name="email"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        type="email"
-                        label="Email Address"
-                        placeholder="Enter email address"
-                        required
-                        error={errors.email?.message}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => navigate(`/users/${userId}`)}
                         disabled={updating || isSubmitting}
-                      />
-                    )}
-                  />
-                </div>
+                      >
+                        Cancel
+                      </Button>
 
-                {/* Role Field */}
-                <div className="col-12">
-                  <Controller
-                    name="role"
-                    control={control}
-                    render={({ field }) => (
-                      <SelectField
-                        {...field}
-                        label="Role"
-                        required
-                        error={errors.role?.message}
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => {
+                          if (user) {
+                            reset({
+                              name: user.name,
+                              email: user.email,
+                              imageUrl: user.imageUrl || '',
+                              role: user.role as 'ADMIN' | 'USER',
+                            });
+                          }
+                        }}
                         disabled={updating || isSubmitting}
-                        options={[
-                          { value: 'USER', label: 'User' },
-                          { value: 'ADMIN', label: 'Administrator' },
-                        ]}
-                      />
-                    )}
-                  />
-                </div>
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </Card.Body>
+            </Card>
 
-                {/* Image URL Field */}
-                <div className="col-12">
-                  <Controller
-                    name="imageUrl"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        type="url"
-                        label="Profile Image URL"
-                        placeholder="https://example.com/avatar.jpg (optional)"
-                        error={errors.imageUrl?.message}
-                        disabled={updating || isSubmitting}
-                        helpText="Optional: Provide a URL for the user's profile image"
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="d-flex gap-3 mt-4">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={updating || isSubmitting}
-                  className="flex-grow-1"
-                >
-                  {updating || isSubmitting ? 'Updating...' : 'Update User'}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  onClick={() => navigate(`/users/${userId}`)}
-                  disabled={updating || isSubmitting}
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  onClick={() => {
-                    if (data?.user) {
-                      reset({
-                        name: data.user.name,
-                        email: data.user.email,
-                        imageUrl: data.user.imageUrl || '',
-                        role: data.user.role as 'ADMIN' | 'USER',
-                      });
-                    }
-                  }}
-                  disabled={updating || isSubmitting}
-                >
-                  Reset
-                </Button>
-              </div>
-            </form>
+            <Breadcrumb items={breadcrumbItems} className="mb-3 mt-5" />
           </div>
         </div>
       </div>

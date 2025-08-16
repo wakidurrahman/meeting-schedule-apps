@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { UserRole, UserSortBy, UserSortDirection } from '@/types/user';
 import { ValidationMessages as VM } from '../constants/messages';
 
 // Register schema
@@ -66,10 +67,14 @@ export const UpdateUserSchema = z.object({
     .optional(),
 });
 
+// User search schema
+
 export const UserSearchSchema = z.object({
   search: z.string().optional(),
-  role: z.enum(['ALL', 'ADMIN', 'USER']).optional(),
-  sortField: z.enum(['NAME', 'CREATED_AT', 'UPDATED_AT']).optional(),
-  sortDirection: z.enum(['ASC', 'DESC']).optional(),
+  role: z.enum(['ALL', 'ADMIN', 'USER'] as [UserRole, ...UserRole[]]).optional(),
+  sortField: z
+    .enum(['NAME', 'CREATED_AT', 'UPDATED_AT'] as [UserSortBy, ...UserSortBy[]])
+    .optional(),
+  sortDirection: z.enum(['ASC', 'DESC'] as [UserSortDirection, ...UserSortDirection[]]).optional(),
   page: z.number().min(1).optional(),
 });

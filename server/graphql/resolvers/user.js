@@ -67,38 +67,6 @@ const userResolvers = {
     }
   },
 
-  user: async ({ id }, context) => {
-    try {
-      // step 01: validate the user by requireAuth
-      requireAuth(context);
-      // step 02: get the user by id
-      const user = await getUserById(id);
-      // step 03: return the user
-      return formatUser(user);
-    } catch (err) {
-      handleUnexpectedError(err);
-    }
-  },
-
-  users: async ({ where, orderBy, pagination }, context) => {
-    try {
-      // step 01: validate the user by requireAuth
-      requireAuth(context);
-      // step 02: get the users with filtering, sorting, and pagination
-      // TODO: properly need to validate the where, orderBy, pagination.
-      // There are possibilities without proper validation there are chances of security issues.
-      const result = await listUsersFiltered({ where, orderBy, pagination });
-      // step 03: format and return the result
-      return {
-        usersList: result.usersList.map(formatUser),
-        total: result.total,
-        hasMore: result.hasMore,
-      };
-    } catch (err) {
-      handleUnexpectedError(err);
-    }
-  },
-
   updateMyProfile: async ({ input }, context) => {
     try {
       // step 01: validate the input by Zod schema
@@ -137,6 +105,25 @@ const userResolvers = {
    * User Management CRUD operations
    */
 
+  users: async ({ where, orderBy, pagination }, context) => {
+    try {
+      // step 01: validate the user by requireAuth
+      requireAuth(context);
+      // step 02: get the users with filtering, sorting, and pagination
+      // TODO: properly need to validate the where, orderBy, pagination.
+      // There are possibilities without proper validation there are chances of security issues.
+      const result = await listUsersFiltered({ where, orderBy, pagination });
+      // step 03: format and return the result
+      return {
+        usersList: result.usersList.map(formatUser),
+        total: result.total,
+        hasMore: result.hasMore,
+      };
+    } catch (err) {
+      handleUnexpectedError(err);
+    }
+  },
+
   createUser: async ({ input }, context) => {
     try {
       // step 01: validate the user by requireAuth
@@ -160,6 +147,19 @@ const userResolvers = {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT, details: err.issues },
         });
       }
+      handleUnexpectedError(err);
+    }
+  },
+
+  user: async ({ id }, context) => {
+    try {
+      // step 01: validate the user by requireAuth
+      requireAuth(context);
+      // step 02: get the user by id
+      const user = await getUserById(id);
+      // step 03: return the user
+      return formatUser(user);
+    } catch (err) {
       handleUnexpectedError(err);
     }
   },

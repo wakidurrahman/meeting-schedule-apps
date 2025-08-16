@@ -11,7 +11,7 @@ type SpinnerColor =
   | 'light'
   | 'dark';
 
-type SpinnerSize = 'sm'; // Bootstrap exposes only `-sm` size utility
+type SpinnerSize = 'sm' | 'lg'; // Bootstrap exposes only `-sm` size utility
 
 export type SpinnerProps = {
   variant?: SpinnerStyle;

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 function omitProps<T extends Record<string, unknown>, K extends readonly (keyof T)[]>(
   obj: T,
@@ -62,9 +63,9 @@ export default function Button(props: ButtonProps): JSX.Element {
       ['variant', 'outline', 'size', 'className', 'children', 'href'] as const,
     ) as React.AnchorHTMLAttributes<HTMLAnchorElement>;
     return (
-      <a href={linkHref} className={classes} {...anchorProps}>
+      <Link to={linkHref} className={classes} {...anchorProps}>
         {children}
-      </a>
+      </Link>
     );
   }
 

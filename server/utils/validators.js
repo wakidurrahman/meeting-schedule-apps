@@ -5,6 +5,9 @@ const { VALIDATION_MESSAGES: VM } = require('../constants/messages');
 
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+const { USER_ROLE } = require('../constants/const');
+
+// Auth schemas
 
 const RegisterInputSchema = z.object({
   name: z
@@ -23,6 +26,8 @@ const LoginInputSchema = z.object({
   password: z.string().min(8, VM.passwordMin), // Example password base on the following regex: e.g. Zain123@, Min_123$
 });
 
+// Meeting schemas
+
 const MeetingInputSchema = z
   .object({
     title: z.string().min(1),
@@ -38,6 +43,8 @@ const MeetingInputSchema = z
     path: ['endTime'],
   });
 
+// Profile schemas
+
 const UpdateProfileInputSchema = z.object({
   name: z.string().min(2).optional(),
   address: z.string().optional(),
@@ -48,7 +55,13 @@ const UpdateProfileInputSchema = z.object({
   imageUrl: z.string().url().optional(),
 });
 
-// User management schemas
+/**
+ * User management schemas
+ *
+ * Create user input schema.
+ * Update user input schema.
+ */
+
 const CreateUserInputSchema = z.object({
   name: z
     .string()
@@ -59,7 +72,7 @@ const CreateUserInputSchema = z.object({
     .transform((str) => str.trim()),
   email: z.string().regex(EmailRegex, VM.emailInvalid),
   imageUrl: z.string().url().optional().or(z.literal('')),
-  role: z.enum(['USER', 'ADMIN']).default('USER'),
+  role: z.enum([USER_ROLE.USER, USER_ROLE.ADMIN]).default(USER_ROLE.USER),
 });
 
 const UpdateUserInputSchema = z.object({
@@ -73,8 +86,14 @@ const UpdateUserInputSchema = z.object({
     .optional(),
   email: z.string().regex(EmailRegex, VM.emailInvalid).optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
-  role: z.enum(['USER', 'ADMIN']).optional(),
+  role: z.enum([USER_ROLE.USER, USER_ROLE.ADMIN]).optional(),
 });
+
+/**
+ * Event schemas
+ *
+ * Create event input schema.
+ */
 
 const EventInputSchema = z.object({
   title: z.string().min(1),

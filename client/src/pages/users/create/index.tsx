@@ -5,10 +5,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
+import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import SelectField from '@/components/atoms/select-field';
+import Text from '@/components/atoms/text';
 import TextField from '@/components/atoms/text-field';
+import Card from '@/components/molecules/card';
 import BaseTemplate from '@/components/templates/base-templates';
 import { paths } from '@/constants/paths';
 import { CREATE_USER, type CreateUserData, type CreateUserInput } from '@/graphql/user/mutations';
@@ -18,7 +21,7 @@ import { CreateUserSchema } from '@/utils/validation';
 
 export default function CreateUserPage(): JSX.Element {
   const navigate = useNavigate();
-  const { showToast } = useToast();
+  const { addSuccess, addError } = useToast();
 
   // Form setup
   const {
@@ -42,16 +45,18 @@ export default function CreateUserPage(): JSX.Element {
     {
       refetchQueries: [{ query: GET_USERS }],
       onCompleted: (data) => {
-        showToast({
-          type: 'success',
-          message: `User "${data.createUser.name}" created successfully!`,
+        addSuccess({
+          title: 'User Created!',
+          subtitle: 'just now',
+          children: `User "${data.createUser.name}" created successfully!`,
         });
         navigate(`/users/${data.createUser.id}`);
       },
       onError: (error) => {
-        showToast({
-          type: 'error',
-          message: `Failed to create user: ${error.message}`,
+        addError({
+          title: 'Creation Failed!',
+          subtitle: 'just now',
+          children: `Failed to create user: ${error.message}`,
         });
       },
     },
@@ -70,132 +75,145 @@ export default function CreateUserPage(): JSX.Element {
     }
   };
 
+  const breadcrumbItems = [
+    { label: 'Users', href: paths.users || '/users' },
+    { label: 'Create User', active: true },
+  ];
+
   return (
     <BaseTemplate>
-      <div className="container-fluid">
+      <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-8 col-lg-6">
+          <div className="col-12 col-md-8 col-lg-6">
+            {/* Page Header */}
             <div className="mb-4">
               <Heading level={1}>Create New User</Heading>
-              <p className="text-muted">Add a new user to the system</p>
+              <Text className="text-muted">Add a new user to the system</Text>
             </div>
 
-            {error && (
-              <Alert type="error" className="mb-4">
-                {error.message}
-              </Alert>
-            )}
+            <Card shadow="sm" className="mb-4">
+              <Card.Body>
+                {/* Error State */}
+                {error && (
+                  <Alert variant="danger" className="mb-4">
+                    <strong>Creation failed:</strong> {error.message}
+                  </Alert>
+                )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="needs-validation" noValidate>
-              <div className="row g-3">
-                {/* Name Field */}
-                <div className="col-12">
-                  <Controller
-                    name="name"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Full Name"
-                        placeholder="Enter full name"
-                        required
-                        error={errors.name?.message}
-                        disabled={loading || isSubmitting}
+                <form onSubmit={handleSubmit(onSubmit)} className="needs-validation" noValidate>
+                  <div className="row g-3">
+                    {/* Name Field */}
+                    <div className="col-12">
+                      <Controller
+                        name="name"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Full Name"
+                            placeholder="Enter full name"
+                            required
+                            error={errors.name?.message}
+                            disabled={loading || isSubmitting}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </div>
+                    </div>
 
-                {/* Email Field */}
-                <div className="col-12">
-                  <Controller
-                    name="email"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        type="email"
-                        label="Email Address"
-                        placeholder="Enter email address"
-                        required
-                        error={errors.email?.message}
-                        disabled={loading || isSubmitting}
+                    {/* Email Field */}
+                    <div className="col-12">
+                      <Controller
+                        name="email"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            type="email"
+                            label="Email Address"
+                            placeholder="Enter email address"
+                            required
+                            error={errors.email?.message}
+                            disabled={loading || isSubmitting}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </div>
+                    </div>
 
-                {/* Role Field */}
-                <div className="col-12">
-                  <Controller
-                    name="role"
-                    control={control}
-                    render={({ field }) => (
-                      <SelectField
-                        {...field}
-                        label="Role"
-                        required
-                        error={errors.role?.message}
-                        disabled={loading || isSubmitting}
-                        options={[
-                          { value: 'USER', label: 'User' },
-                          { value: 'ADMIN', label: 'Administrator' },
-                        ]}
+                    {/* Role Field */}
+                    <div className="col-12">
+                      <Controller
+                        name="role"
+                        control={control}
+                        render={({ field }) => (
+                          <SelectField
+                            {...field}
+                            label="Role"
+                            required
+                            error={errors.role?.message}
+                            disabled={loading || isSubmitting}
+                            options={[
+                              { value: 'USER', label: 'User' },
+                              { value: 'ADMIN', label: 'Administrator' },
+                            ]}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </div>
+                    </div>
 
-                {/* Image URL Field */}
-                <div className="col-12">
-                  <Controller
-                    name="imageUrl"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        type="url"
-                        label="Profile Image URL"
-                        placeholder="https://example.com/avatar.jpg (optional)"
-                        error={errors.imageUrl?.message}
-                        disabled={loading || isSubmitting}
-                        helpText="Optional: Provide a URL for the user's profile image"
+                    {/* Image URL Field */}
+                    <div className="col-12">
+                      <Controller
+                        name="imageUrl"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            type="url"
+                            label="Profile Image URL"
+                            placeholder="https://example.com/avatar.jpg (optional)"
+                            error={errors.imageUrl?.message}
+                            disabled={loading || isSubmitting}
+                            helpText="Optional: Provide a URL for the user's profile image"
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </div>
-              </div>
+                    </div>
+                  </div>
 
-              {/* Action Buttons */}
-              <div className="d-flex gap-3 mt-4">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={loading || isSubmitting}
-                  className="flex-grow-1"
-                >
-                  {loading || isSubmitting ? 'Creating...' : 'Create User'}
-                </Button>
+                  {/* Action Buttons */}
+                  <div className="d-flex gap-3 mt-4">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={loading || isSubmitting}
+                      className="flex-grow-1"
+                    >
+                      {loading || isSubmitting ? 'Creating...' : 'Create User'}
+                    </Button>
 
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  onClick={() => navigate(paths.users || '/users')}
-                  disabled={loading || isSubmitting}
-                >
-                  Cancel
-                </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => navigate(paths.users || '/users')}
+                      disabled={loading || isSubmitting}
+                    >
+                      Cancel
+                    </Button>
 
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  onClick={() => reset()}
-                  disabled={loading || isSubmitting}
-                >
-                  Reset
-                </Button>
-              </div>
-            </form>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => reset()}
+                      disabled={loading || isSubmitting}
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                </form>
+              </Card.Body>
+            </Card>
+
+            <Breadcrumb items={breadcrumbItems} className="mb-3 mt-5" />
           </div>
         </div>
       </div>

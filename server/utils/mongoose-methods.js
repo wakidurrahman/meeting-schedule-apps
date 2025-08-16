@@ -10,7 +10,7 @@ const Booking = require('../models/booking-schema');
 const Event = require('../models/event-schema');
 const Meeting = require('../models/meeting-schema');
 const User = require('../models/user-schema');
-const { DEFAULT_PAGINATION, DEFAULT_SORT, USER_SORT_BY } = require('../constants/const');
+const { DEFAULT_PAGINATION, DEFAULT_SORT, USER_SORT_BY, USER_ROLE } = require('../constants/const');
 
 // -------------------------
 // User helpers
@@ -122,7 +122,7 @@ const listUsersFiltered = async ({ where = {}, orderBy = {}, pagination = {} } =
 /**
  * Create a new user with role support
  */
-const createUserWithRole = async ({ name, email, imageUrl, role = 'USER' }) => {
+const createUserWithRole = async ({ name, email, imageUrl, role = USER_ROLE.USER }) => {
   try {
     const userData = { name, email, role };
     if (imageUrl) {

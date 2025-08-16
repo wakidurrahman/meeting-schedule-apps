@@ -8,7 +8,6 @@ import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import SelectField from '@/components/atoms/select-field';
-import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
 import TextField from '@/components/atoms/text-field';
 import Pagination from '@/components/molecules/pagination';
@@ -16,14 +15,14 @@ import Table from '@/components/molecules/table';
 import BaseTemplate from '@/components/templates/base-templates';
 import { paths } from '@/constants/paths';
 import { GET_USERS, type UsersQueryData, type UsersQueryVars } from '@/graphql/user/queries';
-import type { UserProfile } from '@/types/user';
+import type { UserProfile, UserRole, UserSortBy, UserSortDirection } from '@/types/user';
 import { UserSearchSchema } from '@/utils/validation';
 
 interface UserSearchForm {
   search?: string;
-  role?: 'ALL' | 'ADMIN' | 'USER';
-  sortField?: 'NAME' | 'CREATED_AT' | 'UPDATED_AT';
-  sortDirection?: 'ASC' | 'DESC';
+  role?: UserRole;
+  sortField?: UserSortBy;
+  sortDirection?: UserSortDirection;
   page?: number;
 }
 
@@ -31,8 +30,8 @@ export default function UsersPage(): JSX.Element {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentSort, setCurrentSort] = useState<{
-    field: 'NAME' | 'CREATED_AT' | 'UPDATED_AT';
-    direction: 'ASC' | 'DESC';
+    field: UserSortBy;
+    direction: UserSortDirection;
   }>({
     field: 'NAME',
     direction: 'ASC',
@@ -43,9 +42,9 @@ export default function UsersPage(): JSX.Element {
     resolver: zodResolver(UserSearchSchema),
     defaultValues: {
       search: searchParams.get('search') || '',
-      role: (searchParams.get('role') as 'ALL' | 'ADMIN' | 'USER') || 'ALL',
-      sortField: (searchParams.get('sortField') as 'NAME' | 'CREATED_AT' | 'UPDATED_AT') || 'NAME',
-      sortDirection: (searchParams.get('sortDirection') as 'ASC' | 'DESC') || 'ASC',
+      role: (searchParams.get('role') as UserRole) || 'ALL',
+      sortField: (searchParams.get('sortField') as UserSortBy) || 'NAME',
+      sortDirection: (searchParams.get('sortDirection') as UserSortDirection) || 'ASC',
       page: parseInt(searchParams.get('page') || '1', 10),
     },
   });
@@ -53,7 +52,7 @@ export default function UsersPage(): JSX.Element {
   const formValues = useWatch({ control });
   const [page, setPage] = useState(formValues.page || 1);
   const [debouncedSearch, setDebouncedSearch] = useState(formValues.search || '');
-  const limit = 10;
+  const [limit, setLimit] = useState(10);
 
   // Debounce search input
   useEffect(() => {
@@ -62,11 +61,12 @@ export default function UsersPage(): JSX.Element {
       setPage(1); // Reset to first page on search change
     }, 300);
 
+    // Cleanup function
     return () => clearTimeout(timer);
   }, [formValues.search]);
 
   // Build GraphQL variables
-  const variables: UsersQueryVars = useMemo(() => {
+  const userQueryParams: UsersQueryVars = useMemo(() => {
     return {
       where: {
         search: debouncedSearch || undefined,
@@ -81,11 +81,11 @@ export default function UsersPage(): JSX.Element {
         offset: (page - 1) * limit,
       },
     };
-  }, [debouncedSearch, formValues.role, currentSort, page]);
+  }, [debouncedSearch, formValues.role, currentSort, page, limit]);
 
   // GraphQL query
   const { data, loading, error } = useQuery<UsersQueryData, UsersQueryVars>(GET_USERS, {
-    variables,
+    variables: userQueryParams,
     fetchPolicy: 'cache-and-network',
   });
 
@@ -105,7 +105,7 @@ export default function UsersPage(): JSX.Element {
   }, [debouncedSearch, formValues.role, currentSort, page, setSearchParams]);
 
   // Handle sort by column header click
-  const handleSort = useCallback((field: 'NAME' | 'CREATED_AT' | 'UPDATED_AT') => {
+  const handleSort = useCallback((field: UserSortBy) => {
     setCurrentSort((prev) => ({
       field,
       direction: prev.field === field && prev.direction === 'ASC' ? 'DESC' : 'ASC',
@@ -128,16 +128,14 @@ export default function UsersPage(): JSX.Element {
           className="btn btn-link p-0 text-decoration-none fw-bold"
           onClick={() => handleSort('NAME')}
         >
-          Name{' '}
-          {currentSort.field === 'NAME' && (
-            <span>
-              {currentSort.direction === 'ASC' ? (
-                <i className="bi bi-arrow-up-short" />
-              ) : (
-                <i className="bi bi-arrow-down-short" />
-              )}
-            </span>
-          )}
+          Name
+          <span>
+            {currentSort.direction === 'ASC' ? (
+              <i className="bi bi-arrow-up-short" />
+            ) : (
+              <i className="bi bi-arrow-down-short" />
+            )}
+          </span>
         </button>
       ),
     },
@@ -151,10 +149,14 @@ export default function UsersPage(): JSX.Element {
           className="btn btn-link p-0 text-decoration-none fw-bold"
           onClick={() => handleSort('CREATED_AT')}
         >
-          Created{' '}
-          {currentSort.field === 'CREATED_AT' && (
-            <span>{currentSort.direction === 'ASC' ? '↑' : '↓'}</span>
-          )}
+          Created
+          <span>
+            {currentSort.direction === 'ASC' ? (
+              <i className="bi bi-arrow-up-short" />
+            ) : (
+              <i className="bi bi-arrow-down-short" />
+            )}
+          </span>
         </button>
       ),
       render: (user: UserProfile) => new Date(user.createdAt).toLocaleDateString(),
@@ -245,45 +247,45 @@ export default function UsersPage(): JSX.Element {
         </div>
 
         {/* Results Summary */}
-        <div className="mb-3">
+        <div className="d-flex justify-content-between align-items-center mb-3">
           <Text color="body" weight="medium">
             Showing {users.length} of {total} users
             {debouncedSearch && ` matching "${debouncedSearch}"`}
             {formValues.role && formValues.role !== 'ALL' && ` with role "${formValues.role}"`}
           </Text>
+          <SelectField
+            name="limit"
+            value={limit.toString()}
+            onChange={(e) => setLimit(parseInt(e.target.value, 10))}
+            options={[
+              { value: '10', label: '10' },
+              { value: '20', label: '20' },
+              { value: '30', label: '30' },
+            ]}
+          />
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-4">
-            <Spinner size="sm" />
+        {/* Table with integrated loading state */}
+        <Table
+          data={users}
+          columns={columns}
+          actions={actions}
+          loading={loading}
+          skeletonRows={10}
+        />
+
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-end mt-4">
+            <Pagination currentPage={page} pageCount={totalPages} onPageChange={handlePageChange} />
           </div>
-        )}
-
-        {/* Table */}
-        {!loading && (
-          <>
-            <Table data={users} columns={columns} actions={actions} />
-
-            {totalPages > 1 && (
-              <div className="d-flex justify-content-end mt-4">
-                <Pagination
-                  currentPage={page}
-                  pageCount={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            )}
-          </>
         )}
 
         {/* Empty State */}
         {!loading && users.length === 0 && (
           <div className="text-center py-5">
-            <p className="text-muted">No users found.</p>
             {(debouncedSearch || (formValues.role && formValues.role !== 'ALL')) && (
               <Button
-                variant="primary"
+                variant="warning"
                 outline
                 onClick={() => {
                   setValue('search', '');
