@@ -87,7 +87,7 @@ export default function CreateUserPage(): JSX.Element {
           <div className="col-12 col-md-8 col-lg-6">
             {/* Page Header */}
             <div className="mb-4">
-              <Heading level={1}>Create New User</Heading>
+              <Heading level={1}>Create User</Heading>
               <Text className="text-muted">Add a new user to the system</Text>
             </div>
 
@@ -187,8 +187,9 @@ export default function CreateUserPage(): JSX.Element {
                       variant="primary"
                       disabled={loading || isSubmitting}
                       className="flex-grow-1"
+                      aria-label="Save user"
                     >
-                      {loading || isSubmitting ? 'Creating...' : 'Create User'}
+                      {loading || isSubmitting ? 'Saving...' : 'Save'}
                     </Button>
 
                     <Button
@@ -196,6 +197,7 @@ export default function CreateUserPage(): JSX.Element {
                       variant="secondary"
                       onClick={() => navigate(paths.users || '/users')}
                       disabled={loading || isSubmitting}
+                      aria-label="Cancel"
                     >
                       Cancel
                     </Button>
@@ -205,6 +207,7 @@ export default function CreateUserPage(): JSX.Element {
                       variant="secondary"
                       onClick={() => reset()}
                       disabled={loading || isSubmitting}
+                      aria-label="Reset"
                     >
                       Reset
                     </Button>
