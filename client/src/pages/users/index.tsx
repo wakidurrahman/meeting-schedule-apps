@@ -89,7 +89,7 @@ export default function UsersPage(): JSX.Element {
     fetchPolicy: 'cache-and-network',
   });
 
-  const users = useMemo(() => data?.users?.nodes ?? [], [data?.users?.nodes]);
+  const users = useMemo(() => data?.users?.usersList ?? [], [data?.users?.usersList]);
   const total = useMemo(() => data?.users?.total ?? 0, [data?.users?.total]);
   const totalPages = Math.ceil(total / limit);
 

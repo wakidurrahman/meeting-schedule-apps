@@ -10,6 +10,7 @@ const Booking = require('../models/booking-schema');
 const Event = require('../models/event-schema');
 const Meeting = require('../models/meeting-schema');
 const User = require('../models/user-schema');
+const { DEFAULT_PAGINATION, DEFAULT_SORT, USER_SORT_BY } = require('../constants/const');
 
 // -------------------------
 // User helpers
@@ -73,9 +74,10 @@ const listUsers = () => User.find({}).sort({ name: 1 }).populate('createdEvents'
  */
 const listUsersFiltered = async ({ where = {}, orderBy = {}, pagination = {} } = {}) => {
   try {
+    // Get the where, orderBy, and pagination.
     const { search, role } = where;
-    const { field = 'NAME', direction = 'ASC' } = orderBy;
-    const { limit = 10, offset = 0 } = pagination;
+    const { field = DEFAULT_SORT.FIELD, direction = DEFAULT_SORT.DIRECTION } = orderBy;
+    const { limit = DEFAULT_PAGINATION.LIMIT, offset = DEFAULT_PAGINATION.OFFSET } = pagination;
 
     // Build query conditions
     const query = {};
@@ -94,25 +96,23 @@ const listUsersFiltered = async ({ where = {}, orderBy = {}, pagination = {} } =
     }
 
     // Build sort object
-    const sortMap = {
-      NAME: 'name',
-      CREATED_AT: 'createdAt',
-      UPDATED_AT: 'updatedAt',
-    };
-    const sortField = sortMap[field] || 'name';
-    const sortDirection = direction === 'DESC' ? -1 : 1;
+    const sortMap = USER_SORT_BY;
+    const sortField = sortMap[field] || USER_SORT_BY.NAME;
+    const sortDirection =
+      direction === DEFAULT_SORT.DESC
+        ? DEFAULT_SORT.DIRECTION_MAP.DESC
+        : DEFAULT_SORT.DIRECTION_MAP.ASC;
     const sort = {};
     sort[sortField] = sortDirection;
 
     // Execute queries
-    const [nodes, total] = await Promise.all([
+    const [usersList, total] = await Promise.all([
       User.find(query).sort(sort).skip(offset).limit(limit).lean(),
       User.countDocuments(query),
     ]);
 
     const hasMore = offset + limit < total;
-
-    return { nodes, total, hasMore };
+    return { usersList, total, hasMore };
   } catch (err) {
     err.message = err.message || MESSAGES.INTERNAL_ERROR;
     throw err;

@@ -1,4 +1,4 @@
-# Users Management Implementation Documentation
+# Users Management Implementation Documentation.
 
 ## Overview
 
@@ -12,11 +12,11 @@ The Users Management feature follows a modular, full-stack architecture:
 ┌─────────────────────────────────────────────────────────────┐
 │                    Client Layer (React)                     │
 ├─────────────────────────────────────────────────────────────┤
-│ • Users List Page (search, filter, sort, pagination)       │
-│ • Create User Page (form validation)                       │
-│ • Edit User Page (prefilled forms)                         │
-│ • User Detail Page (view & delete)                         │
-│ • Apollo Client (GraphQL operations & caching)             │
+│ • Users List Page (search, filter, sort, pagination)        │
+│ • Create User Page (form validation)                        │
+│ • Edit User Page (prefilled forms)                          │
+│ • User Detail Page (view & delete)                          │
+│ • Apollo Client (GraphQL operations & caching)              │
 └─────────────────────────────────────────────────────────────┘
                               │
                         GraphQL API
@@ -24,11 +24,11 @@ The Users Management feature follows a modular, full-stack architecture:
 ┌─────────────────────────────────────────────────────────────┐
 │                    Server Layer (Node.js)                   │
 ├─────────────────────────────────────────────────────────────┤
-│ • GraphQL Schema (types, inputs, queries, mutations)       │
-│ • Resolvers (business logic & authorization)               │
-│ • Mongoose Helpers (database operations)                   │
-│ • Validation Schemas (Zod validation)                      │
-│ • MongoDB (data persistence)                               │
+│ • GraphQL Schema (types, inputs, queries, mutations)        │
+│ • Resolvers (business logic & authorization)                │
+│ • Mongoose Helpers (database operations)                    │
+│ • Validation Schemas (Zod validation)                       │
+│ • MongoDB (data persistence)                                │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -106,7 +106,7 @@ input UpdateUserInput {
 
 ```graphql
 type UsersResult {
-  nodes: [User!]! # Array of users for current page
+  usersList: [User!]! # Array of users for current page
   total: Int! # Total count matching filters
   hasMore: Boolean! # Whether more pages exist
 }
@@ -178,13 +178,13 @@ const listUsersFiltered = async ({
   sort[sortField] = sortDirection;
 
   // Execute queries
-  const [nodes, total] = await Promise.all([
+  const [usersList, total] = await Promise.all([
     User.find(query).sort(sort).skip(offset).limit(limit).lean(),
     User.countDocuments(query),
   ]);
 
   const hasMore = offset + limit < total;
-  return { nodes, total, hasMore };
+  return { usersList, total, hasMore };
 };
 ```
 
@@ -267,7 +267,7 @@ users: async ({ where, orderBy, pagination }, context) => {
 
     // Format and return
     return {
-      nodes: result.nodes.map(formatUser),
+      usersList: result.usersList.map(formatUser),
       total: result.total,
       hasMore: result.hasMore,
     };
@@ -332,7 +332,7 @@ export interface UsersQueryVars {
 // Query result
 export interface UsersQueryData {
   users: {
-    nodes: Array<UserProfile>;
+    usersList: Array<UserProfile>;
     total: number;
     hasMore: boolean;
   };
@@ -349,7 +349,7 @@ export const GET_USERS: TD<UsersQueryData, UsersQueryVars> = gql`
     $pagination: Pagination
   ) {
     users(where: $where, orderBy: $orderBy, pagination: $pagination) {
-      nodes {
+      usersList {
         id
         name
         email
@@ -743,7 +743,7 @@ query SearchUsers {
     orderBy: { field: NAME, direction: ASC }
     pagination: { limit: 10, offset: 0 }
   ) {
-    nodes {
+    usersList {
       id
       name
       email

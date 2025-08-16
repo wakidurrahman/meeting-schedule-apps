@@ -10,7 +10,7 @@ import { UserProfile } from '@/types/user';
 // Enhanced Users query with search, sort, pagination, and role filtering
 export interface UsersQueryData {
   users: {
-    nodes: Array<UserProfile>;
+    usersList: Array<UserProfile>;
     total: number;
     hasMore: boolean;
   };
@@ -34,7 +34,7 @@ export interface UsersQueryVars {
 export const GET_USERS: TD<UsersQueryData, UsersQueryVars> = gql`
   query Users($where: UsersWhere, $orderBy: UsersOrderBy, $pagination: Pagination) {
     users(where: $where, orderBy: $orderBy, pagination: $pagination) {
-      nodes {
+      usersList {
         id
         name
         email

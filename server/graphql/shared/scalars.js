@@ -27,4 +27,10 @@ module.exports = `
     OPEN
     CLOSED
   }
+
+   enum UserOrderField { 
+    NAME 
+    CREATED_AT 
+    UPDATED_AT 
+   }
 `;
