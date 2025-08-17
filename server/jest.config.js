@@ -39,8 +39,8 @@ module.exports = {
     },
   },
 
-  // Test timeout
-  testTimeout: 10000,
+  // Test timeout - increased for database operations
+  testTimeout: 30000,
 
   // Verbose output
   verbose: true,
@@ -53,4 +53,11 @@ module.exports = {
 
   // Detect open handles
   detectOpenHandles: true,
+
+  // Global setup and teardown for database
+  globalSetup: '<rootDir>/tests/setup/globalSetup.js',
+  globalTeardown: '<rootDir>/tests/setup/globalTeardown.js',
+
+  // Max workers for parallel execution
+  maxWorkers: 1, // Run tests sequentially to avoid database conflicts
 };

@@ -10,7 +10,7 @@ const request = require('supertest');
 
 const typeDefs = require('../../graphql/type-defs');
 const resolvers = require('../../graphql/resolvers');
-const authMiddleware = require('../../middleware/auth');
+const { authMiddleware } = require('../../middleware/auth');
 const { customFormatErrorFn } = require('../../middleware/error');
 
 /**

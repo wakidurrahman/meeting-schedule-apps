@@ -30,7 +30,7 @@ describe('User CRUD Integration Tests', () => {
     await adminUser.save();
 
     authToken = generateTestToken(adminUser._id);
-  });
+  }, 30000); // 30 second timeout for database connection
 
   beforeEach(async () => {
     // Clear all users except admin

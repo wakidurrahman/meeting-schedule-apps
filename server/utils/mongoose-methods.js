@@ -5,6 +5,7 @@
  * on validation, authorization, and data shaping.
  */
 
+const bcrypt = require('bcryptjs');
 const { MESSAGES } = require('../constants/messages');
 const Booking = require('../models/booking-schema');
 const Event = require('../models/event-schema');
@@ -122,11 +123,28 @@ const listUsersFiltered = async ({ where = {}, orderBy = {}, pagination = {} } =
 /**
  * Create a new user with role support
  */
-const createUserWithRole = async ({ name, email, imageUrl, role = USER_ROLE.USER }) => {
+const createUserWithRole = async ({
+  name,
+  email,
+  password,
+  imageUrl,
+  role = USER_ROLE.USER,
+  address,
+  dob,
+}) => {
   try {
-    const userData = { name, email, role };
+    // For admin user creation, generate a default password if not provided
+    const finalPassword = password || (await bcrypt.hash('TempPassword123!', 12));
+
+    const userData = { name, email, password: finalPassword, role };
     if (imageUrl) {
       userData.imageUrl = imageUrl;
+    }
+    if (address) {
+      userData.address = address;
+    }
+    if (dob) {
+      userData.dob = dob;
     }
 
     return await User.create(userData);

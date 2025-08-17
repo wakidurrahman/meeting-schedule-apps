@@ -3,33 +3,27 @@
  * Provides in-memory MongoDB instance for testing
  */
 
-const { MongoMemoryServer } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
-
-let mongoServer;
 
 /**
  * Connect to in-memory database for testing
  */
 const connectTestDB = async () => {
   try {
-    // Start in-memory MongoDB instance
-    mongoServer = await MongoMemoryServer.create({
-      binary: {
-        version: '7.0.0', // Use a stable version
-      },
-      instance: {
-        dbName: process.env.TEST_DB_NAME,
-      },
-    });
+    // Use the global MongoDB URI from global setup
+    const mongoUri = global.__MONGO_URI__;
 
-    const mongoUri = mongoServer.getUri();
+    if (!mongoUri) {
+      throw new Error('Global MongoDB URI not found. Make sure globalSetup is configured.');
+    }
+
+    // Disconnect if already connected
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
 
     // Connect mongoose to the test database
-    await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(mongoUri);
 
     console.log('✅ Connected to test database');
   } catch (error) {
@@ -53,16 +47,13 @@ const clearTestDB = async () => {
 };
 
 /**
- * Disconnect from test database and stop server
+ * Disconnect from test database
+ * Note: MongoDB server is managed by global teardown
  */
 const disconnectTestDB = async () => {
   try {
     if (mongoose.connection.readyState !== 0) {
       await mongoose.disconnect();
-    }
-
-    if (mongoServer) {
-      await mongoServer.stop();
     }
 
     console.log('✅ Disconnected from test database');

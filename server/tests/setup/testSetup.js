@@ -10,10 +10,10 @@ dotenv.config({ path: '.env.test' });
 
 // Set test environment
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-for-jwt-tokens';
+process.env.JWT_SECRET =
+  process.env.JWT_SECRET || 'test-secret-key-for-jwt-tokens-very-long-and-secure';
 
-// Increase timeout for database operations
-jest.setTimeout(10000);
+// Test timeout is now handled in jest.config.js
 
 // Global test helpers
 global.testHelpers = {
@@ -30,7 +30,7 @@ process.on('unhandledRejection', (err) => {
 const originalConsoleLog = console.log;
 global.console = {
   ...console,
-  log: jest.fn(),
+  log: originalConsoleLog, // Keep logs for debugging during test development
   error: originalConsoleLog, // Keep error logs for debugging
   warn: originalConsoleLog, // Keep warnings for debugging
 };
