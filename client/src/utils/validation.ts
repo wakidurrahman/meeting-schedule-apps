@@ -8,14 +8,14 @@ import { UserRole, UserSortBy, UserSortDirection } from '@/types/user';
  * These are displayed to the user when password validation fails
  */
 export const passwordValidationErrors = {
-  required: 'Password is required',
-  too_short: 'Password must be at least 8 characters long',
-  too_long: 'Password must be at most 50 characters long',
-  no_whitespace: 'Password cannot contain spaces',
-  missing_digits: 'Password must contain at least one number',
-  missing_uppercase: 'Password must contain at least one uppercase letter',
-  missing_lowercase: 'Password must contain at least one lowercase letter',
-  missing_special: 'Password must contain at least one special character (@$!%*?&)',
+  required: VM.passwordRequired,
+  too_short: VM.passwordTooShort,
+  too_long: VM.passwordTooLong,
+  no_whitespace: VM.passwordNoWhitespace,
+  missing_digits: VM.passwordMissingDigits,
+  missing_uppercase: VM.passwordMissingUppercase,
+  missing_lowercase: VM.passwordMissingLowercase,
+  missing_special: VM.passwordMissingSpecial,
 } as const;
 
 /**
@@ -76,23 +76,23 @@ export const RegisterSchema = z.object({
   email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, VM.emailInvalid),
   password: z
     .string()
-    .min(1, passwordValidationErrors.required)
-    .min(8, passwordValidationErrors.too_short)
-    .max(50, passwordValidationErrors.too_long)
+    .min(1, VM.passwordRequired)
+    .min(8, VM.passwordTooShort)
+    .max(50, VM.passwordTooLong)
     .refine((val) => !/\s/.test(val), {
-      message: passwordValidationErrors.no_whitespace,
+      message: VM.passwordNoWhitespace,
     })
     .refine((val) => /\d/.test(val), {
-      message: passwordValidationErrors.missing_digits,
+      message: VM.passwordMissingDigits,
     })
     .refine((val) => /[A-Z]/.test(val), {
-      message: passwordValidationErrors.missing_uppercase,
+      message: VM.passwordMissingUppercase,
     })
     .refine((val) => /[a-z]/.test(val), {
-      message: passwordValidationErrors.missing_lowercase,
+      message: VM.passwordMissingLowercase,
     })
     .refine((val) => /[@$!%*?&]/.test(val), {
-      message: passwordValidationErrors.missing_special,
+      message: VM.passwordMissingSpecial,
     }),
 });
 
