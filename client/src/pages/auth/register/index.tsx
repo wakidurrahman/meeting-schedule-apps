@@ -7,6 +7,7 @@
  * Visual structure
  * - Card layout with three inputs: "name", "email", "password".
  * - Submit button centered; inline error alert shows server errors when present.
+ * - Real-time password validation feedback with detailed requirements list.
  *
  * Form state management (React Hook Form + Zod)
  * - useForm is configured with:
@@ -14,10 +15,18 @@
  *   - mode: 'onChange' → validate as the user types
  *   - criteriaMode: 'all' → collect all issues per field (not just first)
  *   - shouldFocusError: true → focus first invalid field on submit
+ *   - watch: monitors password field for real-time validation
  * - Derived state used by the UI:
  *   - errors: field‑level messages bound to inputs
  *   - isSubmitting: true while submit promise is in flight
  *   - isDirty / isValid: reflect current validation state for helper UI
+ *
+ * Password validation (Enhanced front-end validation)
+ * - Real-time validation using validatePassword utility function
+ * - Shows detailed requirements list when password is touched and has errors
+ * - Validates: length (8-50), uppercase, lowercase, numbers, special chars, no spaces
+ * - Submit button disabled when password validation errors exist
+ * - Separate from server-side validation for better UX
  *
  * Transport (Apollo useMutation)
  * - Mutation: REGISTER
@@ -26,18 +35,19 @@
  * - Error: `error` from Apollo becomes an inline <Alert> and a toast
  *
  * Outcomes
- * - Success: toast “Registration Successful” then navigate → /login
- * - Failure: toast “Registration Failed” and keep user on the form
+ * - Success: toast "Registration Successful" then navigate → /login
+ * - Failure: toast "Registration Failed" and keep user on the form
  *
  * Accessibility and UX
  * - Inputs use `error` props to render invalid styles and messages
- * - Submit button disabled while `loading || isSubmitting`
+ * - Submit button disabled while `loading || isSubmitting || passwordValidationErrors.length > 0`
+ * - Password requirements clearly displayed with real-time feedback
  * - Dev tools: RHF DevTool is rendered only in non‑production builds
  */
 import { useMutation } from '@apollo/client';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -50,7 +60,7 @@ import BaseTemplate from '@/components/templates/base-templates';
 import { REGISTER, type RegisterMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
 import type { UserRegisterInput } from '@/types/user';
-import { RegisterSchema } from '@/utils/validation';
+import { RegisterSchema, validatePassword } from '@/utils/validation';
 
 export default function Register(): JSX.Element {
   // Navigate user to login page after successful registration
@@ -60,11 +70,17 @@ export default function Register(): JSX.Element {
   // Zod form values
   type FormValues = z.infer<typeof RegisterSchema>;
 
+  // Password validation state
+  const [password, setPassword] = useState('');
+  const [passwordValidationErrors, setPasswordValidationErrors] = useState<string[]>([]);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+
   // RHF instance
   const {
     register, // RHF register function
     handleSubmit, // RHF handle submit function
     control, // RHF control function
+    watch, // RHF watch function
     formState: { errors, isSubmitting, isDirty, isValid }, // RHF form state
   } = useForm<FormValues>({
     resolver: zodResolver(RegisterSchema),
@@ -72,6 +88,29 @@ export default function Register(): JSX.Element {
     criteriaMode: 'all', // validate all fields
     shouldFocusError: true, // focus on the first error
   });
+
+  // Watch for password changes
+  const watchPassword = watch('password');
+
+  // Update local state when password changes
+  useEffect(() => {
+    setPassword(watchPassword || '');
+  }, [watchPassword]);
+
+  // Validate password as user types
+  useEffect(() => {
+    if (!password) {
+      setPasswordValidationErrors([]);
+      return;
+    }
+
+    if (!passwordTouched) {
+      setPasswordTouched(true);
+    }
+
+    const errors = validatePassword(password);
+    setPasswordValidationErrors(errors);
+  }, [password, passwordTouched]);
   // Register mutation hook with Apollo Client
   const [registerMutation, { loading, error }] = useMutation<
     RegisterMutationData,
@@ -139,14 +178,34 @@ export default function Register(): JSX.Element {
                     placeholder="Enter your password"
                     disabled={loading}
                     error={errors.password?.message}
-                    helpText="Example password base on the following: e.g. Zain123@, Min_123$"
-                    {...register('password')}
+                    helpText="Password must contain: 8+ characters, uppercase, lowercase, number, special character (@$!%*?&)"
+                    {...register('password', {
+                      onBlur: () => setPasswordTouched(true),
+                    })}
                   />
+
+                  {/* Display password validation errors */}
+                  {passwordTouched && passwordValidationErrors.length > 0 && (
+                    <div className="alert alert-warning mb-3" role="alert">
+                      <small className="fw-bold d-block mb-2">Password requirements:</small>
+                      <ul className="mb-0 ps-3">
+                        {passwordValidationErrors.map((error, index) => (
+                          <li key={`password-validation-${index}`} className="small">
+                            {error}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   {/* Error message from server state */}
                   {error && <Alert variant="danger">{error.message}</Alert>}
                   {/* Submit button */}
                   <div className="d-flex justify-content-center mt-5">
-                    <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={loading || isSubmitting || passwordValidationErrors.length > 0}
+                    >
                       {loading ? 'Loading...' : 'Sign up'}
                     </Button>
                   </div>

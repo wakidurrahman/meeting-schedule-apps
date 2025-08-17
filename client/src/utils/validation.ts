@@ -1,7 +1,68 @@
 import { z } from 'zod';
 
+import { ValidationMessages as VM } from '@/constants/messages';
 import { UserRole, UserSortBy, UserSortDirection } from '@/types/user';
-import { ValidationMessages as VM } from '../constants/messages';
+
+/**
+ * Password validation error messages
+ * These are displayed to the user when password validation fails
+ */
+export const passwordValidationErrors = {
+  required: 'Password is required',
+  too_short: 'Password must be at least 8 characters long',
+  too_long: 'Password must be at most 50 characters long',
+  no_whitespace: 'Password cannot contain spaces',
+  missing_digits: 'Password must contain at least one number',
+  missing_uppercase: 'Password must contain at least one uppercase letter',
+  missing_lowercase: 'Password must contain at least one lowercase letter',
+  missing_special: 'Password must contain at least one special character (@$!%*?&)',
+} as const;
+
+/**
+ * Validates a password against security requirements
+ * @param password - The password to validate
+ * @returns Array of error messages for failed validations
+ */
+export const validatePassword = (password: string): string[] => {
+  if (!password) {
+    return [passwordValidationErrors.required];
+  }
+
+  // Define validation rules as an array of {test, errorMessage} pairs
+  const validationRules = [
+    {
+      test: (pwd: string) => pwd.length < 8,
+      errorMessage: passwordValidationErrors.too_short,
+    },
+    {
+      test: (pwd: string) => pwd.length > 50,
+      errorMessage: passwordValidationErrors.too_long,
+    },
+    {
+      test: (pwd: string) => /\s/.test(pwd),
+      errorMessage: passwordValidationErrors.no_whitespace,
+    },
+    {
+      test: (pwd: string) => !/\d/.test(pwd),
+      errorMessage: passwordValidationErrors.missing_digits,
+    },
+    {
+      test: (pwd: string) => !/[A-Z]/.test(pwd),
+      errorMessage: passwordValidationErrors.missing_uppercase,
+    },
+    {
+      test: (pwd: string) => !/[a-z]/.test(pwd),
+      errorMessage: passwordValidationErrors.missing_lowercase,
+    },
+    {
+      test: (pwd: string) => !/[@$!%*?&]/.test(pwd),
+      errorMessage: passwordValidationErrors.missing_special,
+    },
+  ];
+
+  // Apply all rules and collect error messages
+  return validationRules.filter((rule) => rule.test(password)).map((rule) => rule.errorMessage);
+};
 
 // Register schema
 export const RegisterSchema = z.object({
@@ -15,11 +76,24 @@ export const RegisterSchema = z.object({
   email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, VM.emailInvalid),
   password: z
     .string()
-    .min(8, VM.passwordMin)
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      VM.passwordComplexity,
-    ), // Example password base on the following regex: e.g. Zain123@, Min_123$
+    .min(1, passwordValidationErrors.required)
+    .min(8, passwordValidationErrors.too_short)
+    .max(50, passwordValidationErrors.too_long)
+    .refine((val) => !/\s/.test(val), {
+      message: passwordValidationErrors.no_whitespace,
+    })
+    .refine((val) => /\d/.test(val), {
+      message: passwordValidationErrors.missing_digits,
+    })
+    .refine((val) => /[A-Z]/.test(val), {
+      message: passwordValidationErrors.missing_uppercase,
+    })
+    .refine((val) => /[a-z]/.test(val), {
+      message: passwordValidationErrors.missing_lowercase,
+    })
+    .refine((val) => /[@$!%*?&]/.test(val), {
+      message: passwordValidationErrors.missing_special,
+    }),
 });
 
 // Login schema
