@@ -509,6 +509,8 @@ export const UserSearchSchema = z.object({
 });
 ```
 
+---
+
 ## User Experience (UX) Features
 
 ### Search & Discovery
