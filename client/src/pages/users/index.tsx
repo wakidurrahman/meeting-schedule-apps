@@ -59,7 +59,7 @@ export default function UsersPage(): JSX.Element {
     const timer = setTimeout(() => {
       setDebouncedSearch(formValues.search || '');
       setPage(1); // Reset to first page on search change
-    }, 300);
+    }, 400);
 
     // Cleanup function
     return () => clearTimeout(timer);

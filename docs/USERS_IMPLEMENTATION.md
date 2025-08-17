@@ -515,7 +515,7 @@ export const UserSearchSchema = z.object({
 
 1. **Instant Visual Feedback**
 
-   - Search results update after 400ms typing delay
+   - Search results update after `400ms` typing delay.
    - Real-time result counts: "Showing 5 of 23 users matching 'john'"
    - Clear visual loading states with Spinner component
 
@@ -529,6 +529,8 @@ export const UserSearchSchema = z.object({
    - Click column headers to sort
    - Visual sort direction indicators (↑↓)
    - Remembers sort preferences in URL
+
+![image](./images/users-sort-order-search.png)
 
 ### Navigation & State Management
 
