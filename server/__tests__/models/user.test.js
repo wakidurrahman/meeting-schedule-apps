@@ -187,6 +187,75 @@ describe('User Model', () => {
       const savedUser = await user.save();
       expect(Array.isArray(savedUser.createdEvents)).toBe(true);
     });
+
+    test('should handle role-based queries', async () => {
+      const adminUser = new User({
+        name: 'Admin User',
+        email: 'admin@example.com',
+        password: 'hashedpassword',
+        role: 'ADMIN',
+      });
+
+      const regularUser = new User({
+        name: 'Regular User',
+        email: 'user@example.com',
+        password: 'hashedpassword',
+        role: 'USER',
+      });
+
+      await adminUser.save();
+      await regularUser.save();
+
+      const adminUsers = await User.find({ role: 'ADMIN' });
+      const regularUsers = await User.find({ role: 'USER' });
+
+      expect(adminUsers).toHaveLength(1);
+      expect(regularUsers).toHaveLength(1);
+      expect(adminUsers[0].name).toBe('Admin User');
+      expect(regularUsers[0].name).toBe('Regular User');
+    });
+
+    test('should support text search on name and email', async () => {
+      const users = [
+        {
+          name: 'John Smith',
+          email: 'john.smith@example.com',
+          password: 'hashedpassword',
+        },
+        {
+          name: 'Jane Doe',
+          email: 'jane.doe@example.com',
+          password: 'hashedpassword',
+        },
+        {
+          name: 'Bob Johnson',
+          email: 'bob@company.com',
+          password: 'hashedpassword',
+        },
+      ];
+
+      await User.create(users);
+
+      // Search by name
+      const nameSearch = await User.find({
+        $or: [
+          { name: { $regex: 'john', $options: 'i' } },
+          { email: { $regex: 'john', $options: 'i' } },
+        ],
+      });
+
+      expect(nameSearch).toHaveLength(2); // John Smith and Bob Johnson
+
+      // Search by email domain
+      const emailSearch = await User.find({
+        $or: [
+          { name: { $regex: 'example.com', $options: 'i' } },
+          { email: { $regex: 'example.com', $options: 'i' } },
+        ],
+      });
+
+      expect(emailSearch).toHaveLength(2); // John Smith and Jane Doe
+    });
   });
 
   describe('Database Operations', () => {
