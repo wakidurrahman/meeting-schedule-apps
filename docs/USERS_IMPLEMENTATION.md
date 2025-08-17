@@ -513,24 +513,24 @@ export const UserSearchSchema = z.object({
 
 ## User Experience (UX) Features
 
-### Search & Discovery
+### Search , Filtering, Sorting & Discovery
 
 1. **Instant Visual Feedback**
 
    - Search results update after `400ms` typing delay.
-   - Real-time result counts: "Showing 5 of 23 users matching 'john'"
-   - Clear visual loading states with Spinner component
+   - Real-time result counts: "Showing 5 of 23 users matching 'john'".
+   - Clear visual loading states with Skeleton component.
 
 2. **Smart Filtering**
 
-   - Combined search across name and email fields
-   - Role-based filtering with clear labels
-   - One-click filter clearing
+   - Combined search across name and email fields.
+   - Role-based filtering with clear labels.
+   - One-click filter clearing.
 
 3. **Intuitive Sorting**
-   - Click column headers to sort
-   - Visual sort direction indicators (↑↓)
-   - Remembers sort preferences in URL
+   - Click column headers to sort.
+   - Visual sort direction indicators (↑↓).
+   - Remembers sort preferences in URL.
 
 ![image](./images/users-sort-order-search.png)
 
@@ -538,9 +538,9 @@ export const UserSearchSchema = z.object({
 
 1. **URL State Persistence**
 
-   - All filters, search terms, sort, and page preserved in URL
-   - Bookmarkable and shareable filtered views
-   - Browser back/forward navigation works seamlessly
+   - All `filters`, `search` terms, `sort`, and `page` preserved in URL.
+   - Bookmarkable and shareable filtered views.
+   - Browser **back/forward** navigation works seamlessly.
 
 2. **Responsive Pagination**
    - Shows current page and total pages
@@ -694,18 +694,6 @@ db.users.createIndex({ name: 'text', email: 'text' }); // Text search
 db.users.createIndex({ email: 1 }, { unique: true }); // Unique email
 db.users.createIndex({ role: 1 }); // Role filtering
 db.users.createIndex({ createdAt: -1 }); // Date sorting
-```
-
-### Environment Configuration
-
-```bash
-# Server environment variables
-JWT_SECRET=your-jwt-secret
-MONGO_URI=mongodb://localhost:27017/meeting-scheduler
-NODE_ENV=production
-
-# Client environment variables
-VITE_GRAPHQL_ENDPOINT=http://localhost:4000/graphql
 ```
 
 ## Future Enhancements

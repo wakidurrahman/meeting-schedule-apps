@@ -1,3 +1,16 @@
+/**
+ * Feature: Users Management Page
+ *
+ * Debounced search (400ms delay) by name or email
+ * Role filtering with SelectField (All, Admin, User)
+ * Sortable columns with visual indicators (Name ↑↓, Created ↑↓)
+ * Pagination with 10 items per page
+ * URL state management - preserves all filters in query params
+ * Real-time results summary
+ * Loading states with Spinner component
+ * Empty states with clear filter actions
+ */
+
 import { useQuery } from '@apollo/client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -54,18 +67,18 @@ export default function UsersPage(): JSX.Element {
   const [debouncedSearch, setDebouncedSearch] = useState(formValues.search || '');
   const [limit, setLimit] = useState(10);
 
-  // Debounce search input
+  // Feature:  Debounced search (400ms delay) by name or email
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(formValues.search || '');
       setPage(1); // Reset to first page on search change
-    }, 400);
+    }, 400); // Search results update after 400ms typing delay.
 
     // Cleanup function
     return () => clearTimeout(timer);
   }, [formValues.search]);
 
-  // Build GraphQL variables
+  // Feature: Build GraphQL variables
   const userQueryParams: UsersQueryVars = useMemo(() => {
     return {
       where: {
@@ -89,11 +102,12 @@ export default function UsersPage(): JSX.Element {
     fetchPolicy: 'cache-and-network',
   });
 
+  // Feature: Memoize users and total
   const users = useMemo(() => data?.users?.usersList ?? [], [data?.users?.usersList]);
   const total = useMemo(() => data?.users?.total ?? 0, [data?.users?.total]);
   const totalPages = Math.ceil(total / limit);
 
-  // Update URL search params when form changes
+  // Feature: Update URL search params when form changes
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('search', debouncedSearch);
@@ -104,7 +118,7 @@ export default function UsersPage(): JSX.Element {
     setSearchParams(params, { replace: true });
   }, [debouncedSearch, formValues.role, currentSort, page, setSearchParams]);
 
-  // Handle sort by column header click
+  // Feature: Handle sort by column header click
   const handleSort = useCallback((field: UserSortBy) => {
     setCurrentSort((prev) => ({
       field,
@@ -113,7 +127,7 @@ export default function UsersPage(): JSX.Element {
     setPage(1); // Reset to first page on sort change
   }, []);
 
-  // Handle page change
+  // Feature: Handle page change
   const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
   }, []);
@@ -231,6 +245,7 @@ export default function UsersPage(): JSX.Element {
             />
           </div>
           <div className="col-md-3 d-flex align-items-end mb-3">
+            {/* Feature: Clear Filters button */}
             <Button
               variant="primary"
               outline
@@ -246,13 +261,15 @@ export default function UsersPage(): JSX.Element {
           </div>
         </div>
 
-        {/* Results Summary */}
         <div className="d-flex justify-content-between align-items-center mb-3">
+          {/* Feature: Real-time result counts: "Showing 5 of 23 users matching 'john'" */}
           <Text color="body" weight="medium">
             Showing {users.length} of {total} users
             {debouncedSearch && ` matching "${debouncedSearch}"`}
             {formValues.role && formValues.role !== 'ALL' && ` with role "${formValues.role}"`}
           </Text>
+
+          {/* Feature: Page size selector: "Show 10 per page" */}
           <SelectField
             name="limit"
             value={limit.toString()}
