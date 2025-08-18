@@ -311,7 +311,7 @@ const DashboardPage: React.FC = () => {
               columns={columns}
               rowActions={() => actions}
               loading={false}
-              className="mb-0"
+              // className="mb-0"
             />
           ) : (
             <div className="text-center py-4">

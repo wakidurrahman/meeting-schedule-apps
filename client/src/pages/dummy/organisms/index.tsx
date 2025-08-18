@@ -7,16 +7,9 @@
 import React, { useState } from 'react';
 
 import Card from '@/components/molecules/card';
+import Calendar from '@/components/organisms/calendar';
 import BaseTemplate from '@/components/templates/base-templates';
 import type { CalendarViewType, MeetingEvent } from '@/types/calendar';
-
-// Import Calendar with error handling
-let Calendar: React.ComponentType<any> | null = null;
-try {
-  Calendar = require('@/components/organisms/calendar').default;
-} catch (error) {
-  console.warn('Calendar component not available:', error);
-}
 
 // Mock meeting data
 const mockMeetings: MeetingEvent[] = [

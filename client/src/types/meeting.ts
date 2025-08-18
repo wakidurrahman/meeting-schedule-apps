@@ -4,6 +4,10 @@ export type Meeting = {
   description: string | null;
   startTime: string;
   endTime: string;
+  attendees?: Array<{ id: string; name: string; email?: string }>;
+  createdBy?: { id: string; name: string };
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type MeetingInput = {
@@ -20,6 +24,8 @@ export type Meetings = {
   description: string | null;
   startTime: string;
   endTime: string;
+  attendees?: Array<{ id: string; name: string; email?: string }>;
+  createdBy?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
 };

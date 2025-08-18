@@ -1,12 +1,16 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import DesignSystemDemo from './pages/dummy';
+
 import { paths, pathsWithAuth } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
 import Login from '@/pages/auth/login';
 import Register from '@/pages/auth/register';
 import BookingsPage from '@/pages/bookings';
 import CalendarPage from '@/pages/calendar';
+import CalendarNoModalsPage from '@/pages/calendar-no-modals';
+import SimpleCalendarPage from '@/pages/calendar-simple';
 import Dashboard from '@/pages/dashboard';
 import EventsPage from '@/pages/events';
 import CreateEventPage from '@/pages/events/create';
@@ -17,7 +21,6 @@ import UsersPage from '@/pages/users';
 import UserDetailPage from '@/pages/users/[id]';
 import EditUserPage from '@/pages/users/[id]/edit';
 import CreateUserPage from '@/pages/users/create';
-import DesignSystemDemo from './pages/dummy';
 
 const pathsLink = paths;
 
@@ -139,6 +142,12 @@ export default function App(): JSX.Element {
       />
       {/* Dummy components check */}
       <Route path="/components-story" element={<DesignSystemDemo />} />
+      {/* Test calendar without auth */}
+      <Route path="/calendar-test" element={<CalendarPage />} />
+      {/* Simple calendar test */}
+      <Route path="/calendar-simple" element={<SimpleCalendarPage />} />
+      {/* Calendar without modals test */}
+      <Route path="/calendar-no-modals" element={<CalendarNoModalsPage />} />
     </Routes>
   );
 }

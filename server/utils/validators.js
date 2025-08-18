@@ -43,6 +43,70 @@ const MeetingInputSchema = z
     path: ['endTime'],
   });
 
+const CreateMeetingInputSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, VM.titleRequired)
+      .max(100, VM.titleMax || 'Title too long'),
+    description: z.string().optional().default(''),
+    startTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
+    endTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
+    attendeeIds: z
+      .array(z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId))
+      .default([]),
+  })
+  .refine((data) => new Date(data.startTime) < new Date(data.endTime), {
+    message: VM.startBeforeEnd,
+    path: ['endTime'],
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      const durationMinutes = (end - start) / (1000 * 60);
+      return durationMinutes >= 5 && durationMinutes <= 480; // 5 minutes to 8 hours
+    },
+    {
+      message: 'Meeting duration must be between 5 minutes and 8 hours',
+      path: ['endTime'],
+    },
+  );
+
+const UpdateMeetingInputSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, VM.titleRequired)
+      .max(100, VM.titleMax || 'Title too long')
+      .optional(),
+    description: z.string().optional(),
+    startTime: z
+      .string()
+      .refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime)
+      .optional(),
+    endTime: z
+      .string()
+      .refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime)
+      .optional(),
+    attendeeIds: z
+      .array(z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId))
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // Only validate start/end relationship if both are provided
+      if (data.startTime && data.endTime) {
+        return new Date(data.startTime) < new Date(data.endTime);
+      }
+      return true;
+    },
+    {
+      message: VM.startBeforeEnd,
+      path: ['endTime'],
+    },
+  );
+
 // Profile schemas
 
 const UpdateProfileInputSchema = z.object({
@@ -109,6 +173,8 @@ module.exports = {
   RegisterInputSchema,
   LoginInputSchema,
   MeetingInputSchema,
+  CreateMeetingInputSchema,
+  UpdateMeetingInputSchema,
   UpdateProfileInputSchema,
   EventInputSchema,
   CreateUserInputSchema,

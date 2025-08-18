@@ -8,6 +8,8 @@
  * - Calendar grid structures
  */
 
+import type { BaseComponentProps } from './components-common';
+
 import type { CalendarGrid, CalendarViewType, MeetingEvent } from '@/utils/calendar';
 import type {
   AttendeeAvailability,
@@ -16,7 +18,6 @@ import type {
   MeetingValidationResult,
   TimeSlot,
 } from '@/utils/meeting';
-import type { BaseComponentProps } from './components-common';
 
 // Re-export utility types
 export type {

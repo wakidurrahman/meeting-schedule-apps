@@ -11,12 +11,12 @@
 
 import React from 'react';
 
+import CalendarEvent from './CalendarEvent';
+
 import { BaseComponentProps } from '@/types/components-common';
 import type { CalendarGrid, CalendarViewType, MeetingEvent } from '@/utils/calendar';
 import { formatCalendarDate, isSameDay } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
-
-import CalendarEvent from './CalendarEvent';
 
 export interface CalendarGridProps extends BaseComponentProps {
   calendarGrid: CalendarGrid;

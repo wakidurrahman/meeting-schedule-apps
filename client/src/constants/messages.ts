@@ -27,6 +27,10 @@ export const ValidationMessages = {
   roleRequired: 'Role is required',
   roleInvalid: 'Role must be either ADMIN or USER',
 
+  // Meeting validation
+  titleRequired: 'Meeting title is required',
+  titleTooLong: 'Meeting title is too long',
+
   // Date and time validation
   invalidStartTime: 'Invalid startTime',
   invalidEndTime: 'Invalid endTime',

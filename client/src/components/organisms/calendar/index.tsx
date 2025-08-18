@@ -11,6 +11,10 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 
+import CalendarGrid from './CalendarGrid';
+import CalendarHeader from './CalendarHeader';
+import CalendarNavigation from './CalendarNavigation';
+
 import { BaseComponentProps } from '@/types/components-common';
 import {
   generateCalendarGrid,
@@ -23,10 +27,6 @@ import {
   type MeetingEvent,
 } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
-
-import CalendarGrid from './CalendarGrid';
-import CalendarHeader from './CalendarHeader';
-import CalendarNavigation from './CalendarNavigation';
 
 export interface CalendarProps extends BaseComponentProps {
   // Data

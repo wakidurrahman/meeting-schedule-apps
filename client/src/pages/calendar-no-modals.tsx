@@ -1,12 +1,5 @@
 /**
- * Calendar Page - Main calendar interface
- *
- * Full-featured calendar page with:
- * - Meeting display and management
- * - Modal-based meeting creation/editing
- * - Real-time GraphQL integration
- * - Conflict detection
- * - Responsive layout using CalendarTemplate
+ * Calendar Page - Without Modal Components (for testing)
  */
 
 import { useQuery } from '@apollo/client';
@@ -39,11 +32,7 @@ interface MeetingsQueryData {
   };
 }
 
-const CalendarPage: React.FC = () => {
-  // Authentication (commented out until context is available)
-  // const { user } = useAuth();
-  // const { addToast } = useToast();
-
+const CalendarNoModalsPage: React.FC = () => {
   // Calendar state
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -98,14 +87,10 @@ const CalendarPage: React.FC = () => {
     setSelectedDate(date);
   }, []);
 
-  // const handleDateDoubleClick = useCallback((date: Date) => {
-  //   setSelectedDate(date);
-  //   setShowCreateModal(true);
-  // }, []);
-
   const handleMeetingClick = useCallback((meeting: MeetingEvent) => {
     setSelectedMeeting(meeting);
     setShowDetailsModal(true);
+    console.log('Meeting clicked:', meeting);
   }, []);
 
   const handleCreateMeeting = useCallback((date?: Date) => {
@@ -113,6 +98,7 @@ const CalendarPage: React.FC = () => {
       setSelectedDate(date);
     }
     setShowCreateModal(true);
+    console.log('Create meeting:', date);
   }, []);
 
   const handleViewChange = useCallback((view: CalendarViewType) => {
@@ -123,63 +109,13 @@ const CalendarPage: React.FC = () => {
     setCurrentDate(date);
   }, []);
 
-  // Modal handlers
-  const handleCloseCreateModal = useCallback(() => {
-    setShowCreateModal(false);
-    setSelectedDate(null);
-  }, []);
-
-  const handleCloseDetailsModal = useCallback(() => {
-    setShowDetailsModal(false);
-    setSelectedMeeting(null);
-  }, []);
-
-  const handleMeetingCreated = useCallback(
-    (meeting?: MeetingEvent) => {
-      setShowCreateModal(false);
-      setSelectedDate(null);
-      refetchMeetings();
-      // addToast({
-      //   type: 'success',
-      //   title: 'Meeting Created',
-      //   message: 'Your meeting has been successfully created.',
-      // });
-      console.log('Meeting created successfully:', meeting);
-    },
-    [refetchMeetings],
-  );
-
-  const handleMeetingUpdated = useCallback(() => {
-    setShowDetailsModal(false);
-    setSelectedMeeting(null);
-    refetchMeetings();
-    // addToast({
-    //   type: 'success',
-    //   title: 'Meeting Updated',
-    //   message: 'Your meeting has been successfully updated.',
-    // });
-    console.log('Meeting updated successfully');
-  }, [refetchMeetings]);
-
-  const handleMeetingDeleted = useCallback(() => {
-    setShowDetailsModal(false);
-    setSelectedMeeting(null);
-    refetchMeetings();
-    // addToast({
-    //   type: 'success',
-    //   title: 'Meeting Deleted',
-    //   message: 'Your meeting has been successfully deleted.',
-    // });
-    console.log('Meeting deleted successfully');
-  }, [refetchMeetings]);
-
   // Calendar header component
   const calendarHeader = useMemo(
     () => (
       <div className="d-flex justify-content-between align-items-center py-3">
         <div className="d-flex align-items-center gap-3">
           <Heading level={1} className="h4 mb-0">
-            Calendar
+            Calendar (No Modals Test)
           </Heading>
           {selectedDate && (
             <small className="text-muted">
@@ -366,49 +302,35 @@ const CalendarPage: React.FC = () => {
     refetchMeetings,
   ]);
 
-  // Modal components (real modals with full functionality)
+  // Modal components (placeholder without actual modals)
   const modals = useMemo(
     () => (
-      <>
-        {/* Temporary placeholder for modals */}
+      <div>
         {showCreateModal && (
-          <div
-            className="alert alert-info position-fixed top-0 start-50 translate-middle-x mt-3"
-            style={{ zIndex: 1050 }}
-          >
-            Create Meeting Modal would be here
-            <button className="btn btn-sm btn-secondary ms-2" onClick={handleCloseCreateModal}>
+          <div className="alert alert-info">
+            Create Meeting Modal would be here (Date: {selectedDate?.toDateString()})
+            <button
+              className="btn btn-sm btn-secondary ms-2"
+              onClick={() => setShowCreateModal(false)}
+            >
               Close
             </button>
           </div>
         )}
-
         {showDetailsModal && selectedMeeting && (
-          <div
-            className="alert alert-info position-fixed top-0 start-50 translate-middle-x mt-3"
-            style={{ zIndex: 1050 }}
-          >
-            Meeting Details: {selectedMeeting.title}
-            <button className="btn btn-sm btn-secondary ms-2" onClick={handleCloseDetailsModal}>
+          <div className="alert alert-info">
+            Meeting Details Modal would be here (Meeting: {selectedMeeting.title})
+            <button
+              className="btn btn-sm btn-secondary ms-2"
+              onClick={() => setShowDetailsModal(false)}
+            >
               Close
             </button>
           </div>
         )}
-      </>
+      </div>
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      showCreateModal,
-      showDetailsModal,
-      selectedDate,
-      selectedMeeting,
-      meetings,
-      handleCloseCreateModal,
-      handleCloseDetailsModal,
-      handleMeetingCreated,
-      handleMeetingUpdated,
-      handleMeetingDeleted,
-    ],
+    [showCreateModal, showDetailsModal, selectedDate, selectedMeeting],
   );
 
   // Render using CalendarTemplate
@@ -423,4 +345,4 @@ const CalendarPage: React.FC = () => {
   );
 };
 
-export default CalendarPage;
+export default CalendarNoModalsPage;
