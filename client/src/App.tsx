@@ -11,6 +11,7 @@ import BookingsPage from '@/pages/bookings';
 import CalendarPage from '@/pages/calendar';
 import CalendarNoModalsPage from '@/pages/calendar-no-modals';
 import SimpleCalendarPage from '@/pages/calendar-simple';
+import EditMeetingPage from '@/pages/calendar/edit/[id]';
 import Dashboard from '@/pages/dashboard';
 import EventsPage from '@/pages/events';
 import CreateEventPage from '@/pages/events/create';
@@ -137,6 +138,14 @@ export default function App(): JSX.Element {
         element={
           <PrivateRoute>
             <CalendarPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/calendar/edit/:id"
+        element={
+          <PrivateRoute>
+            <EditMeetingPage />
           </PrivateRoute>
         }
       />

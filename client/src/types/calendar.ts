@@ -10,13 +10,12 @@
 
 import type { BaseComponentProps } from './components-common';
 
-import type { CalendarGrid, CalendarViewType, MeetingEvent } from '@/utils/calendar';
+import type { CalendarGrid, CalendarViewType, MeetingEvent, TimeSlot } from '@/utils/calendar';
 import type {
   AttendeeAvailability,
   MeetingConflict,
   MeetingFormData,
   MeetingValidationResult,
-  TimeSlot,
 } from '@/utils/meeting';
 
 // Re-export utility types

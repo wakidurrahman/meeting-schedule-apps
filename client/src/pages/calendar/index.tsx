@@ -17,6 +17,7 @@ import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
 import Calendar from '@/components/organisms/calendar';
+import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meetings';
 import CalendarTemplate from '@/components/templates/meeting-templates/CalendarTemplate';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import type { CalendarViewType, MeetingEvent } from '@/types/calendar';
@@ -370,30 +371,30 @@ const CalendarPage: React.FC = () => {
   const modals = useMemo(
     () => (
       <>
-        {/* Temporary placeholder for modals */}
-        {showCreateModal && (
-          <div
-            className="alert alert-info position-fixed top-0 start-50 translate-middle-x mt-3"
-            style={{ zIndex: 1050 }}
-          >
-            Create Meeting Modal would be here
-            <button className="btn btn-sm btn-secondary ms-2" onClick={handleCloseCreateModal}>
-              Close
-            </button>
-          </div>
-        )}
+        {/* Create Meeting Modal */}
+        <CreateMeetingModal
+          show={showCreateModal}
+          onHide={handleCloseCreateModal}
+          selectedDate={selectedDate || undefined}
+          onSuccess={handleMeetingCreated}
+          existingMeetings={meetings}
+        />
 
-        {showDetailsModal && selectedMeeting && (
-          <div
-            className="alert alert-info position-fixed top-0 start-50 translate-middle-x mt-3"
-            style={{ zIndex: 1050 }}
-          >
-            Meeting Details: {selectedMeeting.title}
-            <button className="btn btn-sm btn-secondary ms-2" onClick={handleCloseDetailsModal}>
-              Close
-            </button>
-          </div>
-        )}
+        {/* Meeting Details Modal */}
+        <MeetingDetailsModal
+          show={showDetailsModal}
+          onHide={handleCloseDetailsModal}
+          meeting={selectedMeeting}
+          onEdit={(meeting: MeetingEvent) => {
+            // Navigate to edit page or open edit modal
+            console.log('Edit meeting:', meeting);
+            handleMeetingUpdated();
+          }}
+          onDelete={(meetingId: string) => {
+            console.log('Delete meeting:', meetingId);
+            handleMeetingDeleted();
+          }}
+        />
       </>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
