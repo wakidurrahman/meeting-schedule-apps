@@ -620,33 +620,33 @@
 // Dark Mode Support
 // =============================================================================
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --calendar-border-color: #{var(--bs-border-color-dark)};
-    --calendar-header-bg: #{var(--bs-dark)};
-    --calendar-weekend-bg: #{var(--bs-gray-800)};
-    --calendar-hover-bg: #{var(--bs-gray-700)};
-    --calendar-selected-bg: #{var(--bs-primary-dark)};
-  }
+// @media (prefers-color-scheme: dark) {
+//   :root {
+//     --calendar-border-color: #{var(--bs-border-color-dark)};
+//     --calendar-header-bg: #{var(--bs-dark)};
+//     --calendar-weekend-bg: #{var(--bs-gray-800)};
+//     --calendar-hover-bg: #{var(--bs-gray-700)};
+//     --calendar-selected-bg: #{var(--bs-primary-dark)};
+//   }
 
-  .calendar-organism {
-    background: var(--bs-dark);
-    color: var(--bs-light);
-  }
+//   .calendar-organism {
+//     background: var(--bs-dark);
+//     color: var(--bs-light);
+//   }
 
-  .calendar-grid__day {
-    background: var(--bs-dark);
-    color: var(--bs-light);
+//   .calendar-grid__day {
+//     background: var(--bs-dark);
+//     color: var(--bs-light);
 
-    &--other-month {
-      color: var(--bs-gray-400);
-    }
-  }
+//     &--other-month {
+//       color: var(--bs-gray-400);
+//     }
+//   }
 
-  .calendar-event {
-    color: var(--bs-dark);
-  }
-}
+//   .calendar-event {
+//     color: var(--bs-dark);
+//   }
+// }
 
 // =============================================================================
 // Print Styles

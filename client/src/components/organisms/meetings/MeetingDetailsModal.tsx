@@ -30,6 +30,7 @@ import {
   formatMeetingTimeRange,
   getMeetingStatus,
 } from '@/utils/meeting';
+import { useNavigate } from 'react-router-dom';
 
 export interface MeetingDetailsModalProps {
   show: boolean;
@@ -49,7 +50,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   // State
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const navigate = useNavigate();
   // GraphQL mutations
   const [deleteMeeting, { loading: isDeleting }] = useMutation<
     DeleteMeetingMutationData,
@@ -86,6 +87,8 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
     };
   }, [meeting]);
 
+  console.log('meetingDetails', meetingDetails);
+
   // Handlers
   const handleClose = useCallback(() => {
     setError(null);
@@ -95,6 +98,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
 
   const handleEdit = useCallback(() => {
     if (meeting && onEdit) {
+      navigate(`/calendar/edit/${meeting.id}`);
       onEdit(meeting);
     }
   }, [meeting, onEdit]);
