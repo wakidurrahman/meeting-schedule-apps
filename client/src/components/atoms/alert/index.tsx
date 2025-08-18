@@ -1,38 +1,21 @@
 import React from 'react';
 
-type AlertVariant =
-  | 'primary'
-  | 'secondary'
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'info'
-  | 'light'
-  | 'dark';
+import { AlertVariant, VariantComponentProps } from '@/types/components-common';
+import { createAlertClasses } from '@/utils/components-helper';
 
-export type AlertProps = {
-  variant?: AlertVariant;
+export type AlertProps = VariantComponentProps<AlertVariant> & {
   dismissible?: boolean;
   onClose?: () => void;
-  className?: string;
-  children?: React.ReactNode;
 };
 
-export default function Alert({
+const Alert: React.FC<AlertProps> = ({
   variant = 'primary',
   dismissible,
   onClose,
   className,
   children,
-}: AlertProps) {
-  const classes = [
-    'alert',
-    `alert-${variant}`,
-    dismissible ? 'alert-dismissible' : undefined,
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+}) => {
+  const classes = createAlertClasses(variant, dismissible, className);
 
   return (
     <div className={classes} role="alert">
@@ -42,4 +25,6 @@ export default function Alert({
       )}
     </div>
   );
-}
+};
+
+export default Alert;

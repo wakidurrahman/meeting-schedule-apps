@@ -1,33 +1,20 @@
 import React from 'react';
 
-export type BadgeVariant =
-  | 'primary'
-  | 'secondary'
-  | 'success'
-  | 'danger'
-  | 'warning'
-  | 'info'
-  | 'light'
-  | 'dark';
+import { BadgeVariant, VariantComponentProps } from '@/types/components-common';
+import { createBadgeClasses } from '@/utils/components-helper';
 
-export interface BadgeProps {
-  variant?: BadgeVariant;
+export interface BadgeProps extends VariantComponentProps<BadgeVariant> {
   pill?: boolean;
   children: React.ReactNode;
-  className?: string;
 }
 
 const Badge: React.FC<BadgeProps> = ({
   variant = 'secondary',
   pill = false,
   children,
-  className = '',
+  className,
 }) => {
-  const baseClasses = 'badge';
-  const variantClass = `text-bg-${variant}`;
-  const pillClass = pill ? 'rounded-pill' : '';
-
-  const classes = [baseClasses, variantClass, pillClass, className].filter(Boolean).join(' ');
+  const classes = createBadgeClasses(variant, pill, className);
 
   return <span className={classes}>{children}</span>;
 };

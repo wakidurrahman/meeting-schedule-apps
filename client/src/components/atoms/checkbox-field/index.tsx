@@ -1,12 +1,23 @@
 import React from 'react';
 
-export type CheckboxFieldProps = {
+import { FormComponentProps } from '@/types/components-common';
+import { buildClassNames, createValidationClass } from '@/utils/components-helper';
+
+/**
+ * CheckboxFieldProps
+ * @param id - The id of the checkbox field
+ * @param label - The label of the checkbox field
+ * @param error - The error message of the checkbox field
+ * @param helpText - The help text of the checkbox field
+ * @param required - Whether the checkbox field is required
+ * @param className - The class name of the checkbox field
+ * @param rest - The rest of the props
+ * @returns The checkbox field component
+ */
+export type CheckboxFieldProps = FormComponentProps & {
   id?: string;
   label?: string;
-  error?: string;
   helpText?: string;
-  required?: boolean;
-  className?: string;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'className' | 'type' | 'value'>;
 
 /**
@@ -19,9 +30,11 @@ const CheckboxField = React.forwardRef<HTMLInputElement, CheckboxFieldProps>(
   ({ id, label, error, helpText, required, className, ...rest }, ref) => {
     const controlId = id || rest.name || undefined;
     const isInvalid = Boolean(error);
-    const classes = ['form-check-input', isInvalid ? 'is-invalid' : undefined, className]
-      .filter(Boolean)
-      .join(' ');
+    const classes = buildClassNames(
+      'form-check-input',
+      createValidationClass(isInvalid),
+      className,
+    );
 
     return (
       <div className="form-check mb-3">
@@ -29,7 +42,7 @@ const CheckboxField = React.forwardRef<HTMLInputElement, CheckboxFieldProps>(
         {label && (
           <label htmlFor={controlId} className="form-check-label">
             {label}
-            {required ? ' *' : ''}
+            <span className="text-danger ms-1">{required ? ' *' : ''}</span>
           </label>
         )}
         {helpText && !isInvalid && <div className="form-text">{helpText}</div>}
