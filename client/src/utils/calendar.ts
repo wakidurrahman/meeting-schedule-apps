@@ -8,48 +8,10 @@
  * - Time slot calculations
  */
 
-import { formatJST, formatJSTDate } from './date';
+import { cloneDate, formatJST, formatJSTDate, fromPartsJST, now } from './date';
 
-export type CalendarViewType = 'day' | 'week' | 'month' | 'year';
-
-export interface CalendarDay {
-  date: Date;
-  isToday: boolean;
-  isCurrentMonth: boolean;
-  isPreviousMonth: boolean;
-  isNextMonth: boolean;
-  dayNumber: number;
-  meetings: MeetingEvent[];
-}
-
-export interface CalendarWeek {
-  days: CalendarDay[];
-  weekNumber: number;
-}
-
-export interface CalendarGrid {
-  weeks: CalendarWeek[];
-  currentMonth: number;
-  currentYear: number;
-  totalDays: number;
-}
-
-export interface MeetingEvent {
-  id: string;
-  title: string;
-  startTime: Date;
-  endTime: Date;
-  attendees?: Array<{ id: string; name: string }>;
-  description?: string;
-  isAllDay?: boolean;
-}
-
-export interface TimeSlot {
-  start: Date;
-  end: Date;
-  isAvailable: boolean;
-  meetings: MeetingEvent[];
-}
+import { CalendarDay, CalendarGrid, CalendarViewType, CalendarWeek } from '@/types/calendar';
+import { MeetingEvent } from '@/types/meeting';
 
 /**
  * Generate calendar grid for a given month and year
@@ -63,16 +25,16 @@ export function generateCalendarGrid(
   month: number,
   meetings: MeetingEvent[] = [],
 ): CalendarGrid {
-  const today = new Date();
-  const firstDayOfMonth = new Date(year, month, 1);
-  const firstDayOfGrid = new Date(firstDayOfMonth);
+  const today = now();
+  const firstDayOfMonth = fromPartsJST({ year, month, day: 1 });
+  const firstDayOfGrid = cloneDate(firstDayOfMonth);
 
   // Start from the first Sunday of the week containing the first day of the month
   const dayOfWeek = firstDayOfMonth.getDay();
   firstDayOfGrid.setDate(firstDayOfGrid.getDate() - dayOfWeek);
 
   const weeks: CalendarWeek[] = [];
-  const currentDate = new Date(firstDayOfGrid);
+  const currentDate = cloneDate(firstDayOfGrid);
   let weekNumber = 0;
 
   // Generate 6 weeks (42 days) to ensure full month coverage
@@ -83,7 +45,7 @@ export function generateCalendarGrid(
       const dayMeetings = getMeetingsForDate(currentDate, meetings);
 
       const calendarDay: CalendarDay = {
-        date: new Date(currentDate),
+        date: cloneDate(currentDate),
         isToday: isSameDay(currentDate, today),
         isCurrentMonth: currentDate.getMonth() === month,
         isPreviousMonth:
@@ -125,7 +87,7 @@ export function generateCalendarGrid(
  */
 export function getMeetingsForDate(date: Date, meetings: MeetingEvent[]): MeetingEvent[] {
   return meetings.filter((meeting) => {
-    const meetingDate = new Date(meeting.startTime);
+    const meetingDate = cloneDate(meeting.startTime);
     return isSameDay(date, meetingDate);
   });
 }
@@ -173,14 +135,14 @@ export function formatCalendarDate(
  * @param date - Reference date (default: today)
  * @returns Array of 7 dates for the current week
  */
-export function getCurrentWeekDates(date: Date = new Date()): Date[] {
-  const startOfWeek = new Date(date);
+export function getCurrentWeekDates(date: Date = now()): Date[] {
+  const startOfWeek = cloneDate(date);
   const dayOfWeek = date.getDay();
   startOfWeek.setDate(date.getDate() - dayOfWeek);
 
   const weekDates: Date[] = [];
   for (let i = 0; i < 7; i++) {
-    const weekDate = new Date(startOfWeek);
+    const weekDate = cloneDate(startOfWeek);
     weekDate.setDate(startOfWeek.getDate() + i);
     weekDates.push(weekDate);
   }
@@ -195,7 +157,7 @@ export function getCurrentWeekDates(date: Date = new Date()): Date[] {
  * @returns New date for navigation
  */
 export function navigateMonth(currentDate: Date, direction: 'next' | 'previous'): Date {
-  const newDate = new Date(currentDate);
+  const newDate = cloneDate(currentDate);
   if (direction === 'next') {
     newDate.setMonth(newDate.getMonth() + 1);
   } else {
@@ -211,7 +173,7 @@ export function navigateMonth(currentDate: Date, direction: 'next' | 'previous')
  * @returns New date for navigation
  */
 export function navigateWeek(currentDate: Date, direction: 'next' | 'previous'): Date {
-  const newDate = new Date(currentDate);
+  const newDate = cloneDate(currentDate);
   if (direction === 'next') {
     newDate.setDate(newDate.getDate() + 7);
   } else {
@@ -227,7 +189,7 @@ export function navigateWeek(currentDate: Date, direction: 'next' | 'previous'):
  * @returns New date for navigation
  */
 export function navigateDay(currentDate: Date, direction: 'next' | 'previous'): Date {
-  const newDate = new Date(currentDate);
+  const newDate = cloneDate(currentDate);
   if (direction === 'next') {
     newDate.setDate(newDate.getDate() + 1);
   } else {
@@ -251,16 +213,16 @@ export function getTimeSlots(
   endHour: number = 18,
 ): Date[] {
   const slots: Date[] = [];
-  const startTime = new Date(date);
+  const startTime = cloneDate(date);
   startTime.setHours(startHour, 0, 0, 0);
 
-  const endTime = new Date(date);
+  const endTime = cloneDate(date);
   endTime.setHours(endHour, 0, 0, 0);
 
-  const currentSlot = new Date(startTime);
+  const currentSlot = cloneDate(startTime);
 
   while (currentSlot < endTime) {
-    slots.push(new Date(currentSlot));
+    slots.push(cloneDate(currentSlot));
     currentSlot.setMinutes(currentSlot.getMinutes() + interval);
   }
 
@@ -291,7 +253,7 @@ export function getMonthBoundaries(
   end: Date;
 } {
   return {
-    start: new Date(year, month, 1),
+    start: fromPartsJST({ year, month, day: 1 }),
     end: new Date(year, month + 1, 0, 23, 59, 59, 999),
   };
 }
@@ -301,7 +263,7 @@ export function getMonthBoundaries(
  * @returns Today's date with time set to 00:00:00
  */
 export function getToday(): Date {
-  const today = new Date();
+  const today = cloneDate(now());
   today.setHours(0, 0, 0, 0);
   return today;
 }

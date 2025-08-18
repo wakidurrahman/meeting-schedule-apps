@@ -9,36 +9,15 @@
  * - Optimistic updates
  */
 
-import type { MeetingEvent } from './calendar';
 import { formatJST, formatJSTTime } from './date';
 
-export interface MeetingConflict {
-  meeting: MeetingEvent;
-  conflictType: 'overlap' | 'adjacent' | 'duplicate';
-  severity: 'error' | 'warning' | 'info';
-  message: string;
-}
-
-export interface MeetingFormData {
-  title: string;
-  description?: string;
-  startTime: string | Date;
-  endTime: string | Date;
-  attendeeIds?: string[];
-  isAllDay?: boolean;
-}
-
-export interface MeetingValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-}
-
-export interface AttendeeAvailability {
-  userId: string;
-  isAvailable: boolean;
-  conflictingMeetings: MeetingEvent[];
-}
+import type {
+  AttendeeAvailability,
+  MeetingConflict,
+  MeetingEvent,
+  MeetingFormData,
+  MeetingValidationResult,
+} from '@/types/meeting';
 
 /**
  * Check for meeting time conflicts

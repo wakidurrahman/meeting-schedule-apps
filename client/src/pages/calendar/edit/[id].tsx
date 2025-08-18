@@ -77,6 +77,7 @@ type EditMeetingFormData = z.infer<typeof EditMeetingSchema>;
 
 const EditMeetingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  console.log('id', id);
   const navigate = useNavigate();
 
   // State

@@ -20,7 +20,8 @@ import Calendar from '@/components/organisms/calendar';
 import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meetings';
 import CalendarTemplate from '@/components/templates/meeting-templates/CalendarTemplate';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
-import type { CalendarViewType, MeetingEvent } from '@/types/calendar';
+import type { CalendarViewType } from '@/types/calendar';
+import { MeetingEvent } from '@/types/meeting';
 import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
 import { formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 

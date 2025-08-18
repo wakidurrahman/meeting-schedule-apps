@@ -34,7 +34,7 @@ import {
   type ConflictCheckQueryData,
 } from '@/graphql/meeting/queries';
 import { GET_USERS } from '@/graphql/user/queries';
-import type { MeetingEvent } from '@/types/calendar';
+import { MeetingEvent } from '@/types/meeting';
 import {
   checkMeetingConflicts,
   getDefaultMeetingTimes,

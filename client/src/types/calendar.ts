@@ -9,31 +9,51 @@
  */
 
 import type { BaseComponentProps } from './components-common';
-
-import type { CalendarGrid, CalendarViewType, MeetingEvent, TimeSlot } from '@/utils/calendar';
 import type {
-  AttendeeAvailability,
-  MeetingConflict,
-  MeetingFormData,
-  MeetingValidationResult,
-} from '@/utils/meeting';
-
-// Re-export utility types
-export type {
-  CalendarDay,
-  CalendarGrid,
-  CalendarViewType,
-  CalendarWeek,
   MeetingEvent,
-  TimeSlot,
-} from '../utils/calendar';
+  AttendeeAvailability,
+  MeetingConflict,
+  MeetingFormData,
+  MeetingValidationResult,
+} from './meeting';
+
+export interface CalendarDay {
+  date: Date;
+  isToday: boolean;
+  isCurrentMonth: boolean;
+  isPreviousMonth: boolean;
+  isNextMonth: boolean;
+  dayNumber: number;
+  meetings: MeetingEvent[];
+}
+
+export interface CalendarWeek {
+  days: CalendarDay[];
+  weekNumber: number;
+}
+
+export interface CalendarGrid {
+  weeks: CalendarWeek[];
+  currentMonth: number;
+  currentYear: number;
+  totalDays: number;
+}
+
+export interface TimeSlot {
+  start: Date;
+  end: Date;
+  isAvailable: boolean;
+  meetings: MeetingEvent[];
+}
+
+export type CalendarViewType = 'day' | 'week' | 'month' | 'year';
 
 export type {
   AttendeeAvailability,
   MeetingConflict,
   MeetingFormData,
   MeetingValidationResult,
-} from '../utils/meeting';
+} from '@/types/meeting';
 
 // Calendar Component Types
 export interface CalendarProps extends BaseComponentProps {

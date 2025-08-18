@@ -53,8 +53,9 @@ const meetingResolvers = {
     }
   },
 
-  meeting: async ({ id }, context) => {
+  findMeetingById: async ({ id }, context) => {
     try {
+      console.log('id', id);
       // step 01: validate the user by requireAuth
       requireAuth(context);
       // step 02: get the meeting by id

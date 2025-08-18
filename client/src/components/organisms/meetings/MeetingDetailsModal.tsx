@@ -11,6 +11,7 @@
 
 import { useMutation } from '@apollo/client';
 import React, { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
 import Badge from '@/components/atoms/badge';
@@ -30,7 +31,6 @@ import {
   formatMeetingTimeRange,
   getMeetingStatus,
 } from '@/utils/meeting';
-import { useNavigate } from 'react-router-dom';
 
 export interface MeetingDetailsModalProps {
   show: boolean;
@@ -47,6 +47,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   onEdit,
   onDelete,
 }) => {
+  console.log('meeting', meeting);
   // State
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
