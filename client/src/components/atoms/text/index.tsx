@@ -1,30 +1,27 @@
 import React from 'react';
 
+import { BaseComponentProps, TextColor } from '@/types/components-common';
+import { buildClassNames } from '@/utils/components-helper';
+
 type TextAlign = 'start' | 'center' | 'end';
 type TextTransform = 'lowercase' | 'uppercase' | 'capitalize';
 type TextWeight = 'lighter' | 'light' | 'normal' | 'medium' | 'semibold' | 'bold' | 'bolder';
-type TextColor =
-  | 'primary'
-  | 'secondary'
-  | 'success'
-  | 'info'
-  | 'warning'
-  | 'danger'
-  | 'light'
-  | 'dark'
-  | 'body';
+type ExtendedTextColor = TextColor | 'body';
 
-export type TextProps<T extends keyof JSX.IntrinsicElements = 'p'> = {
+export type TextProps<T extends keyof JSX.IntrinsicElements = 'p'> = BaseComponentProps & {
   as?: T;
   align?: TextAlign;
   transform?: TextTransform;
   weight?: TextWeight;
-  color?: TextColor;
+  color?: ExtendedTextColor;
   truncate?: boolean;
-  className?: string;
-  children?: React.ReactNode;
 } & Omit<React.ComponentPropsWithoutRef<T>, 'as' | 'children' | 'className'>;
 
+/**
+ * Text component
+ * @param props - The props for the text
+ * @returns The text component
+ */
 export default function Text<T extends keyof JSX.IntrinsicElements = 'p'>(
   props: TextProps<T>,
 ): JSX.Element {
@@ -32,16 +29,14 @@ export default function Text<T extends keyof JSX.IntrinsicElements = 'p'>(
     props as TextProps;
 
   const Element = (as || 'p') as keyof JSX.IntrinsicElements;
-  const classes = [
+  const classes = buildClassNames(
     className,
     align ? `text-${align}` : undefined,
     transform ? `text-${transform}` : undefined,
     weight ? `fw-${weight}` : undefined,
     color ? (color === 'body' ? 'text-body' : `text-${color}`) : undefined,
     truncate ? 'text-truncate' : undefined,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  );
 
   return (
     <Element className={classes} {...(rest as Record<string, unknown>)}>

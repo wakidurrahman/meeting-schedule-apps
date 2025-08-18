@@ -93,6 +93,19 @@ export default function Header(): JSX.Element {
                       <hr className="dropdown-divider" />
                     </li>
                     <li>
+                      <NavLink
+                        className={({ isActive }: { isActive: boolean }) =>
+                          `dropdown-item${isActive ? ' active' : ''}`
+                        }
+                        to={'/components-story'}
+                      >
+                        Components Story
+                      </NavLink>
+                    </li>
+                    <li>
+                      <hr className="dropdown-divider" />
+                    </li>
+                    <li>
                       <button className="dropdown-item" onClick={logout}>
                         Logout
                       </button>

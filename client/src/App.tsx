@@ -17,6 +17,7 @@ import UsersPage from '@/pages/users';
 import UserDetailPage from '@/pages/users/[id]';
 import EditUserPage from '@/pages/users/[id]/edit';
 import CreateUserPage from '@/pages/users/create';
+import DesignSystemDemo from './pages/dummy';
 
 const pathsLink = paths;
 
@@ -136,6 +137,8 @@ export default function App(): JSX.Element {
           </PrivateRoute>
         }
       />
+      {/* Dummy components check */}
+      <Route path="/components-story" element={<DesignSystemDemo />} />
     </Routes>
   );
 }

@@ -13,8 +13,18 @@ export type BaseVariant =
   | 'light'
   | 'dark';
 
-// Extended variant for buttons (includes 'link')
-export type ButtonVariant = BaseVariant | 'link';
+// Extended variant for buttons (includes 'link' and outline variants)
+export type ButtonVariant =
+  | BaseVariant
+  | 'link'
+  | 'outline-primary'
+  | 'outline-secondary'
+  | 'outline-success'
+  | 'outline-danger'
+  | 'outline-warning'
+  | 'outline-info'
+  | 'outline-light'
+  | 'outline-dark';
 
 // Button outline variant (excludes 'link')
 export type ButtonOutlineVariant = Exclude<ButtonVariant, 'link'>;

@@ -1,10 +1,9 @@
 import React from 'react';
 
-type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
-export type HeadingProps = {
+import { BaseComponentProps, HeadingLevel } from '@/types/components-common';
+
+export type HeadingProps = BaseComponentProps & {
   level?: HeadingLevel;
-  className?: string;
-  children?: React.ReactNode;
 } & Omit<React.ComponentPropsWithoutRef<'h1'>, 'children' | 'className'>;
 
 /**
