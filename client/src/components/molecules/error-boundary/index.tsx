@@ -1,5 +1,8 @@
 import React from 'react';
 
+import Alert from '@/components/atoms/alert';
+import Button from '@/components/atoms/button';
+
 /**
  * Error Boundary
  * @param {JSX.Element} children - The children to render
@@ -47,11 +50,14 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     if (this.state.hasError) {
       return (
         <div className="container py-5">
-          <div className="alert alert-danger">
+          <Alert variant="danger">
             <h4 className="alert-heading">Something went wrong.</h4>
             <p className="text-wrap py-2">
               Please refresh the page. If the issue persists, contact support.
             </p>
+          </Alert>
+          <div className="d-flex justify-content-center mt-3">
+            <Button href="/">Go to Home</Button>
           </div>
         </div>
       );

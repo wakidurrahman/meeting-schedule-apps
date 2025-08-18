@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { BaseComponentProps, BaseVariant } from '@/types/components-common';
+import { buildClassNames, createVariantClass } from '@/utils/component';
+
 /**
  * Toast component based on Bootstrap 5.3 Toasts documentation
  * @param {Object} props - The props for the toast component
@@ -15,16 +18,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
  * @returns {React.ReactNode} The toast component
  */
 
-export interface ToastProps {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark';
+export interface ToastProps extends BaseComponentProps {
+  variant?: BaseVariant;
   show?: boolean;
   autohide?: boolean;
   delay?: number;
   title?: string;
   subtitle?: string;
-  children: React.ReactNode;
   onClose?: () => void;
-  className?: string;
   headerIcon?: React.ReactNode;
 }
 
@@ -37,7 +38,7 @@ export const Toast = ({
   subtitle,
   children,
   onClose,
-  className = '',
+  className,
   headerIcon,
 }: ToastProps) => {
   const [isVisible, setIsVisible] = useState(show);
@@ -72,9 +73,8 @@ export const Toast = ({
     return null;
   }
 
-  const variantClass = variant ? `text-bg-${variant}` : '';
-
-  const toastClasses = ['toast', 'show', variantClass, className].filter(Boolean).join(' ');
+  const variantClass = variant ? createVariantClass('text-bg', variant) : '';
+  const toastClasses = buildClassNames('toast', 'show', variantClass, className);
 
   return (
     <div className={toastClasses} role="alert" aria-live="assertive" aria-atomic="true">

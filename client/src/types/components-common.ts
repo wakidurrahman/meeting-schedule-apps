@@ -75,3 +75,19 @@ export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 // Heading tag types
 export type HeadingTag = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+// Card shadow types
+export type CardShadow = 'none' | 'sm' | 'lg';
+
+// Card image position types
+export type CardImagePosition = 'top' | 'bottom';
+
+// Toast timing types
+export type ToastDelay = number;
+
+// Common action handler types
+export type ActionHandler<T = void> = (data: T) => void;
+
+// Common event handler types
+export type ChangeHandler<T = string> = (value: T) => void;
+export type ClickHandler<T = void> = (data?: T) => void;

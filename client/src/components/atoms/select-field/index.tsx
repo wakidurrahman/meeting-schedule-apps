@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormComponentProps } from '@/types/components-common';
-import { buildClassNames, createValidationClass } from '@/utils/components-helper';
+import { buildClassNames, createValidationClass } from '@/utils/component';
 
 export type SelectFieldOption = { value: string; label: string };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { BaseComponentProps, TextColor } from '@/types/components-common';
-import { buildClassNames } from '@/utils/components-helper';
+import { buildClassNames } from '@/utils/component';
 
 type TextAlign = 'start' | 'center' | 'end';
 type TextTransform = 'lowercase' | 'uppercase' | 'capitalize';

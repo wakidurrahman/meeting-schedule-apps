@@ -6,7 +6,7 @@ import {
   SpinnerStyle,
   TextColor,
 } from '@/types/components-common';
-import { createSpinnerClasses } from '@/utils/components-helper';
+import { createSpinnerClasses } from '@/utils/component';
 
 /**
  * SpinnerProps

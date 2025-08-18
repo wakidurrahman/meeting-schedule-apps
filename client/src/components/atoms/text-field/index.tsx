@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormComponentProps } from '@/types/components-common';
-import { createFormControlClasses } from '@/utils/components-helper';
+import { createFormControlClasses } from '@/utils/component';
 
 /**
  * TextFieldProps

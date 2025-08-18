@@ -1,6 +1,9 @@
 import React from 'react';
 
-export type PaginationProps = {
+import { BaseComponentProps } from '@/types/components-common';
+import { buildClassNames } from '@/utils/component';
+
+export type PaginationProps = BaseComponentProps & {
   currentPage: number;
   pageCount: number; // total number of pages, minimum 1
   onPageChange: (page: number) => void;
@@ -12,6 +15,7 @@ export default function Pagination({
   pageCount,
   onPageChange,
   ariaLabel = 'Page navigation',
+  className,
 }: PaginationProps): JSX.Element {
   const isFirst = currentPage <= 1;
   const isLast = currentPage >= pageCount;
@@ -23,15 +27,15 @@ export default function Pagination({
   };
 
   return (
-    <nav aria-label={ariaLabel || 'Page navigation'}>
+    <nav aria-label={ariaLabel || 'Page navigation'} className={className}>
       <ul className="pagination">
-        <li className={`page-item ${isFirst ? 'disabled' : ''}`}>
+        <li className={buildClassNames('page-item', isFirst && 'disabled')}>
           <button className="page-link" onClick={() => goTo(currentPage - 1)}>
             Previous
           </button>
         </li>
         {Array.from({ length: Math.max(1, pageCount) }, (_, i) => i + 1).map((item) => (
-          <li key={item} className={`page-item ${item === currentPage ? 'active' : ''}`}>
+          <li key={item} className={buildClassNames('page-item', item === currentPage && 'active')}>
             <button
               className="page-link"
               aria-current={item === currentPage ? 'page' : undefined}
@@ -41,7 +45,7 @@ export default function Pagination({
             </button>
           </li>
         ))}
-        <li className={`page-item ${isLast ? 'disabled' : ''}`}>
+        <li className={buildClassNames('page-item', isLast && 'disabled')}>
           <button className="page-link" onClick={() => goTo(currentPage + 1)}>
             Next
           </button>

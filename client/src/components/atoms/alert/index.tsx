@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { AlertVariant, VariantComponentProps } from '@/types/components-common';
-import { createAlertClasses } from '@/utils/components-helper';
+import { createAlertClasses } from '@/utils/component';
 
 export type AlertProps = VariantComponentProps<AlertVariant> & {
   dismissible?: boolean;

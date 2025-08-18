@@ -7,7 +7,7 @@ import {
   SizeComponentProps,
   VariantComponentProps,
 } from '@/types/components-common';
-import { createButtonClasses, omitProps } from '@/utils/components-helper';
+import { createButtonClasses, omitProps } from '@/utils/component';
 
 type ButtonSize = Exclude<ComponentSize, 'md'>; // Buttons only support sm and lg
 

@@ -2,6 +2,9 @@ import React from 'react';
 
 import { TableRowSkeleton } from '../skeleton';
 
+import { ButtonVariant } from '@/types/components-common';
+import { createButtonClasses } from '@/utils/component';
+
 type Column<T> = {
   key: keyof T;
   header: React.ReactNode;
@@ -10,7 +13,7 @@ type Column<T> = {
 
 type Action<T> = {
   label: string;
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning';
+  variant?: ButtonVariant;
   onClick?: (row: T) => void;
 };
 
@@ -35,17 +38,18 @@ type TableProps<T> = {
   skeletonRows?: number;
 };
 
-export default function BootstrapTable<T extends Record<string, unknown>>({
+const Table = <T extends Record<string, unknown>>({
   columns,
   data,
   actions = [],
   rowActions,
   loading = false,
   skeletonRows = 5,
-}: TableProps<T>): JSX.Element {
+}: TableProps<T>): JSX.Element => {
   return (
     <div className="table-responsive">
       <table className="table table-hover align-middle">
+        {/* table header */}
         <thead className="table-light">
           <tr>
             {columns.map((col) => (
@@ -60,6 +64,7 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
             )}
           </tr>
         </thead>
+        {/* table body */}
         <tbody>
           {loading ? (
             // Show skeleton rows during loading
@@ -85,7 +90,7 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
                         <button
                           key={i}
                           type="button"
-                          className={`btn btn-sm btn-${a.variant ?? 'primary'}`}
+                          className={createButtonClasses(a.variant ?? 'primary', false, 'sm')}
                           onClick={() => a.onClick?.(row)}
                         >
                           {a.label}
@@ -111,4 +116,6 @@ export default function BootstrapTable<T extends Record<string, unknown>>({
       </table>
     </div>
   );
-}
+};
+
+export default Table;

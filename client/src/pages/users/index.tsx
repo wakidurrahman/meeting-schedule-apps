@@ -29,6 +29,7 @@ import BaseTemplate from '@/components/templates/base-templates';
 import { paths } from '@/constants/paths';
 import { GET_USERS, type UsersQueryData, type UsersQueryVars } from '@/graphql/user/queries';
 import type { UserProfile, UserRole, UserSortBy, UserSortDirection } from '@/types/user';
+import { formatJST } from '@/utils/date';
 import { UserSearchSchema } from '@/utils/validation';
 
 interface UserSearchForm {
@@ -173,7 +174,7 @@ export default function UsersPage(): JSX.Element {
           </span>
         </button>
       ),
-      render: (user: UserProfile) => new Date(user.createdAt).toLocaleDateString(),
+      render: (user: UserProfile) => formatJST(user.createdAt, 'yyyy/MM/dd HH:mm'),
     },
   ];
 
@@ -189,18 +190,6 @@ export default function UsersPage(): JSX.Element {
       onClick: (user: UserProfile) => navigate(`/users/${user.id}/edit`),
     },
   ];
-
-  if (error) {
-    return (
-      <BaseTemplate>
-        <div className="container">
-          <Alert variant="danger" className="mb-4">
-            Error loading users: {error.message}
-          </Alert>
-        </div>
-      </BaseTemplate>
-    );
-  }
 
   return (
     <BaseTemplate>
@@ -281,6 +270,13 @@ export default function UsersPage(): JSX.Element {
             ]}
           />
         </div>
+
+        {/* Error State */}
+        {error && (
+          <Alert variant="danger" className="mb-4">
+            Error loading users: {error.message}
+          </Alert>
+        )}
 
         {/* Table with integrated loading state */}
         <Table

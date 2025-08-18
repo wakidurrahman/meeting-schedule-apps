@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { BadgeVariant, VariantComponentProps } from '@/types/components-common';
-import { createBadgeClasses } from '@/utils/components-helper';
+import { createBadgeClasses } from '@/utils/component';
 
 export interface BadgeProps extends VariantComponentProps<BadgeVariant> {
   pill?: boolean;
