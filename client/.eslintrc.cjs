@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /**
  * ESLint configuration for the client (React + TS + Vite)
  */

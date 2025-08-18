@@ -30,7 +30,7 @@ const LoginInputSchema = z.object({
 
 const MeetingInputSchema = z
   .object({
-    title: z.string().min(1),
+    title: z.string().min(1, VM.titleRequired),
     description: z.string().optional().default(''),
     startTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
     endTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
@@ -46,13 +46,13 @@ const MeetingInputSchema = z
 // Profile schemas
 
 const UpdateProfileInputSchema = z.object({
-  name: z.string().min(2).optional(),
+  name: z.string().min(2, VM.nameMinProfile).optional(),
   address: z.string().optional(),
   dob: z
     .string()
     .refine((val) => !val || !Number.isNaN(Date.parse(val)), VM.invalidDob)
     .optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().url(VM.invalidUrl).optional(),
 });
 
 /**

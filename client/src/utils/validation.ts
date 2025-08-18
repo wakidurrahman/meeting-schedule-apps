@@ -1,7 +1,14 @@
 import { z } from 'zod';
 
+import {
+  EMAIL_REGEX,
+  NAME_REGEX,
+  SORT_DIRECTION_ENUM,
+  SORT_FIELD_ENUM,
+  USER_ROLE_ENUM,
+  USER_SEARCH_ROLE_ENUM,
+} from '@/constants/const';
 import { ValidationMessages as VM } from '@/constants/messages';
-import { UserRole, UserSortBy, UserSortDirection } from '@/types/user';
 
 /**
  * Password validation error messages
@@ -71,9 +78,9 @@ export const RegisterSchema = z.object({
     .min(1, VM.nameRequired)
     .min(2, VM.nameMin)
     .max(50, VM.nameMax)
-    .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
+    .regex(NAME_REGEX, VM.namePattern)
     .transform((str) => str.trim()),
-  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, VM.emailInvalid),
+  email: z.string().regex(EMAIL_REGEX, VM.emailInvalid),
   password: z
     .string()
     .min(1, VM.passwordRequired)
@@ -98,7 +105,7 @@ export const RegisterSchema = z.object({
 
 // Login schema
 export const LoginSchema = z.object({
-  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, VM.emailInvalid),
+  email: z.string().regex(EMAIL_REGEX, VM.emailInvalid),
   password: z.string().min(8, VM.passwordMin), // Example password base on the following regex: e.g. Zain123@, Min_123$
 });
 
@@ -109,13 +116,13 @@ export const CreateUserSchema = z.object({
     .min(1, VM.nameRequired)
     .min(2, VM.nameMin)
     .max(50, VM.nameMax)
-    .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
+    .regex(NAME_REGEX, VM.namePattern)
     .transform((str) => str.trim()),
-  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, VM.emailInvalid),
-  imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  role: z.enum(['ADMIN', 'USER'], {
-    required_error: 'Role is required',
-    invalid_type_error: 'Role must be either ADMIN or USER',
+  email: z.string().regex(EMAIL_REGEX, VM.emailInvalid),
+  imageUrl: z.string().url(VM.invalidUrl).optional().or(z.literal('')),
+  role: z.enum(USER_ROLE_ENUM, {
+    required_error: VM.roleRequired,
+    invalid_type_error: VM.roleInvalid,
   }),
 });
 
@@ -125,18 +132,15 @@ export const UpdateUserSchema = z.object({
     .min(1, VM.nameRequired)
     .min(2, VM.nameMin)
     .max(50, VM.nameMax)
-    .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
+    .regex(NAME_REGEX, VM.namePattern)
     .transform((str) => str.trim())
     .optional(),
-  email: z
-    .string()
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, VM.emailInvalid)
-    .optional(),
-  imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  email: z.string().regex(EMAIL_REGEX, VM.emailInvalid).optional(),
+  imageUrl: z.string().url(VM.invalidUrl).optional().or(z.literal('')),
   role: z
-    .enum(['ADMIN', 'USER'], {
-      required_error: 'Role is required',
-      invalid_type_error: 'Role must be either ADMIN or USER',
+    .enum(USER_ROLE_ENUM, {
+      required_error: VM.roleRequired,
+      invalid_type_error: VM.roleInvalid,
     })
     .optional(),
 });
@@ -145,10 +149,8 @@ export const UpdateUserSchema = z.object({
 
 export const UserSearchSchema = z.object({
   search: z.string().optional(),
-  role: z.enum(['ALL', 'ADMIN', 'USER'] as [UserRole, ...UserRole[]]).optional(),
-  sortField: z
-    .enum(['NAME', 'CREATED_AT', 'UPDATED_AT'] as [UserSortBy, ...UserSortBy[]])
-    .optional(),
-  sortDirection: z.enum(['ASC', 'DESC'] as [UserSortDirection, ...UserSortDirection[]]).optional(),
+  role: z.enum(USER_SEARCH_ROLE_ENUM).optional(),
+  sortField: z.enum(SORT_FIELD_ENUM).optional(),
+  sortDirection: z.enum(SORT_DIRECTION_ENUM).optional(),
   page: z.number().min(1).optional(),
 });

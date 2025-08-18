@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 import type { ToastData } from '@/components/molecules/toast/toast-container';
+import { ErrorMessages } from '@/constants/messages';
 
 export interface ToastContextValue {
   toasts: ToastData[];
@@ -48,6 +49,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }): JSX.
 
 export function useToastContext(): ToastContextValue {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within a ToastProvider');
+  if (!ctx) throw new Error(ErrorMessages.useToastProvider);
   return ctx;
 }

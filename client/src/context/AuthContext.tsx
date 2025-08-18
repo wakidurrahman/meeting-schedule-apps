@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 
+import { ErrorMessages } from '@/constants/messages';
 import { AuthContextValue, AuthUserNullable, AuthenticatedUser } from '@/types/user';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,19 +53,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuthContext = (): AuthContextValue => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuthContext must be used within AuthProvider');
+  if (!context) throw new Error(ErrorMessages.useAuthProvider);
   return context;
 };
 
 // Typed helpers for non-null access
 export const useAuthUser = (): AuthenticatedUser => {
   const { user } = useAuthContext();
-  if (!user) throw new Error('useAuthUser requires an authenticated user');
+  if (!user) throw new Error(ErrorMessages.requiresUser);
   return user;
 };
 
 export const useAuthToken = (): string => {
   const { token } = useAuthContext();
-  if (!token) throw new Error('useAuthToken requires an authenticated token');
+  if (!token) throw new Error(ErrorMessages.requiresToken);
   return token;
 };
