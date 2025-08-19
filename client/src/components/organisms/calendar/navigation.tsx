@@ -1,6 +1,6 @@
 /**
  * Calendar Navigation Component
- *
+ * TODO : Remove this component and use the header component instead
  * Provides view type switching controls:
  * - Day view button
  * - Week view button
@@ -11,8 +11,8 @@
 import React from 'react';
 
 import Button from '@/components/atoms/button';
+import type { CalendarViewType } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
-import type { CalendarViewType } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
 
 export interface CalendarNavigationProps extends BaseComponentProps {
@@ -23,7 +23,7 @@ export interface CalendarNavigationProps extends BaseComponentProps {
   disabled?: boolean;
 }
 
-const DEFAULT_VIEWS: CalendarViewType[] = ['month', 'week', 'day'];
+const DEFAULT_VIEWS: CalendarViewType[] = ['year', 'month', 'week', 'day'];
 
 const VIEW_LABELS: Record<CalendarViewType, { full: string; short: string; icon: string }> = {
   day: { full: 'Day', short: 'D', icon: 'bi-calendar-day' },
@@ -42,9 +42,9 @@ const CalendarNavigation: React.FC<CalendarNavigationProps> = ({
   ...rest
 }) => {
   const navigationClasses = buildClassNames(
-    'calendar-navigation',
-    compactMode && 'calendar-navigation--compact',
-    disabled && 'calendar-navigation--disabled',
+    'o-calendar-navigation',
+    compactMode && 'o-calendar-navigation--compact',
+    disabled && 'o-calendar-navigation--disabled',
     className,
   );
 
@@ -56,7 +56,7 @@ const CalendarNavigation: React.FC<CalendarNavigationProps> = ({
 
   return (
     <div className={navigationClasses} {...rest}>
-      <div className="calendar-navigation__content">
+      <div className="o-calendar-navigation__content">
         <div className="btn-group" role="group" aria-label="Calendar view options">
           {availableViews.map((viewType) => {
             const isActive = view === viewType;
@@ -72,8 +72,8 @@ const CalendarNavigation: React.FC<CalendarNavigationProps> = ({
                 aria-pressed={isActive}
                 aria-label={`Switch to ${viewConfig.full} view`}
                 className={buildClassNames(
-                  'calendar-navigation__view-btn',
-                  `calendar-navigation__view-btn--${viewType}`,
+                  'o-calendar-navigation__view-btn',
+                  `o-calendar-navigation__view-btn--${viewType}`,
                   isActive && 'active',
                 )}
               >

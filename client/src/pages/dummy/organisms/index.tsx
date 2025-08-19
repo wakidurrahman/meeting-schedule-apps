@@ -9,7 +9,8 @@ import React, { useState } from 'react';
 import Card from '@/components/molecules/card';
 import Calendar from '@/components/organisms/calendar';
 import BaseTemplate from '@/components/templates/base-templates';
-import type { CalendarViewType, MeetingEvent } from '@/types/calendar';
+import type { CalendarViewType } from '@/types/calendar';
+import type { MeetingEvent } from '@/types/meeting';
 
 // Mock meeting data
 const mockMeetings: MeetingEvent[] = [

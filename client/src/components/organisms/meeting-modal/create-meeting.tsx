@@ -258,7 +258,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 
   return (
     <Modal show={show} onHide={handleClose} size="lg">
-      <Modal.Header closeButton>
+      <Modal.Header closeButton onClose={handleClose}>
         <Modal.Title>
           <Heading level={4} className="mb-0">
             Create New Meeting

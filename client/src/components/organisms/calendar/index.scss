@@ -26,7 +26,7 @@
 // Main Calendar Container
 // =============================================================================
 
-.calendar-organism {
+.o-calendar {
   position: relative;
   background: var(--bs-white);
   border-radius: var(--bs-border-radius);
@@ -67,46 +67,9 @@
   }
 
   &__content {
+    margin-top: 1rem;
+    border-top: 1px solid var(--calendar-border-color);
     position: relative;
-  }
-}
-
-// =============================================================================
-// Calendar Navigation (View Switcher)
-// =============================================================================
-
-.calendar-navigation {
-  padding: 1rem;
-  background: var(--calendar-header-bg);
-  border-bottom: 1px solid var(--calendar-border-color);
-
-  &--compact {
-    padding: 0.5rem;
-  }
-
-  &--disabled {
-    pointer-events: none;
-    opacity: 0.6;
-  }
-
-  &__content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  &__view-btn {
-    min-width: 60px;
-  }
-
-  // Mobile adjustments
-  @media (max-width: 576px) {
-    padding: 0.75rem;
-
-    &__view-btn {
-      min-width: 50px;
-      font-size: 0.875rem;
-    }
   }
 }
 
@@ -114,10 +77,8 @@
 // Calendar Header (Title + Navigation)
 // =============================================================================
 
-.calendar-header {
-  padding: 1rem;
+.o-calendar-header {
   background: var(--bs-white);
-  border-bottom: 1px solid var(--calendar-border-color);
 
   &--compact {
     padding: 0.75rem;
@@ -126,92 +87,13 @@
   &--loading {
     pointer-events: none;
   }
-
-  &__content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-
-  &__navigation {
-    display: flex;
-    align-items: center;
-
-    .btn-group {
-      .btn {
-        min-width: 40px;
-      }
-    }
-  }
-
-  &__title {
-    flex: 1;
-    text-align: center;
-
-    h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 600;
-    }
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__today-btn {
-    white-space: nowrap;
-  }
-
-  &__create-btn {
-    white-space: nowrap;
-  }
-
-  &__loading {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-  }
-
-  // Mobile adjustments
-  @media (max-width: 768px) {
-    padding: 0.75rem 0.5rem;
-
-    &__content {
-      gap: 0.5rem;
-    }
-
-    &__title h2 {
-      font-size: 1.25rem;
-    }
-
-    &__navigation .btn {
-      padding: 0.375rem 0.5rem;
-      min-width: 36px;
-    }
-
-    &__create-btn {
-      padding: 0.375rem 0.75rem;
-      font-size: 0.875rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    &__title h2 {
-      font-size: 1.1rem;
-    }
-  }
 }
 
 // =============================================================================
 // Calendar Grid
 // =============================================================================
 
-.calendar-grid {
+.o-calendar-grid {
   background: var(--bs-white);
 
   &--loading {
@@ -461,7 +343,7 @@
 // Calendar Events
 // =============================================================================
 
-.calendar-event {
+.o-calendar-event {
   position: relative;
   background: var(--bs-primary-subtle);
   border: 1px solid var(--bs-primary);

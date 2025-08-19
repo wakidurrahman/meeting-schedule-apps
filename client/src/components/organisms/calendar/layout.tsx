@@ -1,6 +1,6 @@
 /**
  * Calendar Layout Component
- *
+ * TODO : Remove this component and use the Calendar component instead
  * Higher-order component that wraps the Calendar organism
  * with proper styling and responsive layout
  */
@@ -8,6 +8,8 @@
 import React from 'react';
 
 import Calendar, { type CalendarProps } from './index';
+
+import { buildClassNames } from '@/utils/component';
 import './index.scss';
 
 export interface CalendarLayoutProps extends CalendarProps {
@@ -21,18 +23,16 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   className,
   ...calendarProps
 }) => {
-  const layoutClasses = [
-    'calendar-layout',
-    fullHeight && 'calendar-layout--full-height',
-    bordered && 'calendar-layout--bordered',
+  const layoutClasses = buildClassNames(
+    'o-calendar-layout',
+    fullHeight && 'o-calendar-layout--full-height',
+    bordered && 'o-calendar-layout--bordered',
     className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  );
 
   return (
     <div className={layoutClasses}>
-      <Calendar className="calendar-layout__calendar" {...calendarProps} />
+      <Calendar className="o-calendar-layout__calendar" {...calendarProps} />
     </div>
   );
 };

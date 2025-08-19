@@ -56,7 +56,7 @@ export interface MeetingEvent {
   title: string;
   startTime: Date;
   endTime: Date;
-  attendees?: Array<AttendeeUser>;
+  attendees?: Array<AttendeesUser>;
   description?: string;
   isAllDay?: boolean;
 }

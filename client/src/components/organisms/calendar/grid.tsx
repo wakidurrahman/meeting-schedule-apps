@@ -11,15 +11,18 @@
 
 import React from 'react';
 
-import CalendarEvent from './CalendarEvent';
+import CalendarEvent from './event';
 
+import Spinner from '@/components/atoms/spinner';
+import Text from '@/components/atoms/text';
+import type { CalendarGridType, CalendarViewType } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
-import type { CalendarGrid, CalendarViewType, MeetingEvent } from '@/utils/calendar';
+import type { MeetingEvent } from '@/types/meeting';
 import { formatCalendarDate, isSameDay } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
 
 export interface CalendarGridProps extends BaseComponentProps {
-  calendarGrid: CalendarGrid;
+  calendarGrid: CalendarGridType;
   view: CalendarViewType;
   selectedDate?: Date | null;
   hoveredDate?: Date | null;
@@ -44,6 +47,8 @@ const WEEKDAY_LABELS = [
   { full: 'Saturday', short: 'Sat', mini: 'S' },
 ];
 
+// Calendar Grid Component
+
 const CalendarGrid: React.FC<CalendarGridProps> = ({
   calendarGrid,
   view,
@@ -59,6 +64,19 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   className,
   ...rest
 }) => {
+  const gridClasses = buildClassNames(
+    'o-calendar-grid',
+    `o-calendar-grid--${view}`,
+    compactMode && 'o-calendar-grid--compact',
+    loading && 'o-calendar-grid--loading',
+    !showWeekends && 'o-calendar-grid--no-weekends',
+    className,
+  );
+
+  const weekDay = (index: number) => {
+    return index === 0 || index === 6;
+  };
+
   const handleDateClick = (date: Date) => {
     onDateClick?.(date);
   };
@@ -75,23 +93,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     onDateHover?.(null);
   };
 
-  // Note: visibleDays filtering is handled in JSX render logic
-
-  const gridClasses = buildClassNames(
-    'calendar-grid',
-    `calendar-grid--${view}`,
-    compactMode && 'calendar-grid--compact',
-    loading && 'calendar-grid--loading',
-    !showWeekends && 'calendar-grid--no-weekends',
-    className,
-  );
-
   return (
     <div className={gridClasses} {...rest}>
       {/* Weekday Headers */}
-      <div className="calendar-grid__header">
+      <div className="o-calendar-grid__header">
         {WEEKDAY_LABELS.map((weekday, index) => {
-          if (!showWeekends && (index === 0 || index === 6)) {
+          if (!showWeekends && weekDay(index)) {
             return null;
           }
 
@@ -99,8 +106,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
             <div
               key={index}
               className={buildClassNames(
-                'calendar-grid__header-cell',
-                (index === 0 || index === 6) && 'calendar-grid__header-cell--weekend',
+                'o-calendar-grid__header-cell',
+                weekDay(index) && 'o-calendar-grid__header-cell--weekend',
               )}
             >
               <span className="d-none d-md-inline">{weekday.short}</span>
@@ -111,29 +118,29 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
       </div>
 
       {/* Calendar Body */}
-      <div className="calendar-grid__body">
+      <div className="o-calendar-grid__body">
         {calendarGrid.weeks.map((week, weekIndex) => (
-          <div key={weekIndex} className="calendar-grid__week">
+          <div key={weekIndex} className="o-calendar-grid__week">
             {week.days.map((day, dayIndex) => {
-              if (!showWeekends && (dayIndex === 0 || dayIndex === 6)) {
+              if (!showWeekends && weekDay(dayIndex)) {
                 return null;
               }
 
               const isToday = day.isToday;
               const isSelected = selectedDate && isSameDay(day.date, selectedDate);
               const isHovered = hoveredDate && isSameDay(day.date, hoveredDate);
-              const isWeekend = dayIndex === 0 || dayIndex === 6;
+              const isWeekend = weekDay(dayIndex);
               const isOtherMonth = !day.isCurrentMonth;
 
               const dayClasses = buildClassNames(
-                'calendar-grid__day',
-                isToday && 'calendar-grid__day--today',
-                isSelected && 'calendar-grid__day--selected',
-                isHovered && 'calendar-grid__day--hovered',
-                isWeekend && 'calendar-grid__day--weekend',
-                isOtherMonth && 'calendar-grid__day--other-month',
-                day.meetings.length > 0 && 'calendar-grid__day--has-meetings',
-                onDateClick && 'calendar-grid__day--clickable',
+                'o-calendar-grid__day',
+                isToday && 'o-calendar-grid__day--today',
+                isSelected && 'o-calendar-grid__day--selected',
+                isHovered && 'o-calendar-grid__day--hovered',
+                isWeekend && 'o-calendar-grid__day--weekend',
+                isOtherMonth && 'o-calendar-grid__day--other-month',
+                day.meetings.length > 0 && 'o-calendar-grid__day--has-meetings',
+                onDateClick && 'o-calendar-grid__day--clickable',
               );
 
               return (
@@ -160,22 +167,22 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                   data-date={day.date.toISOString()}
                 >
                   {/* Day Header */}
-                  <div className="calendar-grid__day-header">
-                    <span className="calendar-grid__day-number">{day.dayNumber}</span>
+                  <div className="o-calendar-grid__day-header">
+                    <span className="o-calendar-grid__day-number">{day.dayNumber}</span>
 
                     {/* Today indicator */}
                     {isToday && (
-                      <span className="calendar-grid__today-indicator" aria-label="Today" />
+                      <span className="o-calendar-grid__today-indicator" aria-label="Today" />
                     )}
 
                     {/* Meeting count indicator */}
                     {day.meetings.length > 0 && (
-                      <span className="calendar-grid__meeting-count">{day.meetings.length}</span>
+                      <span className="o-calendar-grid__meeting-count">{day.meetings.length}</span>
                     )}
                   </div>
 
                   {/* Day Content - Meetings */}
-                  <div className="calendar-grid__day-content">
+                  <div className="o-calendar-grid__day-content">
                     {day.meetings.slice(0, compactMode ? 2 : 3).map((meeting) => (
                       <CalendarEvent
                         key={meeting.id}
@@ -185,28 +192,23 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         showTime={!compactMode}
                         showAttendees={false}
                         maxTitleLength={compactMode ? 15 : 25}
-                        className="calendar-grid__meeting"
+                        className="o-calendar-grid__meeting"
                       />
                     ))}
 
                     {/* Overflow indicator */}
                     {day.meetings.length > (compactMode ? 2 : 3) && (
-                      <div className="calendar-grid__more-meetings">
-                        <small className="text-muted">
-                          +{day.meetings.length - (compactMode ? 2 : 3)} more
+                      <div className="o-calendar-grid__more-meetings">
+                        <small className="text-danger d-flex align-items-center gap-1 justify-content-center">
+                          <i className="bi bi-plus-lg" aria-hidden="true" />
+                          {day.meetings.length - (compactMode ? 2 : 3)} more
                         </small>
                       </div>
                     )}
                   </div>
 
                   {/* Loading overlay for this day */}
-                  {loading && (
-                    <div className="calendar-grid__day-loading">
-                      <div className="spinner-border spinner-border-sm text-primary" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
-                    </div>
-                  )}
+                  {loading && <Spinner variant="grow" color="primary" size="sm" />}
                 </div>
               );
             })}
@@ -217,10 +219,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
       {/* Empty state */}
       {calendarGrid.weeks.every((week) => week.days.every((day) => day.meetings.length === 0)) &&
         !loading && (
-          <div className="calendar-grid__empty">
-            <div className="text-center text-muted py-5">
+          <div className="o-calendar-grid__empty">
+            <div className="text-center text-muted p-5">
               <i className="bi bi-calendar-x fs-1 mb-3 d-block" aria-hidden="true" />
-              <p className="mb-0">No meetings scheduled</p>
+              <Text className="mb-0">No meetings scheduled</Text>
               <small>Double-click a date to create a meeting</small>
             </div>
           </div>
@@ -228,18 +230,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
       {/* Grid loading overlay */}
       {loading && (
-        <div className="calendar-grid__loading-overlay">
-          <div className="d-flex justify-content-center align-items-center h-100">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading calendar...</span>
-            </div>
-          </div>
+        <div className="o-calendar-grid__loading-overlay">
+          <Spinner variant="grow" color="primary" size="lg" />
         </div>
       )}
     </div>
   );
 };
-
-CalendarGrid.displayName = 'CalendarGrid';
 
 export default CalendarGrid;

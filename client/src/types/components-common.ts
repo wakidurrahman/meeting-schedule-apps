@@ -39,7 +39,7 @@ export type ValidationState = 'valid' | 'invalid';
 export type SpinnerStyle = 'border' | 'grow';
 
 // Text color variants (for spinners, text elements)
-export type TextColor = BaseVariant;
+export type TextColor = BaseVariant | 'muted';
 
 // Badge variants (same as base variants)
 export type BadgeVariant = BaseVariant;

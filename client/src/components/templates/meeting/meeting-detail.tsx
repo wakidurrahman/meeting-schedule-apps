@@ -4,6 +4,7 @@ import Footer from '@/components/organisms/footer';
 import Header from '@/components/organisms/header';
 import { BaseComponentProps } from '@/types/components-common';
 import { buildClassNames } from '@/utils/component';
+import './index.scss';
 
 export interface MeetingDetailTemplateProps extends BaseComponentProps {
   /**
@@ -47,7 +48,7 @@ export interface MeetingDetailTemplateProps extends BaseComponentProps {
  * - Centered layout option for forms
  * - Modal overlay area
  */
-export default function MeetingDetailTemplate({
+const MeetingDetailTemplate: React.FC<MeetingDetailTemplateProps> = ({
   children,
   className,
   breadcrumb,
@@ -57,24 +58,20 @@ export default function MeetingDetailTemplate({
   modals,
   showSidebar = false,
   centered = false,
-}: MeetingDetailTemplateProps): JSX.Element {
-  const templateClasses = buildClassNames('t-meeting-detail-template', className);
+}) => {
+  const templateClasses = buildClassNames('t-meeting-detail', className);
 
   return (
     <div className={templateClasses}>
       <Header />
 
-      <main className="t-meeting-detail-template__main py-4">
+      <main className="t-meeting-detail__main py-4">
         <div className={centered ? 'container' : 'container-fluid'}>
           {/* Breadcrumb */}
-          {breadcrumb && (
-            <div className="t-meeting-detail-template__breadcrumb mb-3">{breadcrumb}</div>
-          )}
+          {breadcrumb && <div className="t-meeting-detail__breadcrumb mb-3">{breadcrumb}</div>}
 
           {/* Meeting Header */}
-          {meetingHeader && (
-            <div className="t-meeting-detail-template__header mb-4">{meetingHeader}</div>
-          )}
+          {meetingHeader && <div className="t-meeting-detail__header mb-4">{meetingHeader}</div>}
 
           {/* Main Content */}
           <div className={buildClassNames('row', centered && 'justify-content-center')}>
@@ -85,19 +82,19 @@ export default function MeetingDetailTemplate({
                 centered ? 'col-md-8 col-lg-6' : showSidebar ? 'col-lg-8 col-xl-9' : 'col-12',
               )}
             >
-              <div className="t-meeting-detail-template__content">{meetingContent}</div>
+              <div className="t-meeting-detail__content">{meetingContent}</div>
             </div>
 
             {/* Sidebar */}
             {showSidebar && !centered && sidebar && (
               <div className="col-lg-4 col-xl-3">
-                <div className="t-meeting-detail-template__sidebar">{sidebar}</div>
+                <div className="t-meeting-detail__sidebar">{sidebar}</div>
               </div>
             )}
           </div>
 
           {/* Legacy children support */}
-          {children && <div className="t-meeting-detail-template__legacy mt-4">{children}</div>}
+          {children && <div className="t-meeting-detail__legacy mt-4">{children}</div>}
         </div>
       </main>
 
@@ -107,4 +104,6 @@ export default function MeetingDetailTemplate({
       {modals}
     </div>
   );
-}
+};
+
+export default MeetingDetailTemplate;

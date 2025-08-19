@@ -16,13 +16,15 @@ import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
+import Text from '@/components/atoms/text';
 import Calendar from '@/components/organisms/calendar';
-import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meetings';
-import CalendarTemplate from '@/components/templates/meeting-templates/CalendarTemplate';
+import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meeting-modal';
+import CalendarTemplate from '@/components/templates/calendar';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import type { CalendarViewType } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
 import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
+import { now } from '@/utils/date';
 import { formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 
 interface MeetingsQueryData {
@@ -55,7 +57,8 @@ const CalendarPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingEvent | null>(null);
-
+  const [showSidebar, setShowSidebar] = useState<boolean>(false);
+  console.log('showSidebar', showSidebar);
   // Calculate date range for current view
   const dateRange = useMemo(() => {
     const { start, end } = getMonthBoundaries(currentDate.getFullYear(), currentDate.getMonth());
@@ -175,18 +178,31 @@ const CalendarPage: React.FC = () => {
     console.log('Meeting deleted successfully');
   }, [refetchMeetings]);
 
+  const handleToggleSidebar = useCallback(() => {
+    console.log('handleToggleSidebar', showSidebar);
+    setShowSidebar(!showSidebar);
+  }, [showSidebar]);
+
   // Calendar header component
   const calendarHeader = useMemo(
     () => (
-      <div className="d-flex justify-content-between align-items-center py-3">
+      <div className="d-flex justify-content-between align-items-center ">
         <div className="d-flex align-items-center gap-3">
+          <button
+            className="btn btn-outline-primary btn-sm border-0"
+            onClick={handleToggleSidebar}
+            aria-label="Toggle sidebar"
+          >
+            <i className="bi bi-list fs-5" />
+          </button>
+          <i className="bi bi-calendar-date fs-3" />
           <Heading level={1} className="h4 mb-0">
             Calendar
           </Heading>
           {selectedDate && (
-            <small className="text-muted">
+            <Text color="muted" weight="light" className="m-0">
               Selected: {formatCalendarDate(selectedDate, 'long')}
-            </small>
+            </Text>
           )}
         </div>
         <div className="d-flex gap-2">
@@ -200,7 +216,7 @@ const CalendarPage: React.FC = () => {
         </div>
       </div>
     ),
-    [selectedDate, handleCreateMeeting],
+    [selectedDate, handleCreateMeeting, handleToggleSidebar],
   );
 
   // Sidebar content
@@ -211,11 +227,7 @@ const CalendarPage: React.FC = () => {
         <div className="mb-4">
           <h6 className="fw-semibold mb-3">Quick Navigation</h6>
           <div className="d-grid gap-2">
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={() => setCurrentDate(new Date())}
-            >
+            <Button variant="outline-secondary" size="sm" onClick={() => setCurrentDate(now())}>
               Go to Today
             </Button>
             <Button variant="outline-primary" size="sm" onClick={() => handleCreateMeeting()}>
@@ -229,7 +241,7 @@ const CalendarPage: React.FC = () => {
         <div className="mb-4">
           <h6 className="fw-semibold mb-3">Today&apos;s Meetings</h6>
           {(() => {
-            const today = new Date();
+            const today = now();
             const todaysMeetings = meetings.filter(
               (meeting) => meeting.startTime.toDateString() === today.toDateString(),
             );
@@ -420,7 +432,7 @@ const CalendarPage: React.FC = () => {
       calendarContent={calendarContent}
       sidebar={sidebar}
       modals={modals}
-      showSidebar={true}
+      showSidebar={showSidebar}
     />
   );
 };

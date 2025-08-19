@@ -24,7 +24,7 @@ import {
   type DeleteMeetingMutationVariables,
 } from '@/graphql/meeting/mutations';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
-import type { MeetingEvent } from '@/types/calendar';
+import type { MeetingEvent } from '@/types/meeting';
 import { formatJST } from '@/utils/date';
 import {
   calculateMeetingDuration,

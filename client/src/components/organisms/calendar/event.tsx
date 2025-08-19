@@ -12,7 +12,7 @@
 import React from 'react';
 
 import { BaseComponentProps } from '@/types/components-common';
-import type { MeetingEvent } from '@/utils/calendar';
+import type { MeetingEvent } from '@/types/meeting';
 import { buildClassNames } from '@/utils/component';
 import { formatAttendeeList, formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 
@@ -63,10 +63,10 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
 
   // CSS classes
   const eventClasses = buildClassNames(
-    'calendar-event',
-    `calendar-event--${meetingStatus}`,
-    compactMode && 'calendar-event--compact',
-    onClick && 'calendar-event--clickable',
+    'o-calendar-event',
+    `o-calendar-event--${meetingStatus}`,
+    compactMode && 'o-calendar-event--compact',
+    onClick && 'o-calendar-event--clickable',
     className,
   );
 
@@ -91,22 +91,22 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
       {...rest}
     >
       {/* Meeting content */}
-      <div className="calendar-event__content">
+      <div className="o-calendar-event__content">
         {/* Time indicator */}
         {showTime && timeRange && !compactMode && (
-          <div className="calendar-event__time">
+          <div className="o-calendar-event__time">
             <small className="text-muted">{timeRange}</small>
           </div>
         )}
 
         {/* Meeting title */}
-        <div className="calendar-event__title">
+        <div className="o-calendar-event__title">
           <span className="fw-medium">{displayTitle}</span>
         </div>
 
         {/* Attendees info */}
         {showAttendees && meeting.attendees && meeting.attendees.length > 0 && !compactMode && (
-          <div className="calendar-event__attendees">
+          <div className="o-calendar-event__attendees">
             <small className="text-muted">
               <i className="bi bi-people me-1" aria-hidden="true" />
               {meeting.attendees.length} attendee{meeting.attendees.length !== 1 ? 's' : ''}
@@ -115,16 +115,16 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         )}
 
         {/* Status indicator */}
-        <div className="calendar-event__status">
+        <div className="o-calendar-event__status">
           <span
-            className={`calendar-event__status-dot calendar-event__status-dot--${meetingStatus}`}
+            className={`o-calendar-event__status-dot o-calendar-event__status-dot--${meetingStatus}`}
           />
         </div>
       </div>
 
       {/* Hover overlay */}
       {onClick && (
-        <div className="calendar-event__hover-overlay">
+        <div className="o-calendar-event__hover-overlay">
           <i className="bi bi-eye" aria-hidden="true" />
         </div>
       )}

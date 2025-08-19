@@ -22,7 +22,7 @@ import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
-import MeetingDetailTemplate from '@/components/templates/meeting-templates/MeetingDetailTemplate';
+import MeetingDetailTemplate from '@/components/templates/meeting/meeting-detail';
 import { ValidationMessages } from '@/constants/messages';
 import {
   DELETE_MEETING,

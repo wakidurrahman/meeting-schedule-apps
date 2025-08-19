@@ -4,6 +4,7 @@ import Footer from '@/components/organisms/footer';
 import Header from '@/components/organisms/header';
 import { BaseComponentProps } from '@/types/components-common';
 import { buildClassNames } from '@/utils/component';
+import './index.scss';
 
 export interface CalendarTemplateProps extends BaseComponentProps {
   /**
@@ -38,7 +39,7 @@ export interface CalendarTemplateProps extends BaseComponentProps {
  * - Modal overlay area
  * - Optimized layout for calendar functionality
  */
-export default function CalendarTemplate({
+const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
   children,
   className,
   calendarHeader,
@@ -46,36 +47,40 @@ export default function CalendarTemplate({
   sidebar,
   modals,
   showSidebar = true,
-}: CalendarTemplateProps): JSX.Element {
-  const templateClasses = buildClassNames('t-calendar-template', className);
+}) => {
+  const templateClasses = buildClassNames('t-calendar', className);
 
   return (
     <div className={templateClasses}>
+      {/* Application main header */}
       <Header />
 
-      <main className="t-calendar-template__main">
-        {/* Calendar Header - Navigation & Controls */}
+      <main className="t-calendar__main">
+        {/* Calendar header - Navigation & Controls */}
         {calendarHeader && (
-          <div className="t-calendar-template__header">
+          <div className="t-calendar__header">
             <div className="container-fluid">{calendarHeader}</div>
           </div>
         )}
 
         {/* Main Calendar Content Area */}
-        <div className="t-calendar-template__content">
+        <div className="t-calendar__content">
           <div className="container-fluid">
             <div className="row g-0">
               {/* Calendar Grid */}
               <div
-                className={buildClassNames('col', showSidebar ? 'col-lg-9 col-xl-10' : 'col-12')}
+                className={buildClassNames(
+                  'col',
+                  showSidebar ? 'col-md-9 col-lg-9 col-xl-10' : 'col-12',
+                )}
               >
-                <div className="t-calendar-template__calendar">{calendarContent}</div>
+                <div className="t-calendar__calendar">{calendarContent}</div>
               </div>
 
               {/* Sidebar */}
               {showSidebar && sidebar && (
-                <div className="col-lg-3 col-xl-2">
-                  <div className="t-calendar-template__sidebar">{sidebar}</div>
+                <div className="col-md-3 col-lg-3 col-xl-2">
+                  <div className="t-calendar__sidebar">{sidebar}</div>
                 </div>
               )}
             </div>
@@ -83,7 +88,7 @@ export default function CalendarTemplate({
         </div>
 
         {/* Legacy children support */}
-        {children && <div className="t-calendar-template__legacy">{children}</div>}
+        {children && <div className="t-calendar__legacy">{children}</div>}
       </main>
 
       <Footer />
@@ -92,4 +97,6 @@ export default function CalendarTemplate({
       {modals}
     </div>
   );
-}
+};
+
+export default CalendarTemplate;

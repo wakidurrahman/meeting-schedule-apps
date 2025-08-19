@@ -21,9 +21,9 @@ import Spinner from '@/components/atoms/spinner';
 import Card from '@/components/molecules/card';
 import Table from '@/components/molecules/table';
 import Modal from '@/components/organisms/modal';
-import MeetingDashboardTemplate from '@/components/templates/meeting-templates/MeetingDashboardTemplate';
+import MeetingDashboardTemplate from '@/components/templates/dashboard/meeting-dashboard';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
-import type { MeetingEvent } from '@/types/calendar';
+import type { MeetingEvent } from '@/types/meeting';
 import { formatCalendarDate } from '@/utils/calendar';
 import { formatAttendeeList, formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 

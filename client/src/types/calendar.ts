@@ -50,7 +50,7 @@ export interface CalendarWeek {
   weekNumber: number;
 }
 
-export interface CalendarGrid {
+export interface CalendarGridType {
   weeks: CalendarWeek[];
   currentMonth: number;
   currentYear: number;
@@ -157,7 +157,7 @@ export interface CalendarGridProps extends BaseComponentProps {
   /**
    * Calendar grid data
    */
-  calendarGrid: CalendarGrid;
+  calendarGrid: CalendarGridType;
   /**
    * Currently selected date
    */

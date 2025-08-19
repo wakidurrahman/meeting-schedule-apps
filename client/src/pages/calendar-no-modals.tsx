@@ -10,9 +10,10 @@ import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
 import Calendar from '@/components/organisms/calendar';
-import CalendarTemplate from '@/components/templates/meeting-templates/CalendarTemplate';
+import CalendarTemplate from '@/components/templates/calendar';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
-import type { CalendarViewType, MeetingEvent } from '@/types/calendar';
+import type { CalendarViewType } from '@/types/calendar';
+import type { MeetingEvent } from '@/types/meeting';
 import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
 import { formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 

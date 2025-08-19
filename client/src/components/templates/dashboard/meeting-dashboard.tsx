@@ -4,6 +4,7 @@ import Footer from '@/components/organisms/footer';
 import Header from '@/components/organisms/header';
 import { BaseComponentProps } from '@/types/components-common';
 import { buildClassNames } from '@/utils/component';
+import './index.scss';
 
 export interface MeetingDashboardTemplateProps extends BaseComponentProps {
   /**
@@ -38,7 +39,7 @@ export interface MeetingDashboardTemplateProps extends BaseComponentProps {
  * - Modal overlay area
  * - Optimized for meeting management workflows
  */
-export default function MeetingDashboardTemplate({
+const MeetingDashboardTemplate: React.FC<MeetingDashboardTemplateProps> = ({
   children,
   className,
   dashboardHeader,
@@ -46,18 +47,18 @@ export default function MeetingDashboardTemplate({
   quickActions,
   modals,
   showQuickActions = true,
-}: MeetingDashboardTemplateProps): JSX.Element {
-  const templateClasses = buildClassNames('t-meeting-dashboard-template', className);
+}) => {
+  const templateClasses = buildClassNames('t-meeting-dashboard', className);
 
   return (
     <div className={templateClasses}>
       <Header />
 
-      <main className="t-meeting-dashboard-template__main py-4">
+      <main className="t-meeting-dashboard__main py-4">
         <div className="container-fluid">
           {/* Dashboard Header */}
           {dashboardHeader && (
-            <div className="t-meeting-dashboard-template__header mb-4">{dashboardHeader}</div>
+            <div className="t-meeting-dashboard__header mb-4">{dashboardHeader}</div>
           )}
 
           {/* Main Dashboard Content */}
@@ -66,19 +67,19 @@ export default function MeetingDashboardTemplate({
             <div
               className={buildClassNames('col', showQuickActions ? 'col-lg-9 col-xl-9' : 'col-12')}
             >
-              <div className="t-meeting-dashboard-template__content">{mainContent}</div>
+              <div className="t-meeting-dashboard__content">{mainContent}</div>
             </div>
 
             {/* Quick Actions Sidebar */}
             {showQuickActions && quickActions && (
               <div className="col-lg-3 col-xl-3">
-                <div className="t-meeting-dashboard-template__sidebar">{quickActions}</div>
+                <div className="t-meeting-dashboard__sidebar">{quickActions}</div>
               </div>
             )}
           </div>
 
           {/* Legacy children support */}
-          {children && <div className="t-meeting-dashboard-template__legacy mt-4">{children}</div>}
+          {children && <div className="t-meeting-dashboard__legacy mt-4">{children}</div>}
         </div>
       </main>
 
@@ -88,4 +89,6 @@ export default function MeetingDashboardTemplate({
       {modals}
     </div>
   );
-}
+};
+
+export default MeetingDashboardTemplate;

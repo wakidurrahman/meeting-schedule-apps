@@ -11,20 +11,20 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 
-import CalendarGrid from './CalendarGrid';
-import CalendarHeader from './CalendarHeader';
-import CalendarNavigation from './CalendarNavigation';
+import CalendarGrid from './grid';
+import CalendarHeader from './header';
+import './index.scss';
 
+import Spinner from '@/components/atoms/spinner';
+import type { CalendarGridType, CalendarViewType } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
+import type { MeetingEvent } from '@/types/meeting';
 import {
   generateCalendarGrid,
   getCalendarViewTitle,
   navigateDay,
   navigateMonth,
   navigateWeek,
-  type CalendarGrid as CalendarGridType,
-  type CalendarViewType,
-  type MeetingEvent,
 } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
 
@@ -73,7 +73,6 @@ const Calendar: React.FC<CalendarProps> = ({
   onViewChange,
   onDateChange,
   compactMode = false,
-  hideNavigation = false,
   hideHeader = false,
   minHeight = '500px',
   className,
@@ -200,23 +199,14 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // CSS classes
   const calendarClasses = buildClassNames(
-    'calendar-organism',
-    compactMode && 'calendar-organism--compact',
-    loading && 'calendar-organism--loading',
+    'o-calendar',
+    compactMode && 'o-calendar--compact',
+    loading && 'o-calendar--loading',
     className,
   );
 
   return (
     <div className={calendarClasses} style={{ minHeight }} {...rest}>
-      {/* Navigation Controls */}
-      {!hideNavigation && (
-        <CalendarNavigation
-          view={currentView}
-          onViewChange={handleViewChange}
-          className="calendar-organism__navigation"
-        />
-      )}
-
       {/* Calendar Header */}
       {!hideHeader && (
         <CalendarHeader
@@ -226,19 +216,21 @@ const Calendar: React.FC<CalendarProps> = ({
           onToday={handleNavigateToday}
           loading={loading}
           onCreateMeeting={() => onCreateMeeting?.()}
-          className="calendar-organism__header"
+          className="o-calendar__header"
+          onViewChange={handleViewChange}
+          view={currentView}
         />
       )}
 
       {/* Error State */}
       {error && (
-        <div className="calendar-organism__error alert alert-danger" role="alert">
+        <div className="o-calendar__error alert alert-danger" role="alert">
           {error}
         </div>
       )}
 
       {/* Calendar Content */}
-      <div className="calendar-organism__content">
+      <div className="o-calendar__content">
         <CalendarGrid
           calendarGrid={calendarGrid}
           view={currentView}
@@ -256,16 +248,12 @@ const Calendar: React.FC<CalendarProps> = ({
 
       {/* Loading Overlay */}
       {loading && (
-        <div className="calendar-organism__loading-overlay">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading calendar...</span>
-          </div>
+        <div className="o-calendar__loading-overlay">
+          <Spinner variant="grow" color="primary" size="lg" />
         </div>
       )}
     </div>
   );
 };
-
-Calendar.displayName = 'Calendar';
 
 export default Calendar;
