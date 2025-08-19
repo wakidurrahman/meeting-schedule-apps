@@ -1,10 +1,10 @@
-# Meeting Scheduler Implementation Guide
+# Meeting Scheduler Implementation with Calendar Guide
 
 ## 📅 Overview
 
-This document provides a comprehensive guide to the **completed** Meeting Scheduler implementation - a full-stack internal virtual meeting scheduler app similar to Google Calendar or Microsoft Teams. The implementation follows atomic design principles, uses specialized templates instead of the general BaseTemplate, and is **ready for production deployment**.
+This document provides a comprehensive guide to the **completed** Meeting Scheduler implementation - a full-stack internal virtual meeting scheduler application similar to Google Calendar or Microsoft Teams. The implementation follows atomic design principles, uses specialized templates, and is **ready for production deployment**.
 
-**🎉 Implementation Status: COMPLETE**
+**🎉 Implementation Status: COMPLETE** (2025-08-19)
 
 - **Phase 1**: Foundation & Infrastructure ✅
 - **Phase 2**: Calendar Organism & Pages ✅
@@ -16,22 +16,25 @@ This document provides a comprehensive guide to the **completed** Meeting Schedu
 
 ### **Design Principles**
 
-- **Atomic Design Pattern**: Components organized as atoms → molecules → organisms → templates
-- **Specialized Templates**: Dedicated meeting templates instead of BaseTemplate
-- **JST Timezone Support**: All date/time functions use Japan Standard Time
-- **Type Safety**: Comprehensive TypeScript types for all components
-- **Conflict Prevention**: Real-time meeting conflict detection
-- **Optimistic Updates**: Apollo cache integration for smooth UX
+- **Atomic Design Pattern**: Components organized as atoms → molecules → organisms → templates.
+- **Specialized Templates**: Dedicated meeting templates (CalendarTemplate, MeetingDashboardTemplate, MeetingDetailTemplate)
+- **JST Timezone Support**: All date/time functions use Japan Standard Time.
+- **Type Safety**: Comprehensive TypeScript types for all components.
+- **Conflict Prevention**: Real-time meeting conflict detection (server and client-side with Subscription).
+- **Optimistic Updates**: Apollo cache integration for smooth UX.
 
 ### **Key Features** (All Implemented ✅)
 
-- ✅ **Meeting Creation**: Full-featured modal with form validation, conflict detection, and attendee selection
-- ✅ **Calendar Views**: Complete month view with navigation (week/day/year navigation ready)
-- ✅ **Meeting Management**: Edit, delete, view with permission-based access control
-- ✅ **Conflict Detection**: Real-time server and client-side overlap and adjacency checking
-- ✅ **Internal Users Only**: ReactSelectField integration with user validation
-- ✅ **Dashboard Views**: Statistics cards, meeting tables, and quick actions
-- ✅ **Responsive Design**: Mobile-first design with touch-friendly interactions
+- ✅ **Meeting Creation**: Full-featured modal with
+  - form validation,
+  - conflict detection, and
+  - attendee selection
+- ✅ **Calendar Views**: Complete month view with navigation (`month`/`week`/`day`/`year` navigation ready)
+- ✅ **Meeting Management**: `Edit`, `Delete`, `View` with permission-based access control.
+- ✅ **Conflict Detection**: Real-time `server` and `client-side` overlap and adjacency checking.
+- ✅ **Internal Users Only**: ReactSelectField integration with user validation to support multiple users in a meeting.
+- ✅ **Dashboard Views**: `Statistics` cards, meeting `tables`, and quick actions.
+- ✅ **Responsive Design**: Mobile-first design with touch-friendly interactions.
 - ✅ **Real-time Updates**: Optimistic Apollo cache updates for smooth UX
 - ✅ **JST Timezone**: Complete Japan Standard Time integration
 - ✅ **Professional UI**: Bootstrap integration with consistent design system
@@ -40,7 +43,7 @@ This document provides a comprehensive guide to the **completed** Meeting Schedu
 
 ## 📁 File Structure
 
-```
+```text
 client/src/
 ├── components/
 │   ├── atoms/
@@ -64,7 +67,9 @@ client/src/
 │       ├── edit/[id]/             # [READY] Can be built using MeetingDetailTemplate
 │       └── [id]/                  # [READY] Can be built using MeetingDetailTemplate
 ├── types/
-│   └── calendar.ts                 # ✅ Calendar & meeting types
+│   ├── meeting.ts                  # ✅ Meeting types
+│   ├── user.ts                     # ✅ User types
+│   └── calendar.ts                 # ✅ Calendar types
 ├── utils/
 │   ├── calendar.ts                 # ✅ Calendar utilities
 │   ├── meeting.ts                  # ✅ Meeting utilities
@@ -73,7 +78,7 @@ client/src/
     └── meeting/                    # ✅ Meeting queries/mutations
 ```
 
----
+## ![Calendar Organism](./images/calendar-p2.png)
 
 ## 🎨 Meeting Templates
 

@@ -1,21 +1,39 @@
 /**
- * Calendar and Meeting Types
+ * Calendar Types
  *
  * Type definitions for:
- * - Calendar views and navigation
- * - Meeting events and scheduling
- * - Time slots and conflicts
- * - Calendar grid structures
+ * - CalendarDay: A single day in the calendar
+ * - CalendarWeek: A week in the calendar
+ * - CalendarGrid: A grid of days in the calendar
+ * - TimeSlot: A time slot in the calendar
+ * - CalendarViewType: The type of view in the calendar
+ * - CalendarProps: The props for the calendar component
+ * - CalendarHeaderProps: The props for the calendar header component
+ * - CalendarGridProps: The props for the calendar grid component
+ * - CalendarEventProps: The props for the calendar event component
+ * - MeetingModalProps: The props for the meeting modal component
+ * - QuickCreateModalProps: The props for the quick create modal component
+ * - MeetingDetailsModalProps: The props for the meeting details modal component
+ * - MeetingListProps: The props for the meeting list component
+ * - MeetingCardProps: The props for the meeting card component
+ * - TimeSlotProps: The props for the time slot component
+ * - MeetingFilterProps: The props for the meeting filter component
+ * - CalendarNavigationAction: The action for the calendar navigation
+ * - CalendarViewAction: The action for the calendar view
+ * - CalendarDateAction: The action for the calendar date
+ * - CalendarState: The state of the calendar
+ * - MeetingFormState: The state of the meeting form
  */
 
-import type { BaseComponentProps } from './components-common';
+import type { BaseComponentProps } from '@/types/components-common';
 import type {
-  MeetingEvent,
   AttendeeAvailability,
   MeetingConflict,
+  MeetingEvent,
   MeetingFormData,
   MeetingValidationResult,
-} from './meeting';
+} from '@/types/meeting';
+import type { AttendeeUser } from '@/types/user';
 
 export interface CalendarDay {
   date: Date;
@@ -47,13 +65,6 @@ export interface TimeSlot {
 }
 
 export type CalendarViewType = 'day' | 'week' | 'month' | 'year';
-
-export type {
-  AttendeeAvailability,
-  MeetingConflict,
-  MeetingFormData,
-  MeetingValidationResult,
-} from '@/types/meeting';
 
 // Calendar Component Types
 export interface CalendarProps extends BaseComponentProps {
@@ -217,7 +228,7 @@ export interface MeetingModalProps extends BaseComponentProps {
   /**
    * Available users for attendee selection
    */
-  availableUsers?: Array<{ id: string; name: string; email: string }>;
+  availableUsers?: Array<AttendeeUser>;
   /**
    * Loading state
    */
@@ -248,7 +259,7 @@ export interface QuickCreateModalProps extends BaseComponentProps {
   /**
    * Available users for attendee selection
    */
-  availableUsers?: Array<{ id: string; name: string; email: string }>;
+  availableUsers?: Array<AttendeeUser>;
   /**
    * Loading state
    */
