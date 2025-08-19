@@ -11,6 +11,7 @@
 
 import React from 'react';
 
+import Text from '@/components/atoms/text';
 import { BaseComponentProps } from '@/types/components-common';
 import type { MeetingEvent } from '@/types/meeting';
 import { buildClassNames } from '@/utils/component';
@@ -95,22 +96,26 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         {/* Time indicator */}
         {showTime && timeRange && !compactMode && (
           <div className="o-calendar-event__time">
-            <small className="text-muted">{timeRange}</small>
+            <Text as="small" weight="normal" color="dark" className="m-0">
+              {timeRange}
+            </Text>
           </div>
         )}
 
         {/* Meeting title */}
         <div className="o-calendar-event__title">
-          <span className="fw-medium">{displayTitle}</span>
+          <Text as="span" weight="medium" color="dark" className="m-0">
+            {displayTitle}
+          </Text>
         </div>
 
         {/* Attendees info */}
         {showAttendees && meeting.attendees && meeting.attendees.length > 0 && !compactMode && (
           <div className="o-calendar-event__attendees">
-            <small className="text-muted">
-              <i className="bi bi-people me-1" aria-hidden="true" />
+            <Text as="small" weight="normal" color="dark" className="m-0">
+              <i className="bi bi-people me-1 text-info" aria-hidden="true" />
               {meeting.attendees.length} attendee{meeting.attendees.length !== 1 ? 's' : ''}
-            </small>
+            </Text>
           </div>
         )}
 

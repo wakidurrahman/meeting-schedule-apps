@@ -108,10 +108,17 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
               className={buildClassNames(
                 'o-calendar-grid__header-cell',
                 weekDay(index) && 'o-calendar-grid__header-cell--weekend',
+                'text-center',
               )}
             >
-              <span className="d-none d-md-inline">{weekday.short}</span>
-              <span className="d-md-none">{weekday.mini}</span>
+              {/* <span className="d-none d-md-inline">{weekday.short}</span>
+              <span className="d-md-none">{weekday.mini}</span> */}
+              <Text as="span" weight="medium" className="m-0 d-none d-md-inline">
+                {weekday.short}
+              </Text>
+              <Text as="span" weight="medium" className="m-0 d-md-none">
+                {weekday.mini}
+              </Text>
             </div>
           );
         })}
@@ -190,7 +197,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                         onClick={onMeetingClick}
                         compactMode={compactMode}
                         showTime={!compactMode}
-                        showAttendees={false}
+                        showAttendees={true}
                         maxTitleLength={compactMode ? 15 : 25}
                         className="o-calendar-grid__meeting"
                       />

@@ -48,7 +48,6 @@ export interface CalendarProps extends BaseComponentProps {
 
   // UI customization
   compactMode?: boolean;
-  hideNavigation?: boolean;
   hideHeader?: boolean;
   minHeight?: string;
 }

@@ -13,6 +13,7 @@ import { useQuery } from '@apollo/client';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import Alert from '@/components/atoms/alert';
+import Badge from '@/components/atoms/badge';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
@@ -23,6 +24,7 @@ import CalendarTemplate from '@/components/templates/calendar';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import type { CalendarViewType } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
+import { AttendeesUser } from '@/types/user';
 import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
 import { now } from '@/utils/date';
 import { formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
@@ -35,7 +37,7 @@ interface MeetingsQueryData {
       description?: string;
       startTime: string;
       endTime: string;
-      attendees?: Array<{ id: string; name: string; email: string }>;
+      attendees?: Array<AttendeesUser>;
       creator: { id: string; name: string };
       createdAt: string;
       updatedAt: string;
@@ -225,7 +227,9 @@ const CalendarPage: React.FC = () => {
       <div className="p-3">
         {/* Mini Calendar */}
         <div className="mb-4">
-          <h6 className="fw-semibold mb-3">Quick Navigation</h6>
+          <Heading level={6} className="mb-3">
+            Quick Navigation
+          </Heading>
           <div className="d-grid gap-2">
             <Button variant="outline-secondary" size="sm" onClick={() => setCurrentDate(now())}>
               Go to Today
@@ -239,7 +243,9 @@ const CalendarPage: React.FC = () => {
 
         {/* Today's Meetings */}
         <div className="mb-4">
-          <h6 className="fw-semibold mb-3">Today&apos;s Meetings</h6>
+          <Heading level={6} className="mb-3">
+            Today&apos;s Meetings
+          </Heading>
           {(() => {
             const today = now();
             const todaysMeetings = meetings.filter(
@@ -247,7 +253,7 @@ const CalendarPage: React.FC = () => {
             );
 
             if (todaysMeetings.length === 0) {
-              return <p className="text-muted small mb-0">No meetings today</p>;
+              return <Text className="text-muted small mb-0">No meetings today</Text>;
             }
 
             return (
@@ -255,7 +261,7 @@ const CalendarPage: React.FC = () => {
                 {todaysMeetings.slice(0, 3).map((meeting) => (
                   <div
                     key={meeting.id}
-                    className="p-2 bg-light rounded cursor-pointer"
+                    className="d-flex flex-column gap-1 p-2 bg-light rounded cursor-pointer border border-secondary shadow-sm"
                     onClick={() => handleMeetingClick(meeting)}
                     role="button"
                     tabIndex={0}
@@ -266,21 +272,32 @@ const CalendarPage: React.FC = () => {
                       }
                     }}
                   >
-                    <div className="fw-medium small">{meeting.title}</div>
-                    <div className="text-muted small">
+                    <Text as="small" weight="normal" color="dark" className="m-0">
+                      {meeting.title}
+                    </Text>
+                    <Text as="small" weight="normal" color="dark" className="m-0">
                       {formatMeetingTimeRange(meeting.startTime, meeting.endTime)}
-                    </div>
-                    <div className="d-flex align-items-center gap-1 mt-1">
-                      <span
+                    </Text>
+                    <div className="d-flex align-items-center gap-1">
+                      <Badge
+                        variant={getMeetingStatus(meeting) === 'ongoing' ? 'success' : 'primary'}
                         className={`badge badge-${getMeetingStatus(meeting) === 'ongoing' ? 'success' : 'primary'}`}
                       >
                         {getMeetingStatus(meeting)}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 ))}
                 {todaysMeetings.length > 3 && (
-                  <small className="text-muted">+{todaysMeetings.length - 3} more meetings</small>
+                  <Text
+                    as="small"
+                    weight="normal"
+                    color="dark"
+                    className="d-flex gap-1 align-items-center m-0"
+                  >
+                    <i className="bi bi-plus" aria-hidden="true" />
+                    {todaysMeetings.length - 3} more meetings
+                  </Text>
                 )}
               </div>
             );
@@ -289,15 +306,23 @@ const CalendarPage: React.FC = () => {
 
         {/* Calendar Stats */}
         <div>
-          <h6 className="fw-semibold mb-3">This Month</h6>
+          <Heading level={6} className="mb-3">
+            This Month
+          </Heading>
           <div className="d-flex flex-column gap-1 small">
             <div className="d-flex justify-content-between">
-              <span>Total Meetings:</span>
-              <span className="fw-medium">{meetings.length}</span>
+              <Text as="span" weight="normal" color="dark" className="m-0">
+                Total Meetings:
+              </Text>
+              <Text as="span" weight="medium" color="dark" className="m-0">
+                {meetings.length}
+              </Text>
             </div>
             <div className="d-flex justify-content-between">
-              <span>This Week:</span>
-              <span className="fw-medium">
+              <Text as="span" weight="normal" color="dark" className="m-0">
+                This Week:
+              </Text>
+              <Text as="span" weight="medium" color="dark" className="m-0">
                 {
                   meetings.filter((m) => {
                     const weekStart = new Date();
@@ -307,13 +332,15 @@ const CalendarPage: React.FC = () => {
                     return m.startTime >= weekStart && m.startTime <= weekEnd;
                   }).length
                 }
-              </span>
+              </Text>
             </div>
             <div className="d-flex justify-content-between">
-              <span>Upcoming:</span>
-              <span className="fw-medium">
+              <Text as="span" weight="normal" color="dark" className="m-0">
+                Upcoming:
+              </Text>
+              <Text as="span" weight="medium" color="dark" className="m-0">
                 {meetings.filter((m) => m.startTime > new Date()).length}
-              </span>
+              </Text>
             </div>
           </div>
         </div>
@@ -331,8 +358,7 @@ const CalendarPage: React.FC = () => {
           style={{ minHeight: '400px' }}
         >
           <div className="text-center">
-            <Spinner size="lg" className="mb-3" />
-            <p className="text-muted">Loading your calendar...</p>
+            <Spinner size="lg" variant="grow" className="mb-3" />
           </div>
         </div>
       );
@@ -341,8 +367,8 @@ const CalendarPage: React.FC = () => {
     if (meetingsError) {
       return (
         <Alert variant="danger" className="m-4">
-          <h6>Error Loading Calendar</h6>
-          <p className="mb-2">{meetingsError.message}</p>
+          <Heading level={6}>Error Loading Calendar</Heading>
+          <Text className="mb-2">{meetingsError.message}</Text>
           <Button variant="outline-danger" size="sm" onClick={() => refetchMeetings()}>
             <i className="bi bi-arrow-clockwise me-1" />
             Retry

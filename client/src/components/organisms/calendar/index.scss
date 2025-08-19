@@ -121,9 +121,7 @@
 
   &__header-cell {
     padding: 1rem 0.5rem;
-    text-align: center;
-    font-weight: 600;
-    color: var(--bs-secondary);
+
     border-right: 1px solid var(--calendar-border-color);
 
     &:last-child {
@@ -394,7 +392,7 @@
     cursor: pointer;
 
     &:hover {
-      transform: translateY(-1px);
+      transform: translateY(1px);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       z-index: 2;
     }
@@ -476,7 +474,7 @@
     opacity: 0;
     transition: opacity 0.2s ease;
 
-    .calendar-event--clickable:hover & {
+    .o-calendar-event--clickable:hover & {
       opacity: 1;
     }
   }
