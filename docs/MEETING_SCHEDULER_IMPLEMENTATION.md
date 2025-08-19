@@ -903,6 +903,8 @@ describe('CalendarGrid', () => {
 
 ### ✅ **Phase 2: Calendar Organism & Pages (COMPLETED)**
 
+![Calendar Organism](./images/calendar-p2.png)
+
 - [x] **Calendar Organism (6 components, 1,890+ lines)** - Complete calendar system
   - [x] Calendar Main Component (270 lines) - State management and orchestration
   - [x] CalendarGrid Component (280 lines) - Monthly view with meeting display
