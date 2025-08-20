@@ -88,3 +88,11 @@ export interface AttendeeAvailability {
   isAvailable: boolean;
   conflictingMeetings: MeetingEvent[];
 }
+
+export interface TaskEvent {
+  id: string;
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime: Date;
+}

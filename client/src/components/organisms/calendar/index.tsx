@@ -44,6 +44,7 @@ export interface CalendarProps extends BaseComponentProps {
   onDateClick?: (date: Date) => void;
   onMeetingClick?: (meeting: MeetingEvent) => void;
   onCreateMeeting?: (date?: Date) => void;
+  onCreateTask?: (date?: Date) => void;
   onViewChange?: (view: CalendarViewType) => void;
   onDateChange?: (date: Date) => void;
 
@@ -69,6 +70,7 @@ const Calendar: React.FC<CalendarProps> = ({
   onDateClick,
   onMeetingClick,
   onCreateMeeting,
+  onCreateTask,
   onViewChange,
   onDateChange,
   compactMode = false,
@@ -258,6 +260,7 @@ const Calendar: React.FC<CalendarProps> = ({
         onToday={handleNavigateToday}
         loading={loading}
         onCreateMeeting={() => onCreateMeeting?.()}
+        onCreateTask={() => onCreateTask?.()}
         className="o-calendar__header"
         onViewChange={handleViewChange}
         view={currentView}

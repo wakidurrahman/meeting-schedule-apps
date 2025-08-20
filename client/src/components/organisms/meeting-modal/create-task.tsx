@@ -40,9 +40,9 @@ import {
 } from '@/utils/meeting';
 import { CreateMeetingEventSchema } from '@/utils/validation';
 
-type CreateMeetingFormData = z.infer<typeof CreateMeetingEventSchema>;
+type CreateTaskFormData = z.infer<typeof CreateMeetingEventSchema>;
 
-export interface CreateMeetingModalProps {
+export interface CreateTaskModalProps {
   show: boolean;
   onHide: () => void;
   selectedDate?: Date;
@@ -50,7 +50,7 @@ export interface CreateMeetingModalProps {
   existingMeetings?: MeetingEvent[];
 }
 
-const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
+const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
   show,
   onHide,
   selectedDate,
@@ -110,7 +110,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     watch,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateMeetingFormData>({
+  } = useForm<CreateTaskFormData>({
     resolver: zodResolver(CreateMeetingEventSchema),
     defaultValues: {
       title: '',
@@ -178,7 +178,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     onHide();
   }, [reset, onHide]);
 
-  const onSubmit = async (data: CreateMeetingFormData) => {
+  const onSubmit = async (data: CreateTaskFormData) => {
     try {
       // Final validation
       const validation = validateMeetingData({
@@ -226,7 +226,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
   return (
     <Modal show={show} centered onHide={handleClose} size="md">
       <Modal.Header closeButton onClose={handleClose}>
-        <Modal.Title level={5}>Create Event</Modal.Title>
+        <Modal.Title level={5}>Create Task</Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
@@ -356,4 +356,4 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
   );
 };
 
-export default CreateMeetingModal;
+export default CreateTaskModal;

@@ -25,6 +25,7 @@ export interface CalendarHeaderProps extends BaseComponentProps {
   onNext: () => void;
   onToday?: () => void;
   onCreateMeeting?: () => void;
+  onCreateTask?: () => void;
   loading?: boolean;
   compactMode?: boolean;
   availableViews?: CalendarViewType[];
@@ -46,6 +47,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   view,
   onViewChange,
   onCreateMeeting,
+  onCreateTask,
   ...rest
 }) => {
   const headerClasses = buildClassNames(
@@ -63,6 +65,10 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   const handleCreateMeeting = useCallback(() => {
     onCreateMeeting?.();
   }, [onCreateMeeting]);
+
+  const handleCreateTask = useCallback(() => {
+    onCreateTask?.();
+  }, [onCreateTask]);
 
   return (
     <div className={headerClasses} {...rest}>
@@ -151,7 +157,11 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
           </div>
           <Button variant="primary" onClick={() => handleCreateMeeting()}>
             <i className="bi bi-plus-lg me-1" />
-            Create Meeting
+            Event
+          </Button>
+          <Button variant="primary" onClick={() => handleCreateTask()}>
+            <i className="bi bi-plus-lg me-1" />
+            Task
           </Button>
         </div>
       </div>

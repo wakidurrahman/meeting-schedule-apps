@@ -19,11 +19,15 @@ import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
 import Calendar from '@/components/organisms/calendar';
-import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meeting-modal';
+import {
+  CreateMeetingModal,
+  CreateTaskModal,
+  MeetingDetailsModal,
+} from '@/components/organisms/meeting-modal';
 import CalendarTemplate from '@/components/templates/calendar';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import type { CalendarViewType } from '@/types/calendar';
-import { MeetingEvent } from '@/types/meeting';
+import { MeetingEvent, TaskEvent } from '@/types/meeting';
 import { AttendeesUser } from '@/types/user';
 import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
 import { now } from '@/utils/date';
@@ -59,6 +63,11 @@ const CalendarPage: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingEvent | null>(null);
+
+  // Task state
+  const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<TaskEvent | null>(null);
+
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   console.log('showSidebar', showSidebar);
   // Calculate date range for current view
@@ -120,6 +129,11 @@ const CalendarPage: React.FC = () => {
       setSelectedDate(date);
     }
     setShowCreateModal(true);
+  }, []);
+
+  const handleTaskClick = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setShowCreateTaskModal(true);
   }, []);
 
   const handleViewChange = useCallback((view: CalendarViewType) => {
@@ -184,6 +198,15 @@ const CalendarPage: React.FC = () => {
     console.log('handleToggleSidebar', showSidebar);
     setShowSidebar(!showSidebar);
   }, [showSidebar]);
+
+  const handleCreateTask = useCallback(() => {
+    setShowCreateTaskModal(true);
+  }, []);
+
+  const handleCloseCreateTaskModal = useCallback(() => {
+    setShowCreateTaskModal(false);
+    setSelectedTask(null);
+  }, []);
 
   // Calendar header component
   const calendarHeader = useMemo(
@@ -378,6 +401,7 @@ const CalendarPage: React.FC = () => {
         onDateClick={handleDateClick}
         onMeetingClick={handleMeetingClick}
         onCreateMeeting={handleCreateMeeting}
+        onCreateTask={handleCreateTask}
         onViewChange={handleViewChange}
         onDateChange={handleDateChange}
         className="border-0"
@@ -410,6 +434,14 @@ const CalendarPage: React.FC = () => {
           existingMeetings={meetings}
         />
 
+        {/* Create Task Modal */}
+        <CreateTaskModal
+          show={showCreateTaskModal}
+          onHide={handleCloseCreateTaskModal}
+          selectedDate={selectedDate || undefined}
+          onSuccess={handleCreateTask}
+        />
+
         {/* Meeting Details Modal */}
         <MeetingDetailsModal
           show={showDetailsModal}
@@ -439,6 +471,9 @@ const CalendarPage: React.FC = () => {
       handleMeetingCreated,
       handleMeetingUpdated,
       handleMeetingDeleted,
+      showCreateTaskModal,
+      handleCloseCreateTaskModal,
+      handleCreateTask,
     ],
   );
 
