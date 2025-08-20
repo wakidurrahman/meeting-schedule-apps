@@ -9,7 +9,7 @@
  * - Truncation for long titles
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import Text from '@/components/atoms/text';
 import { BaseComponentProps } from '@/types/components-common';
@@ -38,17 +38,38 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
   className,
   ...rest
 }) => {
-  const handleClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onClick?.(meeting, event);
-  };
+  /**
+   * All Event Handlers
+   *
+   * *This is a performance optimization.*
+   * All of the event handlers are wrapped in useCallback to avoid unnecessary re-renders.
+   * The useCallback hook is used to memoize the event handlers so that they are not recreated on every render.
+   * This is important because the event handlers are passed to the child components and if they are recreated on every render,
+   * the child components will also be recreated on every render.
+   *
+   * 1. handleClick (Meeting click)
+   * 2. handleDoubleClick (Meeting double click)
+   */
 
-  const handleDoubleClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onDoubleClick?.(meeting, event);
-  };
+  // 1. Meeting click handler
+  const handleClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onClick?.(meeting, event);
+    },
+    [meeting, onClick],
+  );
 
-  // Format meeting details
+  // 2. Meeting double click handler
+  const handleDoubleClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      onDoubleClick?.(meeting, event);
+    },
+    [meeting, onDoubleClick],
+  );
+
+  // 3. Format meeting details
   const timeRange = showTime
     ? formatMeetingTimeRange(meeting.startTime, meeting.endTime, 'short')
     : '';
@@ -56,13 +77,13 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     showAttendees && meeting.attendees ? formatAttendeeList(meeting.attendees, 2) : '';
   const meetingStatus = getMeetingStatus(meeting);
 
-  // Truncate title if needed
+  // 4. Truncate title if needed
   const displayTitle =
     meeting.title.length > maxTitleLength
       ? `${meeting.title.substring(0, maxTitleLength)}...`
       : meeting.title;
 
-  // CSS classes
+  // 5. CSS classes
   const eventClasses = buildClassNames(
     'o-calendar-event',
     `o-calendar-event--${meetingStatus}`,
@@ -136,7 +157,5 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     </div>
   );
 };
-
-CalendarEvent.displayName = 'CalendarEvent';
 
 export default CalendarEvent;

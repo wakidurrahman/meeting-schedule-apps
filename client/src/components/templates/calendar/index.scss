@@ -21,8 +21,8 @@
   }
 
   &__header {
-    background-color: var(--bs-light);
-    border-bottom: 1px solid var(--bs-border-color);
+    // background-color: var(--bs-light);
+    // border-bottom: 1px solid var(--bs-border-color);
     padding: 1rem 0;
 
     @media (max-width: 768px) {
@@ -38,7 +38,7 @@
   &__calendar {
     height: 100%;
     min-height: calc(100vh - 200px);
-    padding: 1rem;
+    // padding: 1rem;
 
     @media (max-width: 768px) {
       padding: 0.5rem;
@@ -47,9 +47,10 @@
   }
 
   &__sidebar {
-    background-color: var(--bs-light);
-    border-left: 1px solid var(--bs-border-color);
-    padding: 1rem;
+    // background-color: var(--bs-light);
+    // border-left: 1px solid var(--bs-border-color);
+    // box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    padding: 0 1rem;
     min-height: calc(100vh - 140px);
     height: 100%;
     overflow-y: auto;

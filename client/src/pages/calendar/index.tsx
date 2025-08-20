@@ -207,15 +207,6 @@ const CalendarPage: React.FC = () => {
             </Text>
           )}
         </div>
-        <div className="d-flex gap-2">
-          <Button variant="outline-primary" size="sm" onClick={() => setCurrentDate(new Date())}>
-            Today
-          </Button>
-          <Button variant="primary" size="sm" onClick={() => handleCreateMeeting()}>
-            <i className="bi bi-plus-lg me-1" />
-            Create Meeting
-          </Button>
-        </div>
       </div>
     ),
     [selectedDate, handleCreateMeeting, handleToggleSidebar],
@@ -224,7 +215,7 @@ const CalendarPage: React.FC = () => {
   // Sidebar content
   const sidebar = useMemo(
     () => (
-      <div className="p-3">
+      <div className="px-1">
         {/* Mini Calendar */}
         <div className="mb-4">
           <Heading level={6} className="mb-3">

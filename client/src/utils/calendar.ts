@@ -10,7 +10,7 @@
 
 import { cloneDate, formatJST, formatJSTDate, fromPartsJST, now } from './date';
 
-import { CalendarDay, CalendarGrid, CalendarViewType, CalendarWeek } from '@/types/calendar';
+import { CalendarDay, CalendarGridType, CalendarViewType, CalendarWeek } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
 
 /**
@@ -24,26 +24,37 @@ export function generateCalendarGrid(
   year: number,
   month: number,
   meetings: MeetingEvent[] = [],
-): CalendarGrid {
+): CalendarGridType {
+  // 1. Today's date in JST instance
   const today = now();
+
+  // 2. Get the first day of the month and the first day of the grid
   const firstDayOfMonth = fromPartsJST({ year, month, day: 1 });
   const firstDayOfGrid = cloneDate(firstDayOfMonth);
 
-  // Start from the first Sunday of the week containing the first day of the month
+  // 3. Start from the first Monday of the week containing the first day of the month
   const dayOfWeek = firstDayOfMonth.getDay();
-  firstDayOfGrid.setDate(firstDayOfGrid.getDate() - dayOfWeek);
+  // Convert Sunday (0) to 7, so Monday becomes 0
+  const mondayBasedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  firstDayOfGrid.setDate(firstDayOfGrid.getDate() - mondayBasedDayOfWeek);
 
+  // 4. Generate weeks
   const weeks: CalendarWeek[] = [];
+  // 5. Start from the first day of the month
   const currentDate = cloneDate(firstDayOfGrid);
+  // 6. Week number
   let weekNumber = 0;
 
-  // Generate 6 weeks (42 days) to ensure full month coverage
-  while (weeks.length < 6) {
+  // 7. Generate 5 weeks (35 days) to ensure full month coverage
+  while (weeks.length < 5) {
+    // 8. Days in the week
     const days: CalendarDay[] = [];
-
+    // 9. Generate 7 days for the week
     for (let i = 0; i < 7; i++) {
+      // 10. Get meetings for the current date
       const dayMeetings = getMeetingsForDate(currentDate, meetings);
 
+      // 11. Create a calendar day object
       const calendarDay: CalendarDay = {
         date: cloneDate(currentDate),
         isToday: isSameDay(currentDate, today),
@@ -55,11 +66,13 @@ export function generateCalendarGrid(
         dayNumber: currentDate.getDate(),
         meetings: dayMeetings,
       };
-
+      // 12. Add the calendar day to the days array
       days.push(calendarDay);
+      // 13. Increment the current date by 1 day
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
+    // 14. Add the days to the weeks array
     weeks.push({
       days,
       weekNumber: weekNumber++,
@@ -71,6 +84,7 @@ export function generateCalendarGrid(
     }
   }
 
+  // 15. Return the calendar grid
   return {
     weeks,
     currentMonth: month,

@@ -2,7 +2,7 @@
  * Calendar Grid Component
  *
  * Displays the main calendar grid with:
- * - Monthly grid layout (6 weeks x 7 days)
+ * - Monthly grid layout (5 weeks x 7 days) = 35 days
  * - Meeting events within each day
  * - Day numbers and states (today, selected, other month)
  * - Click handlers for dates and meetings
@@ -15,6 +15,7 @@ import CalendarEvent from './event';
 
 import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
+import { WEEKDAY_LABELS } from '@/constants/const';
 import type { CalendarGridType, CalendarViewType } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
 import type { MeetingEvent } from '@/types/meeting';
@@ -36,16 +37,6 @@ export interface CalendarGridProps extends BaseComponentProps {
   onMeetingClick?: (meeting: MeetingEvent, event: React.MouseEvent) => void;
   onDateHover?: (date: Date | null) => void;
 }
-
-const WEEKDAY_LABELS = [
-  { full: 'Sunday', short: 'Sun', mini: 'S' },
-  { full: 'Monday', short: 'Mon', mini: 'M' },
-  { full: 'Tuesday', short: 'Tue', mini: 'T' },
-  { full: 'Wednesday', short: 'Wed', mini: 'W' },
-  { full: 'Thursday', short: 'Thu', mini: 'T' },
-  { full: 'Friday', short: 'Fri', mini: 'F' },
-  { full: 'Saturday', short: 'Sat', mini: 'S' },
-];
 
 // Calendar Grid Component
 
@@ -74,7 +65,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   );
 
   const weekDay = (index: number) => {
-    return index === 0 || index === 6;
+    // In Monday-first week: Saturday is index 5, Sunday is index 6
+    return index === 5 || index === 6;
   };
 
   const handleDateClick = (date: Date) => {

@@ -67,8 +67,6 @@
   }
 
   &__content {
-    margin-top: 1rem;
-    border-top: 1px solid var(--calendar-border-color);
     position: relative;
   }
 }
@@ -78,6 +76,10 @@
 // =============================================================================
 
 .o-calendar-header {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
   background: var(--bs-white);
 
   &--compact {
@@ -115,21 +117,21 @@
   &__header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background: var(--calendar-header-bg);
+    // background: var(--calendar-header-bg);
     border-bottom: 2px solid var(--calendar-border-color);
   }
 
   &__header-cell {
-    padding: 1rem 0.5rem;
+    padding: 0.5rem 0.5rem;
 
     border-right: 1px solid var(--calendar-border-color);
 
-    &:last-child {
-      border-right: none;
+    &:first-child {
+      border-left: 1px solid var(--calendar-border-color);
     }
 
     &--weekend {
-      background: var(--calendar-weekend-bg);
+      // background: var(--calendar-weekend-bg);
       color: var(--bs-muted);
     }
   }
@@ -190,10 +192,11 @@
     }
 
     &--weekend {
-      background: var(--calendar-weekend-bg);
+      // background: var(--calendar-weekend-bg);
     }
 
     &--other-month {
+      background: var(--bs-gray-100);
       opacity: var(--calendar-other-month-opacity);
 
       .calendar-grid__day-number {

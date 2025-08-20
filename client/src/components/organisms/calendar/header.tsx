@@ -8,23 +8,16 @@
  * - Optional create meeting button
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
-import Spinner from '@/components/atoms/spinner';
+import { CALENDAR_VIEW_LABELS } from '@/constants/const';
 import type { CalendarViewType } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
 import { buildClassNames } from '@/utils/component';
 
 const DEFAULT_VIEWS: CalendarViewType[] = ['year', 'month', 'week', 'day'];
-
-const VIEW_LABELS: Record<CalendarViewType, { full: string; short: string; icon: string }> = {
-  day: { full: 'Day', short: 'D', icon: 'bi bi-calendar-day' },
-  week: { full: 'Week', short: 'W', icon: 'bi bi-calendar-week' },
-  month: { full: 'Month', short: 'M', icon: 'bi bi-calendar-month' },
-  year: { full: 'Year', short: 'Y', icon: 'bi bi-calendar' },
-};
 
 export interface CalendarHeaderProps extends BaseComponentProps {
   title: string;
@@ -52,7 +45,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   disabled = false,
   view,
   onViewChange,
-
+  onCreateMeeting,
   ...rest
 }) => {
   const headerClasses = buildClassNames(
@@ -67,17 +60,24 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
       onViewChange(newView);
     }
   };
+  const handleCreateMeeting = useCallback(() => {
+    onCreateMeeting?.();
+  }, [onCreateMeeting]);
 
   return (
     <div className={headerClasses} {...rest}>
       <div className="d-flex justify-content-between align-items-center gap-1">
-        {/* Left section - Navigation */}
-        <div className="d-flex align-items-center">
-          <div className="btn-group shadow" role="group" aria-label="Calendar navigation">
+        {/* Center section - Title */}
+        <Heading level={4} color="primary" className="text-center mb-0">
+          {title}
+        </Heading>
+
+        {/* Right section - Actions */}
+        <div className="d-flex align-items-center gap-2">
+          <div className="btn-group" role="group" aria-label="Calendar navigation">
             {/* Previous button */}
             <Button
-              variant="outline-secondary"
-              size="sm"
+              variant="outline-primary"
               onClick={onPrevious}
               disabled={loading || disabled}
               aria-label="Previous period"
@@ -89,8 +89,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             {/* Today button */}
             {onToday && (
               <Button
-                variant="outline-secondary"
-                size="sm"
+                variant="outline-primary"
                 onClick={onToday}
                 disabled={loading || disabled}
                 className="o-calendar-header__today-btn"
@@ -101,8 +100,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
             {/* Next button */}
             <Button
-              variant="outline-secondary"
-              size="sm"
+              variant="outline-primary"
               onClick={onNext}
               disabled={loading || disabled}
               aria-label="Next period"
@@ -111,57 +109,51 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               <i className="bi bi-chevron-right" aria-hidden="true" />
             </Button>
           </div>
+          <div className="dropdown">
+            <button
+              className="btn btn-outline-primary dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {CALENDAR_VIEW_LABELS[view].full}
+            </button>
+            <ul className="dropdown-menu">
+              {availableViews.map((viewType) => {
+                const isActive = view === viewType;
+                const viewConfig = CALENDAR_VIEW_LABELS[viewType];
+
+                return (
+                  <li key={viewType}>
+                    <button
+                      className={buildClassNames('dropdown-item', isActive && 'active')}
+                      onClick={() => handleViewClick(viewType)}
+                      disabled={disabled}
+                      aria-pressed={isActive}
+                      aria-label={`Switch to ${viewConfig.full} view`}
+                    >
+                      {compactMode ? (
+                        <>
+                          <i className={`${viewConfig.icon} me-1`} aria-hidden="true" />
+                          {viewConfig.short}
+                        </>
+                      ) : (
+                        <span className="d-flex align-items-center gap-1">
+                          <i className={`${viewConfig.icon} me-1`} aria-hidden="true" />
+                          {viewConfig.full}
+                        </span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <Button variant="primary" onClick={() => handleCreateMeeting()}>
+            <i className="bi bi-plus-lg me-1" />
+            Create Meeting
+          </Button>
         </div>
-
-        {/* Center section - Title */}
-        <Heading level={2} color="primary" className="text-center mb-0">
-          {title}
-        </Heading>
-
-        {/* Right section - Actions */}
-        <div className="dropdown">
-          <button
-            className="btn btn-outline-primary dropdown-toggle btn-sm shadow"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            {VIEW_LABELS[view].full}
-          </button>
-          <ul className="dropdown-menu">
-            {availableViews.map((viewType) => {
-              const isActive = view === viewType;
-              const viewConfig = VIEW_LABELS[viewType];
-
-              return (
-                <li key={viewType}>
-                  <button
-                    className={buildClassNames('dropdown-item', isActive && 'active')}
-                    onClick={() => handleViewClick(viewType)}
-                    disabled={disabled}
-                    aria-pressed={isActive}
-                    aria-label={`Switch to ${viewConfig.full} view`}
-                  >
-                    {compactMode ? (
-                      <>
-                        <i className={`${viewConfig.icon} me-1`} aria-hidden="true" />
-                        {viewConfig.short}
-                      </>
-                    ) : (
-                      <span className="d-flex align-items-center gap-1">
-                        <i className={`${viewConfig.icon} me-1`} aria-hidden="true" />
-                        {viewConfig.full}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
-        {/* Loading indicator */}
-        {loading && <Spinner variant="grow" color="primary" size="lg" />}
       </div>
     </div>
   );
