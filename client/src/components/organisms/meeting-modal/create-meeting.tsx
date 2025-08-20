@@ -22,7 +22,6 @@ import ReactSelectField from '@/components/atoms/react-select';
 import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
 import Modal from '@/components/organisms/modal';
-import { ValidationMessages } from '@/constants/messages';
 import {
   CREATE_MEETING,
   type CreateMeetingMutationData,
@@ -40,41 +39,9 @@ import {
   getDefaultMeetingTimes,
   validateMeetingData,
 } from '@/utils/meeting';
+import { CreateMeetingEventSchema } from '@/utils/validation';
 
-// Validation schema
-const CreateMeetingSchema = z
-  .object({
-    title: z.string().min(1, ValidationMessages.titleRequired).max(100, 'Title too long'),
-    description: z.string().optional(),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
-    attendeeIds: z.array(z.string()).optional().default([]),
-  })
-  .refine(
-    (data) => {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
-      return start < end;
-    },
-    {
-      message: 'End time must be after start time',
-      path: ['endTime'],
-    },
-  )
-  .refine(
-    (data) => {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
-      const duration = (end.getTime() - start.getTime()) / (1000 * 60);
-      return duration >= 5 && duration <= 480; // 5 minutes to 8 hours
-    },
-    {
-      message: 'Meeting duration must be between 5 minutes and 8 hours',
-      path: ['endTime'],
-    },
-  );
-
-type CreateMeetingFormData = z.infer<typeof CreateMeetingSchema>;
+type CreateMeetingFormData = z.infer<typeof CreateMeetingEventSchema>;
 
 export interface CreateMeetingModalProps {
   show: boolean;
@@ -96,7 +63,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
   const [warnings, setWarnings] = useState<string[]>([]);
   const [isCheckingConflicts, setIsCheckingConflicts] = useState(false);
 
-  // GraphQL hooks
+  // GraphQL hooks: Create meeting mutation.
   const [createMeeting, { loading: isCreating }] = useMutation<
     CreateMeetingMutationData,
     CreateMeetingMutationVariables
@@ -120,6 +87,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 
   const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
 
+  // GraphQL hooks: Check meeting conflicts.
   const [checkConflicts] = useLazyQuery<ConflictCheckQueryData>(CHECK_MEETING_CONFLICTS, {
     onCompleted: (data) => {
       setIsCheckingConflicts(false);
@@ -131,7 +99,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     },
   });
 
-  // Form setup
+  // Form setup: Default times.
   const defaultTimes = useMemo(() => {
     return getDefaultMeetingTimes(selectedDate);
   }, [selectedDate]);
@@ -144,7 +112,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CreateMeetingFormData>({
-    resolver: zodResolver(CreateMeetingSchema),
+    resolver: zodResolver(CreateMeetingEventSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -154,10 +122,10 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     },
   });
 
-  // Watch form values for conflict checking
+  // Watch form values for conflict checking.
   const watchedValues = watch(['startTime', 'endTime', 'attendeeIds']);
 
-  // Debounced conflict checking
+  // Debounced conflict checking.
   useEffect(() => {
     const [startTime, endTime, attendeeIds] = watchedValues;
 
@@ -193,7 +161,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     return () => clearTimeout(timer);
   }, [watchedValues, existingMeetings, checkConflicts]);
 
-  // User options for attendee selection
+  // User options for attendee selection.
   const userOptions = useMemo(() => {
     if (!usersData?.users?.usersList) return [];
 
@@ -203,7 +171,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     }));
   }, [usersData]);
 
-  // Handlers
+  // Handlers: Close modal.
   const handleClose = useCallback(() => {
     reset();
     setConflicts([]);

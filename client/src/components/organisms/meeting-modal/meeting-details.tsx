@@ -147,7 +147,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
 
   return (
     <Modal show={show} onHide={handleClose} size="lg">
-      <Modal.Header closeButton>
+      <Modal.Header closeButton onClose={handleClose}>
         <Modal.Title>
           <div className="d-flex align-items-center gap-2">
             <Heading level={4} className="mb-0">

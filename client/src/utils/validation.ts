@@ -145,6 +145,39 @@ export const UpdateUserSchema = z.object({
     .optional(),
 });
 
+// Meeting schema
+export const CreateMeetingEventSchema = z
+  .object({
+    title: z.string().min(1, VM.titleRequired).max(100, 'Title too long'),
+    description: z.string().optional(),
+    startTime: z.string().min(1, 'Start time is required'),
+    endTime: z.string().min(1, 'End time is required'),
+    attendeeIds: z.array(z.string()).optional().default([]),
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      return start < end;
+    },
+    {
+      message: 'End time must be after start time',
+      path: ['endTime'],
+    },
+  )
+  .refine(
+    (data) => {
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      const duration = (end.getTime() - start.getTime()) / (1000 * 60);
+      return duration >= 5 && duration <= 480; // 5 minutes to 8 hours
+    },
+    {
+      message: 'Meeting duration must be between 5 minutes and 8 hours',
+      path: ['endTime'],
+    },
+  );
+
 // User search schema
 
 export const UserSearchSchema = z.object({
