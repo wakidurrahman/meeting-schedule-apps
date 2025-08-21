@@ -9,8 +9,9 @@
  * - Optimistic updates
  */
 
-import { formatJST, formatJSTTime } from './date';
+import { cloneDate, formatJST, formatJSTTime, now } from './date';
 
+import { ValidationMessages as VM } from '@/constants/messages';
 import type {
   AttendeeAvailability,
   MeetingConflict,
@@ -103,64 +104,64 @@ export function validateMeetingData(meetingData: MeetingFormData): MeetingValida
 
   // Required fields
   if (!meetingData.title || meetingData.title.trim().length === 0) {
-    errors.push('Meeting title is required');
+    errors.push(VM.titleRequired);
   }
 
   if (!meetingData.startTime) {
-    errors.push('Start time is required');
+    errors.push(VM.startTimeRequired);
   }
 
   if (!meetingData.endTime) {
-    errors.push('End time is required');
+    errors.push(VM.endTimeRequired);
   }
 
   // Time validation
   if (meetingData.startTime && meetingData.endTime) {
-    const startTime = new Date(meetingData.startTime);
-    const endTime = new Date(meetingData.endTime);
+    const startTime = cloneDate(meetingData.startTime);
+    const endTime = cloneDate(meetingData.endTime);
 
     if (startTime >= endTime) {
-      errors.push('End time must be after start time');
+      errors.push(VM.endTimeAfterStart);
     }
 
     const duration = calculateMeetingDuration(startTime, endTime);
 
     if (duration < 5) {
-      warnings.push('Meeting duration is very short (less than 5 minutes)');
+      warnings.push(VM.meetingDurationShort);
     }
 
     if (duration > 480) {
       // 8 hours
-      warnings.push('Meeting duration is very long (more than 8 hours)');
+      warnings.push(VM.meetingDurationLong);
     }
 
     // Check if meeting is in the past
-    const now = new Date();
-    if (startTime < now) {
-      warnings.push('Meeting is scheduled in the past');
+    const currentTime = now();
+    if (startTime < currentTime) {
+      warnings.push(VM.meetingInPast);
     }
 
     // Check for weekend scheduling
     const isWeekendMeeting = startTime.getDay() === 0 || startTime.getDay() === 6;
     if (isWeekendMeeting) {
-      warnings.push('Meeting is scheduled for a weekend');
+      warnings.push(VM.meetingOnWeekend);
     }
 
     // Check for off-hours scheduling
     const hour = startTime.getHours();
     if (hour < 8 || hour > 18) {
-      warnings.push('Meeting is scheduled outside business hours');
+      warnings.push(VM.meetingOffHours);
     }
   }
 
   // Title length validation
   if (meetingData.title && meetingData.title.length > 100) {
-    warnings.push('Meeting title is very long');
+    warnings.push(VM.titleVeryLong);
   }
 
   // Description length validation
   if (meetingData.description && meetingData.description.length > 1000) {
-    warnings.push('Meeting description is very long');
+    warnings.push(VM.descriptionVeryLong);
   }
 
   return {
@@ -332,16 +333,16 @@ export function dateToDatetimeLocal(date: Date): string {
  * @returns Object with start and end times in datetime-local format
  */
 export function getDefaultMeetingTimes(
-  referenceDate: Date = new Date(),
+  referenceDate: Date = now(),
   durationMinutes: number = 60,
 ): { startTime: string; endTime: string } {
-  const now = new Date(referenceDate);
+  const now = cloneDate(referenceDate);
 
   // Round up to next 30-minute interval
   const minutes = now.getMinutes();
   const roundedMinutes = Math.ceil(minutes / 30) * 30;
 
-  const startTime = new Date(now);
+  const startTime = cloneDate(now);
   startTime.setMinutes(roundedMinutes, 0, 0);
 
   // If we've moved to the next hour due to rounding, adjust
@@ -368,7 +369,7 @@ export function groupMeetingsByDate(meetings: MeetingEvent[]): Map<string, Meeti
   const grouped = new Map<string, MeetingEvent[]>();
 
   meetings.forEach((meeting) => {
-    const date = new Date(meeting.startTime);
+    const date = cloneDate(meeting.startTime);
     const dateKey = date.toDateString();
 
     if (!grouped.has(dateKey)) {

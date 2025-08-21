@@ -90,7 +90,23 @@ const VALIDATION_MESSAGES = {
   required: 'This field is required',
   titleRequired: 'Title is required',
   titleMin: 'Title must be at least 1 character',
+  titleTooLong: 'Meeting title is too long',
   nameMinProfile: 'Name must be at least 2 characters',
+
+  // Meeting validation messages
+  titleVeryLong: 'Meeting title is very long',
+  descriptionVeryLong: 'Meeting description is very long',
+  startTimeRequired: 'Start time is required',
+  endTimeRequired: 'End time is required',
+  endTimeAfterStart: 'End time must be after start time',
+  meetingDurationRange: 'Meeting duration must be between 5 minutes and 8 hours',
+
+  // Business rule warnings
+  meetingDurationShort: 'Meeting duration is very short (less than 5 minutes)',
+  meetingDurationLong: 'Meeting duration is very long (more than 8 hours)',
+  meetingInPast: 'Meeting is scheduled in the past',
+  meetingOnWeekend: 'Meeting is scheduled for a weekend',
+  meetingOffHours: 'Meeting is scheduled outside business hours',
 };
 
 module.exports = { HTTP_STATUS, ERROR_CODES, MESSAGES, VALIDATION_MESSAGES };

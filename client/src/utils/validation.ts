@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { cloneDate } from './date';
+
 import {
   EMAIL_REGEX,
   NAME_REGEX,
@@ -148,32 +150,32 @@ export const UpdateUserSchema = z.object({
 // Meeting schema
 export const CreateMeetingEventSchema = z
   .object({
-    title: z.string().min(1, VM.titleRequired).max(100, 'Title too long'),
+    title: z.string().min(1, VM.titleRequired).max(100, VM.titleTooLong),
     description: z.string().optional(),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
+    startTime: z.string().min(1, VM.startTimeRequired),
+    endTime: z.string().min(1, VM.endTimeRequired),
     attendeeIds: z.array(z.string()).optional().default([]),
   })
   .refine(
     (data) => {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
       return start < end;
     },
     {
-      message: 'End time must be after start time',
+      message: VM.endTimeAfterStart,
       path: ['endTime'],
     },
   )
   .refine(
     (data) => {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
       const duration = (end.getTime() - start.getTime()) / (1000 * 60);
       return duration >= 5 && duration <= 480; // 5 minutes to 8 hours
     },
     {
-      message: 'Meeting duration must be between 5 minutes and 8 hours',
+      message: VM.meetingDurationRange,
       path: ['endTime'],
     },
   );
@@ -187,3 +189,5 @@ export const UserSearchSchema = z.object({
   sortDirection: z.enum(SORT_DIRECTION_ENUM).optional(),
   page: z.number().min(1).optional(),
 });
+
+//

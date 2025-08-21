@@ -30,6 +30,21 @@ export const ValidationMessages = {
   // Meeting validation
   titleRequired: 'Meeting title is required',
   titleTooLong: 'Meeting title is too long',
+  titleVeryLong: 'Meeting title is very long',
+  descriptionVeryLong: 'Meeting description is very long',
+
+  // Time validation
+  startTimeRequired: 'Start time is required',
+  endTimeRequired: 'End time is required',
+  endTimeAfterStart: 'End time must be after start time',
+  meetingDurationRange: 'Meeting duration must be between 5 minutes and 8 hours',
+
+  // Business rule warnings
+  meetingDurationShort: 'Meeting duration is very short (less than 5 minutes)',
+  meetingDurationLong: 'Meeting duration is very long (more than 8 hours)',
+  meetingInPast: 'Meeting is scheduled in the past',
+  meetingOnWeekend: 'Meeting is scheduled for a weekend',
+  meetingOffHours: 'Meeting is scheduled outside business hours',
 
   // Date and time validation
   invalidStartTime: 'Invalid startTime',

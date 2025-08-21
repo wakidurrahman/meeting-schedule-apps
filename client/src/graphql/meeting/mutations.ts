@@ -1,30 +1,32 @@
 import { gql } from '@apollo/client';
 import { TypedDocumentNode as TD } from '@graphql-typed-document-node/core';
 
-import { Meeting } from '@/types/meeting';
+import { Meetings } from '@/types/meeting';
 
 /**
  * Meeting-related mutations
  */
 
-// Types for CreateMeeting mutation
-export interface CreateMeetingMutationData {
-  createMeeting: Meeting;
+// Types for CreateMeeting mutation data.
+export interface CreateMeetingMutation {
+  createMeeting: Meetings;
 }
 
-export interface CreateMeetingMutationVariables {
+// Types for CreateMeeting mutation input.
+export interface CreateMeetingMutationInput {
   input: {
     title: string;
     description?: string;
     startTime: string;
     endTime: string;
     attendeeIds: string[];
+    // createdBy: AttendeesUser;
   };
 }
 
-// Types for UpdateMeeting mutation
+// Types for UpdateMeeting mutation data.
 export interface UpdateMeetingMutationData {
-  updateMeeting: Meeting;
+  updateMeeting: Meetings;
 }
 
 export interface UpdateMeetingMutationVariables {
@@ -39,15 +41,15 @@ export interface UpdateMeetingMutationVariables {
 }
 
 // Types for DeleteMeeting mutation
-export interface DeleteMeetingMutationData {
+export interface DeleteMeetingMutationEvent {
   deleteMeeting: boolean;
 }
 
-export interface DeleteMeetingMutationVariables {
+export interface DeleteMeetingMutationEventInput {
   id: string;
 }
 
-export const CREATE_MEETING: TD<CreateMeetingMutationData, CreateMeetingMutationVariables> = gql`
+export const CREATE_MEETING_EVENT: TD<CreateMeetingMutation, CreateMeetingMutationInput> = gql`
   mutation CreateMeeting($input: CreateMeetingInput!) {
     createMeeting(input: $input) {
       id
@@ -60,15 +62,11 @@ export const CREATE_MEETING: TD<CreateMeetingMutationData, CreateMeetingMutation
         name
         email
       }
-      createdBy {
-        id
-        name
-      }
       createdAt
       updatedAt
     }
   }
-` as unknown as TD<CreateMeetingMutationData, CreateMeetingMutationVariables>;
+` as unknown as TD<CreateMeetingMutation, CreateMeetingMutationInput>;
 
 export const UPDATE_MEETING: TD<UpdateMeetingMutationData, UpdateMeetingMutationVariables> = gql`
   mutation UpdateMeeting($id: ID!, $input: UpdateMeetingInput!) {
@@ -93,8 +91,8 @@ export const UPDATE_MEETING: TD<UpdateMeetingMutationData, UpdateMeetingMutation
   }
 ` as unknown as TD<UpdateMeetingMutationData, UpdateMeetingMutationVariables>;
 
-export const DELETE_MEETING: TD<DeleteMeetingMutationData, DeleteMeetingMutationVariables> = gql`
+export const DELETE_MEETING: TD<DeleteMeetingMutationEvent, DeleteMeetingMutationEventInput> = gql`
   mutation DeleteMeeting($id: ID!) {
     deleteMeeting(id: $id)
   }
-` as unknown as TD<DeleteMeetingMutationData, DeleteMeetingMutationVariables>;
+` as unknown as TD<DeleteMeetingMutationEvent, DeleteMeetingMutationEventInput>;

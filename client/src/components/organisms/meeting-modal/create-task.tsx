@@ -22,9 +22,9 @@ import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
 import Modal from '@/components/organisms/modal';
 import {
-  CREATE_MEETING,
-  type CreateMeetingMutationData,
-  type CreateMeetingMutationVariables,
+  CREATE_MEETING_EVENT,
+  type CreateMeetingMutation,
+  type CreateMeetingMutationInput,
 } from '@/graphql/meeting/mutations';
 import {
   CHECK_MEETING_CONFLICTS,
@@ -64,9 +64,9 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({
 
   // GraphQL hooks: Create meeting mutation.
   const [createMeeting, { loading: isCreating }] = useMutation<
-    CreateMeetingMutationData,
-    CreateMeetingMutationVariables
-  >(CREATE_MEETING, {
+    CreateMeetingMutation,
+    CreateMeetingMutationInput
+  >(CREATE_MEETING_EVENT, {
     refetchQueries: [{ query: GET_MEETINGS }],
     onCompleted: (data) => {
       const meetingEvent: MeetingEvent = {

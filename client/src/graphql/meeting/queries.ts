@@ -42,6 +42,22 @@ export interface ConflictCheckQueryData {
   };
 }
 
+export interface DateRangeQueryData {
+  dateRange: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+export interface ConflictCheckQueryInput {
+  input: {
+    startTime: string;
+    endTime: string;
+    attendeeIds: string[];
+    excludeMeetingId?: string;
+  };
+}
+
 export const GET_MEETINGS: TD<MeetingsQueryData, Record<string, never>> = gql`
   query Meetings {
     meetings {
@@ -92,10 +108,7 @@ export const GET_MEETING_BY_ID: TD<MeetingByIdQueryData, { id: string }> = gql`
   }
 ` as unknown as TD<MeetingByIdQueryData, { id: string }>;
 
-export const GET_MEETINGS_BY_DATE_RANGE: TD<
-  MeetingsByDateRangeQueryData,
-  { dateRange: { startDate: string; endDate: string } }
-> = gql`
+export const GET_MEETINGS_BY_DATE_RANGE: TD<MeetingsByDateRangeQueryData, DateRangeQueryData> = gql`
   query GetMeetingsByDateRange($dateRange: DateRangeInput!) {
     meetingsByDateRange(dateRange: $dateRange) {
       id
@@ -116,10 +129,7 @@ export const GET_MEETINGS_BY_DATE_RANGE: TD<
       updatedAt
     }
   }
-` as unknown as TD<
-  MeetingsByDateRangeQueryData,
-  { dateRange: { startDate: string; endDate: string } }
->;
+` as unknown as TD<MeetingsByDateRangeQueryData, DateRangeQueryData>;
 
 export const GET_MY_MEETINGS: TD<MeetingsByDateRangeQueryData, { userId: string }> = gql`
   query GetMyMeetings($userId: ID!) {
@@ -167,17 +177,7 @@ export const GET_UPCOMING_MEETINGS: TD<MeetingsByDateRangeQueryData, { limit?: n
   }
 ` as unknown as TD<MeetingsByDateRangeQueryData, { limit?: number }>;
 
-export const CHECK_MEETING_CONFLICTS: TD<
-  ConflictCheckQueryData,
-  {
-    input: {
-      startTime: string;
-      endTime: string;
-      attendeeIds: string[];
-      excludeMeetingId?: string;
-    };
-  }
-> = gql`
+export const CHECK_MEETING_CONFLICTS: TD<ConflictCheckQueryData, ConflictCheckQueryInput> = gql`
   query CheckMeetingConflicts($input: ConflictCheckInput!) {
     checkMeetingConflicts(input: $input) {
       hasConflicts
@@ -195,14 +195,4 @@ export const CHECK_MEETING_CONFLICTS: TD<
       warnings
     }
   }
-` as unknown as TD<
-  ConflictCheckQueryData,
-  {
-    input: {
-      startTime: string;
-      endTime: string;
-      attendeeIds: string[];
-      excludeMeetingId?: string;
-    };
-  }
->;
+` as unknown as TD<ConflictCheckQueryData, ConflictCheckQueryInput>;

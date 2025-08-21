@@ -16,14 +16,14 @@ import { useNavigate } from 'react-router-dom';
 import Alert from '@/components/atoms/alert';
 import Badge from '@/components/atoms/badge';
 import Button from '@/components/atoms/button';
-import Heading from '@/components/atoms/heading';
 import Modal from '@/components/organisms/modal';
 import {
   DELETE_MEETING,
-  type DeleteMeetingMutationData,
-  type DeleteMeetingMutationVariables,
+  type DeleteMeetingMutationEvent,
+  type DeleteMeetingMutationEventInput,
 } from '@/graphql/meeting/mutations';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
+import { useToast } from '@/hooks/use-toast';
 import type { MeetingEvent } from '@/types/meeting';
 import { formatJST } from '@/utils/date';
 import {
@@ -34,35 +34,47 @@ import {
 
 export interface MeetingDetailsModalProps {
   show: boolean;
-  onHide: () => void;
   meeting: MeetingEvent | null;
+  onHide: () => void;
   onEdit?: (meeting: MeetingEvent) => void;
   onDelete?: (meetingId: string) => void;
 }
 
 const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   show,
-  onHide,
   meeting,
+  onHide,
   onEdit,
   onDelete,
 }) => {
-  console.log('meeting', meeting);
   // State
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  console.log('meeting', meeting);
   const navigate = useNavigate();
+  const { addError, addSuccess } = useToast();
+
   // GraphQL mutations
   const [deleteMeeting, { loading: isDeleting }] = useMutation<
-    DeleteMeetingMutationData,
-    DeleteMeetingMutationVariables
+    DeleteMeetingMutationEvent,
+    DeleteMeetingMutationEventInput
   >(DELETE_MEETING, {
     refetchQueries: [{ query: GET_MEETINGS }],
     onCompleted: () => {
+      addSuccess({
+        title: 'Success',
+        subtitle: 'just now',
+        children: `Meeting deleted successfully`,
+      });
       onDelete?.(meeting?.id || '');
       handleClose();
     },
     onError: (error) => {
+      addError({
+        title: 'Error',
+        subtitle: 'just now',
+        children: `Failed to delete meeting: ${error.message}`,
+      });
       setError(error.message);
     },
   });
@@ -88,8 +100,6 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
     };
   }, [meeting]);
 
-  console.log('meetingDetails', meetingDetails);
-
   // Handlers
   const handleClose = useCallback(() => {
     setError(null);
@@ -102,7 +112,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
       navigate(`/calendar/edit/${meeting.id}`);
       onEdit(meeting);
     }
-  }, [meeting, onEdit]);
+  }, [meeting, onEdit, navigate]);
 
   const handleDeleteClick = useCallback(() => {
     setShowDeleteConfirm(true);
@@ -124,19 +134,23 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
     if (meeting) {
       const meetingUrl = `${window.location.origin}/meeting/${meeting.id}`;
       navigator.clipboard.writeText(meetingUrl);
-      // You could add a toast notification here
-      console.log('Meeting link copied to clipboard');
+      addSuccess({
+        title: 'Success',
+        subtitle: 'just now',
+        children: `Meeting link copied to clipboard`,
+      });
     }
   }, [meeting]);
 
   const handleJoinMeeting = useCallback(() => {
     // Logic to join meeting (open meeting URL, launch app, etc.)
     console.log('Joining meeting:', meeting?.id);
+    addSuccess({
+      title: 'Success',
+      subtitle: 'just now',
+      children: `Joining meeting...${meeting?.id}`,
+    });
   }, [meeting]);
-
-  if (!meeting || !meetingDetails) {
-    return null;
-  }
 
   const statusVariants = {
     upcoming: 'primary',
@@ -148,13 +162,11 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   return (
     <Modal show={show} onHide={handleClose} size="lg">
       <Modal.Header closeButton onClose={handleClose}>
-        <Modal.Title>
-          <div className="d-flex align-items-center gap-2">
-            <Heading level={4} className="mb-0">
-              Meeting Details
-            </Heading>
+        <Modal.Title className="d-flex align-items-center gap-2" level={5}>
+          Meeting Details
+          {meetingDetails && (
             <Badge variant={statusVariants[meetingDetails.status]}>{meetingDetails.status}</Badge>
-          </div>
+          )}
         </Modal.Title>
       </Modal.Header>
 

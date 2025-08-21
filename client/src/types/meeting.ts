@@ -59,6 +59,7 @@ export interface MeetingEvent {
   attendees?: Array<AttendeesUser>;
   description?: string;
   isAllDay?: boolean;
+  createdBy?: AttendeesUser;
 }
 
 export interface MeetingConflict {
