@@ -26,3 +26,10 @@ export const CALENDAR_VIEW_LABELS: Record<
   month: { full: 'Month', short: 'M', icon: 'bi bi-calendar-month' },
   year: { full: 'Year', short: 'Y', icon: 'bi bi-calendar' },
 };
+
+export const MEETING_STATUS_VARIANTS = {
+  upcoming: 'primary',
+  ongoing: 'success',
+  completed: 'secondary',
+  cancelled: 'danger',
+} as const;

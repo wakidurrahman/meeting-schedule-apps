@@ -395,13 +395,13 @@ export function groupMeetingsByDate(meetings: MeetingEvent[]): Map<string, Meeti
 export function getMeetingStatus(
   meeting: MeetingEvent,
 ): 'upcoming' | 'ongoing' | 'completed' | 'cancelled' {
-  const now = new Date();
-  const startTime = new Date(meeting.startTime);
-  const endTime = new Date(meeting.endTime);
+  const currentTime = now();
+  const startTime = cloneDate(meeting.startTime);
+  const endTime = cloneDate(meeting.endTime);
 
-  if (now < startTime) {
+  if (currentTime < startTime) {
     return 'upcoming';
-  } else if (now >= startTime && now <= endTime) {
+  } else if (currentTime >= startTime && currentTime <= endTime) {
     return 'ongoing';
   } else {
     return 'completed';

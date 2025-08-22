@@ -3,8 +3,7 @@
  * CREATE MEETING EVENT MODAL - COMPREHENSIVE DOCUMENTATION
  * ============================================================================
  *
- * A sophisticated meeting creation modal component built with React, TypeScript,
- * and modern form management. This component serves as the primary interface for
+ * A meeting event creation modal component. This component serves as the primary interface for
  * creating new meeting events within the meeting scheduler application.
  *
  * ARCHITECTURE & FEATURES:
@@ -190,7 +189,6 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 
     // Error handler - show user-friendly error message
     onError: (error) => {
-      console.error('Error creating meeting:', error);
       addError({
         title: 'Creation Failed!',
         subtitle: 'just now',
@@ -199,6 +197,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     },
   });
 
+  // GraphQL hooks: Get users.
   const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
 
   // GraphQL hooks: Check meeting conflicts.
@@ -337,8 +336,6 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
    */
   const onSubmit = async (data: CreateMeetingFormData) => {
     try {
-      console.log('Meeting submission data:', data);
-
       // STEP 1: Final business logic validation
       // This catches warnings and business rule violations
       const validation = validateMeetingData({
@@ -536,7 +533,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
               <Spinner size="sm" className="me-1" />
             </>
           ) : (
-            'Create Event'
+            'Save'
           )}
         </Button>
       </Modal.Footer>

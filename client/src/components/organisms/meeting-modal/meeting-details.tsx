@@ -16,7 +16,10 @@ import { useNavigate } from 'react-router-dom';
 import Alert from '@/components/atoms/alert';
 import Badge from '@/components/atoms/badge';
 import Button from '@/components/atoms/button';
+import Heading from '@/components/atoms/heading';
+import Text from '@/components/atoms/text';
 import Modal from '@/components/organisms/modal';
+import { MEETING_STATUS_VARIANTS } from '@/constants/const';
 import {
   DELETE_MEETING,
   type DeleteMeetingMutationEvent,
@@ -50,7 +53,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   // State
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  console.log('meeting', meeting);
+
   const navigate = useNavigate();
   const { addError, addSuccess } = useToast();
 
@@ -66,7 +69,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
         subtitle: 'just now',
         children: `Meeting deleted successfully`,
       });
-      onDelete?.(meeting?.id || '');
+      onDelete?.(meeting?.id ?? '');
       handleClose();
     },
     onError: (error) => {
@@ -120,14 +123,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
 
   const handleConfirmDelete = useCallback(async () => {
     if (!meeting) return;
-
-    try {
-      await deleteMeeting({
-        variables: { id: meeting.id },
-      });
-    } catch (error) {
-      console.error('Error deleting meeting:', error);
-    }
+    await deleteMeeting({ variables: { id: meeting.id } });
   }, [meeting, deleteMeeting]);
 
   const handleCopyLink = useCallback(() => {
@@ -140,32 +136,27 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
         children: `Meeting link copied to clipboard`,
       });
     }
-  }, [meeting]);
+  }, [meeting, addSuccess]);
 
   const handleJoinMeeting = useCallback(() => {
-    // Logic to join meeting (open meeting URL, launch app, etc.)
-    console.log('Joining meeting:', meeting?.id);
+    //TODO: Logic to join meeting (open meeting URL, launch app, etc.)
+
     addSuccess({
       title: 'Success',
       subtitle: 'just now',
       children: `Joining meeting...${meeting?.id}`,
     });
-  }, [meeting]);
-
-  const statusVariants = {
-    upcoming: 'primary',
-    ongoing: 'success',
-    completed: 'secondary',
-    cancelled: 'danger',
-  } as const;
+  }, [meeting, addSuccess]);
 
   return (
     <Modal show={show} onHide={handleClose} size="lg">
       <Modal.Header closeButton onClose={handleClose}>
         <Modal.Title className="d-flex align-items-center gap-2" level={5}>
-          Meeting Details
+          Event
           {meetingDetails && (
-            <Badge variant={statusVariants[meetingDetails.status]}>{meetingDetails.status}</Badge>
+            <Badge variant={MEETING_STATUS_VARIANTS[meetingDetails.status]}>
+              {meetingDetails.status}
+            </Badge>
           )}
         </Modal.Title>
       </Modal.Header>
@@ -173,7 +164,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
       <Modal.Body>
         {error && (
           <Alert variant="danger" className="mb-3">
-            <h6>Error</h6>
+            <Heading level={6}>Error</Heading>
             <p className="mb-0">{error}</p>
           </Alert>
         )}
@@ -182,34 +173,41 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
           <div>
             {/* Meeting Title */}
             <div className="mb-4">
-              <h5 className="mb-2">{meeting.title}</h5>
-              {meeting.description && <p className="text-muted mb-0">{meeting.description}</p>}
+              <Heading level={5} className="mb-2">
+                <i className="bi bi-square-fill me-2" />
+                {meeting?.title}
+              </Heading>
+              {meeting?.description && (
+                <Text color="muted" className="mb-0">
+                  {meeting.description}
+                </Text>
+              )}
             </div>
 
             {/* Meeting Time */}
             <div className="mb-4">
-              <h6 className="text-primary">
+              <Heading level={6} color="primary" className="mb-2">
                 <i className="bi bi-calendar-event me-2" />
                 Date & Time
-              </h6>
+              </Heading>
               <div className="ps-4">
-                <div className="fw-medium">{meetingDetails.formattedStartTime}</div>
-                <div className="text-muted">
-                  Ends at {meetingDetails.formattedEndTime} ({meetingDetails.duration})
-                </div>
+                <Text weight="medium">{meetingDetails?.formattedStartTime}</Text>
+                <Text color="muted">
+                  Ends at {meetingDetails?.formattedEndTime} ({meetingDetails?.duration})
+                </Text>
               </div>
             </div>
 
             {/* Attendees */}
-            {meetingDetails.attendeeCount > 0 && (
+            {meetingDetails && meetingDetails.attendeeCount > 0 && (
               <div className="mb-4">
                 <h6 className="text-primary">
                   <i className="bi bi-people me-2" />
-                  Attendees ({meetingDetails.attendeeCount})
+                  Attendees ({meetingDetails?.attendeeCount})
                 </h6>
                 <div className="ps-4">
                   <div className="d-flex flex-wrap gap-2">
-                    {meeting.attendees?.map((attendee) => (
+                    {meeting?.attendees?.map((attendee) => (
                       <span key={attendee.id} className="badge bg-light text-dark border">
                         {attendee.name}
                       </span>
@@ -220,7 +218,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
             )}
 
             {/* Meeting Actions */}
-            {meetingDetails.status === 'ongoing' && (
+            {meetingDetails && meetingDetails.status === 'ongoing' && (
               <div className="mb-4">
                 <h6 className="text-success">
                   <i className="bi bi-video me-2" />
@@ -243,13 +241,13 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
             <div className="row text-center">
               <div className="col-md-4">
                 <div className="border rounded p-3">
-                  <div className="h4 mb-1 text-primary">{meetingDetails.duration}</div>
+                  <div className="h4 mb-1 text-primary">{meetingDetails?.duration}</div>
                   <small className="text-muted">Duration</small>
                 </div>
               </div>
               <div className="col-md-4">
                 <div className="border rounded p-3">
-                  <div className="h4 mb-1 text-success">{meetingDetails.attendeeCount}</div>
+                  <div className="h4 mb-1 text-success">{meetingDetails?.attendeeCount}</div>
                   <small className="text-muted">Attendees</small>
                 </div>
               </div>
@@ -271,7 +269,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
             </div>
             <h5 className="mb-3">Delete Meeting?</h5>
             <p className="text-muted mb-4">
-              Are you sure you want to delete &quot;{meeting.title}&quot;?
+              Are you sure you want to delete &quot;{meeting?.title}&quot;?
               <br />
               This action cannot be undone and all attendees will be notified.
             </p>
@@ -308,13 +306,13 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
               </Button>
             </div>
             <div className="d-flex gap-2">
-              {meetingDetails.canDelete && (
+              {meetingDetails?.canDelete && (
                 <Button variant="outline-danger" onClick={handleDeleteClick} disabled={isDeleting}>
                   <i className="bi bi-trash me-1" />
                   Delete
                 </Button>
               )}
-              {meetingDetails.canEdit && (
+              {meetingDetails?.canEdit && (
                 <Button variant="outline-primary" onClick={handleEdit}>
                   <i className="bi bi-pencil me-1" />
                   Edit
