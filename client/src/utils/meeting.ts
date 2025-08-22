@@ -183,6 +183,32 @@ export function calculateMeetingDuration(startTime: Date, endTime: Date): number
 }
 
 /**
+ * Calculate meeting duration in a human-readable format
+ * @param startTime - Meeting start time
+ * @param endTime - Meeting end time
+ * @returns Duration as formatted string (e.g., "8 hours 10 minutes", "45 minutes", "2 hours")
+ */
+export function calculateMeetingDurationMinutes(startTime: Date, endTime: Date): string {
+  const diffMs = endTime.getTime() - startTime.getTime();
+  const diffMinutes = Math.round(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffMinutesRemainder = diffMinutes % 60;
+
+  // Handle singular/plural forms
+  const hoursText = diffHours === 1 ? 'hour' : 'hours';
+  const minutesText = diffMinutesRemainder === 1 ? 'minute' : 'minutes';
+
+  // Return formatted string based on duration
+  if (diffHours === 0) {
+    return `${diffMinutesRemainder} ${minutesText}`;
+  } else if (diffMinutesRemainder === 0) {
+    return `${diffHours} ${hoursText}`;
+  } else {
+    return `${diffHours} ${hoursText} ${diffMinutesRemainder} ${minutesText}`;
+  }
+}
+
+/**
  * Format meeting time range using JST timezone
  * @param startTime - Meeting start time
  * @param endTime - Meeting end time
@@ -198,6 +224,7 @@ export function formatMeetingTimeRange(
     case 'short': {
       const start = formatJSTTime(startTime);
       const end = formatJSTTime(endTime);
+      // return in 24 hour format base on the start time and end time e
       return `${start} - ${end}`;
     }
 
