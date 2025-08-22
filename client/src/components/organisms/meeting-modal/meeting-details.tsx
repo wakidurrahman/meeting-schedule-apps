@@ -90,7 +90,6 @@
 
 import { useMutation } from '@apollo/client';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
 import Badge from '@/components/atoms/badge';
@@ -126,7 +125,6 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
   show,
   meeting,
   onHide,
-  onEdit,
   onDelete,
 }) => {
   /**
@@ -140,9 +138,6 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
    * @description Stores error messages for display to user
    */
   const [error, setError] = useState<string | null>(null);
-
-  /** React Router navigation hook for page transitions */
-  const navigate = useNavigate();
 
   /** Toast notification system for user feedback */
   const { addError, addSuccess } = useToast();

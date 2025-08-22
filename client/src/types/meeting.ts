@@ -96,4 +96,20 @@ export interface TaskEvent {
   description?: string;
   startTime: Date;
   endTime: Date;
+  createdBy?: AttendeesUser;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskEventFormData {
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface TaskValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
 }
