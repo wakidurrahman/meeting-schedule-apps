@@ -20,15 +20,25 @@ import Alert from '@/components/atoms/alert';
 import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
+import ReactSelectField from '@/components/atoms/react-select';
+import Spinner from '@/components/atoms/spinner';
+import Text from '@/components/atoms/text';
 import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
+import Card, {
+  CardBody,
+  CardFooter,
+  CardHeader,
+  CardText,
+  CardTitle,
+} from '@/components/molecules/card';
 import MeetingDetailTemplate from '@/components/templates/meeting/meeting-detail';
 import { ValidationMessages } from '@/constants/messages';
 import {
   DELETE_MEETING,
   UPDATE_MEETING,
-  type DeleteMeetingMutationData,
-  type DeleteMeetingMutationVariables,
+  type DeleteMeetingMutationEvent,
+  type DeleteMeetingMutationEventInput,
   type UpdateMeetingMutationData,
   type UpdateMeetingMutationVariables,
 } from '@/graphql/meeting/mutations';
@@ -38,6 +48,8 @@ import {
   type MeetingByIdQueryData,
 } from '@/graphql/meeting/queries';
 import { GET_USERS } from '@/graphql/user/queries';
+import { useToast } from '@/hooks/use-toast';
+import { cloneDate, formatJSTDate } from '@/utils/date';
 import { datetimeLocalToDate, dateToDatetimeLocal } from '@/utils/meeting';
 
 // Validation schema
@@ -51,8 +63,8 @@ const EditMeetingSchema = z
   })
   .refine(
     (data) => {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
       return start < end;
     },
     {
@@ -62,8 +74,8 @@ const EditMeetingSchema = z
   )
   .refine(
     (data) => {
-      const start = new Date(data.startTime);
-      const end = new Date(data.endTime);
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
       const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
       return durationMinutes >= 5 && durationMinutes <= 480; // 5 minutes to 8 hours
     },
@@ -79,6 +91,7 @@ const EditMeetingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   console.log('id', id);
   const navigate = useNavigate();
+  const { addSuccess, addError } = useToast();
 
   // State
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -94,30 +107,49 @@ const EditMeetingPage: React.FC = () => {
     skip: !id,
   });
 
-  const { data: usersData } = useQuery(GET_USERS);
+  const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
   const [updateMeeting, { loading: updateLoading }] = useMutation<
     UpdateMeetingMutationData,
     UpdateMeetingMutationVariables
   >(UPDATE_MEETING, {
     refetchQueries: [{ query: GET_MEETINGS }],
-    onCompleted: () => {
-      navigate('/calendar');
+    onCompleted: (data) => {
+      const meeting = data.updateMeeting;
+      addSuccess({
+        title: 'Success',
+        subtitle: 'just now',
+        children: `Meeting updated successfully ${meeting.title}`,
+      });
+      navigate(`/calendar`);
     },
     onError: (error) => {
-      console.error('Error updating meeting:', error);
+      addError({
+        title: 'Error',
+        subtitle: 'just now',
+        children: `Failed to update meeting: ${error.message}`,
+      });
     },
   });
 
   const [deleteMeeting, { loading: deleteLoading }] = useMutation<
-    DeleteMeetingMutationData,
-    DeleteMeetingMutationVariables
+    DeleteMeetingMutationEvent,
+    DeleteMeetingMutationEventInput
   >(DELETE_MEETING, {
     refetchQueries: [{ query: GET_MEETINGS }],
     onCompleted: () => {
+      addSuccess({
+        title: 'Success',
+        subtitle: 'just now',
+        children: `Meeting deleted successfully`,
+      });
       navigate('/calendar');
     },
     onError: (error) => {
-      console.error('Error deleting meeting:', error);
+      addError({
+        title: 'Error',
+        subtitle: 'just now',
+        children: `Failed to delete meeting: ${error.message}`,
+      });
     },
   });
 
@@ -144,7 +176,7 @@ const EditMeetingPage: React.FC = () => {
         description: meeting.description || '',
         startTime: dateToDatetimeLocal(new Date(meeting.startTime)),
         endTime: dateToDatetimeLocal(new Date(meeting.endTime)),
-        attendeeIds: meeting.attendees?.map((a) => a.id) || [],
+        attendeeIds: meeting.attendees?.map((user) => user.id) || [],
       });
     }
   }, [meetingData, reset]);
@@ -181,22 +213,18 @@ const EditMeetingPage: React.FC = () => {
     async (data: EditMeetingFormData) => {
       if (!id) return;
 
-      try {
-        await updateMeeting({
-          variables: {
-            id,
-            input: {
-              title: data.title,
-              description: data.description || '',
-              startTime: datetimeLocalToDate(data.startTime).toISOString(),
-              endTime: datetimeLocalToDate(data.endTime).toISOString(),
-              attendeeIds: data.attendeeIds || [],
-            },
+      await updateMeeting({
+        variables: {
+          id,
+          input: {
+            title: data.title,
+            description: data.description || '',
+            startTime: datetimeLocalToDate(data.startTime).toISOString(),
+            endTime: datetimeLocalToDate(data.endTime).toISOString(),
+            attendeeIds: data.attendeeIds || [],
           },
-        });
-      } catch (error) {
-        console.error('Error updating meeting:', error);
-      }
+        },
+      });
     },
     [id, updateMeeting],
   );
@@ -205,62 +233,19 @@ const EditMeetingPage: React.FC = () => {
   const handleDelete = useCallback(async () => {
     if (!id) return;
 
-    try {
-      await deleteMeeting({
-        variables: { id },
-      });
-    } catch (error) {
-      console.error('Error deleting meeting:', error);
-    }
+    await deleteMeeting({
+      variables: { id },
+    });
   }, [id, deleteMeeting]);
 
   // Breadcrumb items
   const breadcrumbItems = [
     { label: 'Calendar', href: '/calendar' },
-    { label: meetingData?.findMeetingById?.title || 'Meeting', href: '#' },
+
     { label: 'Edit', href: '#' },
   ];
 
-  // Loading state
-  if (meetingLoading) {
-    return (
-      <MeetingDetailTemplate
-        breadcrumb={<Breadcrumb items={breadcrumbItems} />}
-        meetingHeader={<Heading level={1}>Loading...</Heading>}
-        meetingContent={
-          <div className="d-flex justify-content-center py-5">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading meeting...</span>
-            </div>
-          </div>
-        }
-      />
-    );
-  }
-
-  // Error state
-  if (meetingError || !meetingData?.findMeetingById) {
-    return (
-      <MeetingDetailTemplate
-        breadcrumb={<Breadcrumb items={breadcrumbItems} />}
-        meetingHeader={<Heading level={1}>Meeting Not Found</Heading>}
-        meetingContent={
-          <Alert variant="danger">
-            <h6>Error Loading Meeting</h6>
-            <p>
-              The meeting you&apos;re trying to edit could not be found or you don&apos;t have
-              permission to edit it.
-            </p>
-            <Button variant="primary" onClick={() => navigate('/calendar')}>
-              Back to Calendar
-            </Button>
-          </Alert>
-        }
-      />
-    );
-  }
-
-  const meeting = meetingData.findMeetingById;
+  const meeting = meetingData?.findMeetingById;
 
   // Render
   return (
@@ -288,181 +273,205 @@ const EditMeetingPage: React.FC = () => {
         </div>
       }
       meetingContent={
-        <div className="row">
-          <div className="col-lg-8">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="card">
-                <div className="card-header">
-                  <h5 className="card-title mb-0">Meeting Details</h5>
-                </div>
-                <div className="card-body">
-                  {/* Title */}
-                  <div className="mb-3">
-                    <Controller
-                      name="title"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Meeting Title"
-                          placeholder="Enter meeting title"
-                          error={errors.title?.message}
-                          required
-                        />
-                      )}
-                    />
-                  </div>
+        <>
+          {meetingLoading && <Spinner size="lg" />}
+          {meetingError && <Alert variant="danger">Error loading meeting</Alert>}
+          {!meetingLoading && !meetingError && !meetingData?.findMeetingById && (
+            <Alert variant="danger">
+              <Text>Meeting not found</Text>
+              <Button variant="primary" onClick={() => navigate('/calendar')}>
+                Back to Calendar
+              </Button>
+            </Alert>
+          )}
+          {!meetingLoading && !meetingError && meetingData?.findMeetingById && (
+            <div className="row">
+              <div className="col-lg-8">
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <Card>
+                    <CardHeader>
+                      <Heading level={4} className="mb-0">
+                        Meeting Details
+                      </Heading>
+                    </CardHeader>
+                    <CardBody>
+                      {/* Title */}
 
-                  {/* Description */}
-                  <div className="mb-3">
-                    <Controller
-                      name="description"
-                      control={control}
-                      render={({ field }) => (
-                        <TextareaField
-                          {...field}
-                          label="Description"
-                          placeholder="Enter meeting description (optional)"
-                          rows={3}
-                          error={errors.description?.message}
-                        />
-                      )}
-                    />
-                  </div>
+                      <Controller
+                        name="title"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Meeting Title"
+                            placeholder="Enter meeting title"
+                            error={errors.title?.message}
+                            required
+                          />
+                        )}
+                      />
 
-                  {/* Time Fields */}
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="mb-3">
-                        <Controller
-                          name="startTime"
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              type="datetime-local"
-                              label="Start Time"
-                              error={errors.startTime?.message}
-                              required
-                            />
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="mb-3">
-                        <Controller
-                          name="endTime"
-                          control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              type="datetime-local"
-                              label="End Time"
-                              error={errors.endTime?.message}
-                              required
-                            />
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                      {/* Description */}
 
-                  {/* Attendees */}
-                  <div className="mb-3">
-                    <Controller
-                      name="attendeeIds"
-                      control={control}
-                      render={({ field }) => (
-                        <div>
-                          <label htmlFor="attendees-select" className="form-label">
-                            Attendees
-                          </label>
-                          <select {...field} id="attendees-select" className="form-select" multiple>
-                            {attendeeOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          {errors.attendeeIds?.message && (
-                            <div className="text-danger small mt-1">
-                              {errors.attendeeIds.message}
-                            </div>
-                          )}
+                      <Controller
+                        name="description"
+                        control={control}
+                        render={({ field }) => (
+                          <TextareaField
+                            {...field}
+                            label="Description"
+                            placeholder="Enter meeting description (optional)"
+                            rows={3}
+                            error={errors.description?.message}
+                          />
+                        )}
+                      />
+
+                      {/* Time Fields */}
+                      <div className="row">
+                        <div className="col-md-6">
+                          <Controller
+                            name="startTime"
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                type="datetime-local"
+                                label="Start Time"
+                                error={errors.startTime?.message}
+                                required
+                              />
+                            )}
+                          />
                         </div>
+                        <div className="col-md-6">
+                          <Controller
+                            name="endTime"
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                type="datetime-local"
+                                label="End Time"
+                                error={errors.endTime?.message}
+                                required
+                              />
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Attendees */}
+
+                      {/* Attendees Selection */}
+                      <Controller
+                        name="attendeeIds"
+                        control={control}
+                        render={({ field }) => (
+                          <ReactSelectField
+                            label="Selected attendees"
+                            placeholder="Search and select attendees"
+                            isMulti
+                            isSearchable
+                            isClearable
+                            isLoading={usersLoading}
+                            options={attendeeOptions}
+                            value={attendeeOptions.filter((option) =>
+                              (field.value || []).includes(option.value as string),
+                            )}
+                            onChange={(selectedOptions) => {
+                              const values = Array.isArray(selectedOptions)
+                                ? selectedOptions.map((option) => option.value as string)
+                                : [];
+                              field.onChange(values);
+                            }}
+                            error={errors.attendeeIds?.message}
+                            helpText="Only registered users can be invited"
+                          />
+                        )}
+                      />
+
+                      {/* Conflicts Warning */}
+                      {conflicts.length > 0 && (
+                        <Alert variant="warning" className="mb-3">
+                          <Heading level={6}>Meeting Conflicts Detected</Heading>
+                          <ul className="mb-0">
+                            {conflicts.map((conflict, index) => (
+                              <li key={index}>{conflict.message}</li>
+                            ))}
+                          </ul>
+                        </Alert>
                       )}
-                    />
-                  </div>
-
-                  {/* Conflicts Warning */}
-                  {conflicts.length > 0 && (
-                    <Alert variant="warning" className="mb-3">
-                      <h6>Meeting Conflicts Detected</h6>
-                      <ul className="mb-0">
-                        {conflicts.map((conflict, index) => (
-                          <li key={index}>{conflict.message}</li>
-                        ))}
-                      </ul>
-                    </Alert>
-                  )}
-                </div>
-                <div className="card-footer">
-                  <div className="d-flex justify-content-between">
-                    <Button
-                      variant="outline-secondary"
-                      onClick={() => navigate('/calendar')}
-                      disabled={updateLoading}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      disabled={!isValid || !isDirty || updateLoading}
-                    >
-                      {updateLoading ? 'Updating...' : 'Update Meeting'}
-                    </Button>
-                  </div>
-                </div>
+                    </CardBody>
+                    <CardFooter>
+                      <div className="d-flex justify-content-between">
+                        <Button
+                          type="button"
+                          variant="outline-secondary"
+                          onClick={() => navigate('/calendar')}
+                          disabled={updateLoading}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          variant="primary"
+                          disabled={!isValid || !isDirty || updateLoading}
+                        >
+                          {updateLoading ? 'Updating...' : 'Update Meeting'}
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                </form>
               </div>
-            </form>
-          </div>
 
-          <div className="col-lg-4">
-            <div className="card">
-              <div className="card-header">
-                <h6 className="card-title mb-0">Meeting Information</h6>
-              </div>
-              <div className="card-body">
-                <div className="mb-3">
-                  <small className="text-muted">Created</small>
-                  <div>{new Date(meeting.createdAt).toLocaleDateString()}</div>
-                </div>
-                <div className="mb-3">
-                  <small className="text-muted">Creator</small>
-                  <div>{meeting.createdBy?.name || 'Unknown'}</div>
-                </div>
-                <div className="mb-3">
-                  <small className="text-muted">Current Attendees</small>
-                  <div>
-                    {meeting.attendees?.length ? (
-                      <ul className="list-unstyled mb-0">
-                        {meeting.attendees.map((attendee) => (
-                          <li key={attendee.id} className="small">
-                            {attendee.name}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <span className="text-muted">No attendees</span>
+              <div className="col-lg-4">
+                <Card>
+                  <CardHeader>
+                    <Heading level={4} className="mb-0">
+                      Meeting Information
+                    </Heading>
+                  </CardHeader>
+                  <CardBody>
+                    {meeting && (
+                      <>
+                        <CardText>
+                          <span className="text-muted">Created : </span>
+                          <span className="fw-bold">
+                            {formatJSTDate(meeting?.createdAt ?? new Date())}
+                          </span>
+                        </CardText>
+                        <CardText>
+                          <span className="text-muted">Created by : </span>
+                          <span className="fw-bold">{meeting?.createdBy?.name || 'Unknown'}</span>
+                        </CardText>
+                        <CardText>
+                          <span className="text-muted">Current Attendees : </span>
+                          <span className="fw-bold">{meeting?.attendees?.length || 0}</span>
+                        </CardText>
+
+                        <CardTitle className="mt-4">Attendees Name</CardTitle>
+
+                        {meeting.attendees?.length ? (
+                          <ol className="list-group list-group-numbered">
+                            {meeting.attendees.map((attendee) => (
+                              <li key={attendee.id} className="list-group-item">
+                                {attendee.name}
+                              </li>
+                            ))}
+                          </ol>
+                        ) : (
+                          <Text color="muted">No attendees</Text>
+                        )}
+                      </>
                     )}
-                  </div>
-                </div>
+                  </CardBody>
+                </Card>
               </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       }
       modals={
         showDeleteConfirm && (

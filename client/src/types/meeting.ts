@@ -54,12 +54,12 @@ export type Meetings = {
 export interface MeetingEvent {
   id: string;
   title: string;
+  description?: string;
   startTime: Date;
   endTime: Date;
   attendees?: Array<AttendeesUser>;
-  description?: string;
-  isAllDay?: boolean;
   createdBy?: AttendeesUser;
+  isAllDay?: boolean;
 }
 
 export interface MeetingConflict {

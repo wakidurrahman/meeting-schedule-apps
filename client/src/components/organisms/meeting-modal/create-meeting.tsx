@@ -147,7 +147,8 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
    */
   useEffect(() => {
     console.log('Current user:', currentUser);
-  }, [currentUser]);
+    console.log('selectedDate', selectedDate);
+  }, [currentUser, selectedDate]);
 
   /**
    * ========================================================================
@@ -243,6 +244,24 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
       attendeeIds: [],
     },
   });
+
+  /**
+   * Update form values when selectedDate changes
+   * This ensures that startTime and endTime are updated with new default values
+   * when user selects a different date on the calendar
+   */
+  useEffect(() => {
+    if (selectedDate && show) {
+      const newDefaultTimes = getDefaultMeetingTimes(selectedDate);
+      reset({
+        title: '',
+        description: '',
+        startTime: newDefaultTimes.startTime,
+        endTime: newDefaultTimes.endTime,
+        attendeeIds: [],
+      });
+    }
+  }, [selectedDate, show, reset]);
 
   // Watch form values for conflict checking.
   const watchedValues = watch(['startTime', 'endTime', 'attendeeIds']);

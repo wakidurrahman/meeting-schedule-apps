@@ -44,7 +44,7 @@ export interface CalendarProps extends BaseComponentProps {
   onDateClick?: (date: Date) => void;
   onMeetingClick?: (meeting: MeetingEvent) => void;
   onCreateMeeting?: (date?: Date) => void;
-
+  onDateDoubleClick?: (date: Date) => void;
   onViewChange?: (view: CalendarViewType) => void;
   onDateChange?: (date: Date) => void;
 
@@ -69,6 +69,7 @@ const Calendar: React.FC<CalendarProps> = ({
   showWeekends = true,
   onDateClick,
   onMeetingClick,
+  onDateDoubleClick,
   onCreateMeeting,
 
   onViewChange,
@@ -86,6 +87,7 @@ const Calendar: React.FC<CalendarProps> = ({
   );
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
 
+  console.log('internalSelectedDate', internalSelectedDate);
   /**
    * All Event Handlers
    *
@@ -196,9 +198,9 @@ const Calendar: React.FC<CalendarProps> = ({
   const handleDateDoubleClick = useCallback(
     (date: Date) => {
       console.log('date double click', date);
-      onCreateMeeting?.(date);
+      onDateDoubleClick?.(date);
     },
-    [onCreateMeeting],
+    [onDateDoubleClick],
   );
 
   // 8. Meeting click handler

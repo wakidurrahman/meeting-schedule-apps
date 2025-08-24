@@ -471,7 +471,7 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
               )}
               {meetingDetails?.canEdit && (
                 <Button href={`/calendar/edit/${meeting?.id}`} variant="outline-secondary">
-                  <i className="bi bi-cursor-fill me-1" />
+                  <i className="bi bi-box-arrow-up-right me-1" />
                   Edit
                 </Button>
               )}
