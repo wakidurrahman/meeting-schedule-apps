@@ -38,7 +38,7 @@ export function generateCalendarGrid(
   const mondayBasedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
   firstDayOfGrid.setDate(firstDayOfGrid.getDate() - mondayBasedDayOfWeek);
 
-  // 4. Generate weeks
+  // 4. Generate weeks array
   const weeks: CalendarWeek[] = [];
   // 5. Start from the first day of the month
   const currentDate = cloneDate(firstDayOfGrid);

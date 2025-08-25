@@ -180,6 +180,38 @@ export const CreateMeetingEventSchema = z
     },
   );
 
+export const EditMeetingSchema = z
+  .object({
+    title: z.string().min(1, VM.titleRequired).max(100, VM.titleTooLong),
+    description: z.string().optional(),
+    startTime: z.string().min(1, VM.startTimeRequired),
+    endTime: z.string().min(1, VM.endTimeRequired),
+    attendeeIds: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
+      return start < end;
+    },
+    {
+      message: VM.endTimeAfterStart,
+      path: ['endTime'],
+    },
+  )
+  .refine(
+    (data) => {
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
+      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+      return durationMinutes >= 5 && durationMinutes <= 480; // 5 minutes to 8 hours
+    },
+    {
+      message: VM.meetingDurationRange,
+      path: ['endTime'],
+    },
+  );
+
 // User search schema
 
 export const UserSearchSchema = z.object({

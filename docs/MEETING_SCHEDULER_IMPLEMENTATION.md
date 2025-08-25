@@ -187,8 +187,7 @@ navigateDay(date: Date, direction: 'next' | 'previous'): Date
 // Get calendar view titles
 getCalendarViewTitle(date: Date, view: CalendarViewType): string
 
-// Time slot generation
-getTimeSlots(date: Date, interval: number, startHour: number, endHour: number): Date[]
+
 
 // Date utilities
 getCurrentWeekDates(date: Date): Date[]
@@ -607,19 +606,6 @@ The calendar system requires proper SCSS imports in `main.scss` for professional
 
 ```scss
 // =============================================================================
-// Import Custom Component Styles
-// =============================================================================
-
-// Import base template styles
-@import '../../components/templates/base-templates/index.scss';
-
-// Import meeting template styles
-@import '../../components/templates/meeting-templates/index.scss';
-
-// Import calendar organism styles
-@import '../../components/organisms/calendar/index.scss';
-
-// =============================================================================
 // Calendar Quick Fixes
 // =============================================================================
 
@@ -655,12 +641,6 @@ The calendar system requires proper SCSS imports in `main.scss` for professional
 }
 ```
 
-### **Styling Components**
-
-- **`calendar/index.scss`** (700+ lines) - Complete calendar organism styling
-- **`meeting-templates/index.scss`** (340+ lines) - Template-specific styling
-- **`base-templates/index.scss`** - Foundation template styling
-
 ### **Design System Integration**
 
 - ✅ Bootstrap CSS variables integration
@@ -682,8 +662,6 @@ Calendar/
 ├── CalendarGrid.tsx       # ✅ Month view grid (280 lines)
 ├── CalendarHeader.tsx     # ✅ Navigation controls (120 lines)
 ├── CalendarEvent.tsx      # ✅ Meeting event display (140 lines)
-├── CalendarNavigation.tsx # ✅ View switcher (100 lines)
-├── CalendarLayout.tsx     # ✅ HOC wrapper (40 lines)
 └── index.scss             # ✅ Complete styling (700+ lines)
 ```
 

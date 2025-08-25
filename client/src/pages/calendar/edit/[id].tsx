@@ -34,7 +34,6 @@ import Card, {
 } from '@/components/molecules/card';
 import Modal from '@/components/organisms/modal';
 import MeetingDetailTemplate from '@/components/templates/meeting/meeting-detail';
-import { ValidationMessages } from '@/constants/messages';
 import {
   DELETE_MEETING,
   UPDATE_MEETING,
@@ -50,41 +49,11 @@ import {
 } from '@/graphql/meeting/queries';
 import { GET_USERS } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
-import { cloneDate, formatJSTDate } from '@/utils/date';
+import { formatJSTDate } from '@/utils/date';
 import { datetimeLocalToDate, dateToDatetimeLocal } from '@/utils/meeting';
+import { EditMeetingSchema } from '@/utils/validation';
 
 // Validation schema
-const EditMeetingSchema = z
-  .object({
-    title: z.string().min(1, ValidationMessages.titleRequired).max(100, 'Title too long'),
-    description: z.string().optional(),
-    startTime: z.string().min(1, 'Start time is required'),
-    endTime: z.string().min(1, 'End time is required'),
-    attendeeIds: z.array(z.string()).optional(),
-  })
-  .refine(
-    (data) => {
-      const start = cloneDate(data.startTime);
-      const end = cloneDate(data.endTime);
-      return start < end;
-    },
-    {
-      message: 'End time must be after start time',
-      path: ['endTime'],
-    },
-  )
-  .refine(
-    (data) => {
-      const start = cloneDate(data.startTime);
-      const end = cloneDate(data.endTime);
-      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-      return durationMinutes >= 5 && durationMinutes <= 480; // 5 minutes to 8 hours
-    },
-    {
-      message: 'Meeting duration must be between 5 minutes and 8 hours',
-      path: ['endTime'],
-    },
-  );
 
 type EditMeetingFormData = z.infer<typeof EditMeetingSchema>;
 
