@@ -10,7 +10,13 @@
 
 import { cloneDate, formatJST, formatJSTDate, fromPartsJST, now } from './date';
 
-import { CalendarDay, CalendarGridType, CalendarViewType, CalendarWeek } from '@/types/calendar';
+import {
+  CalendarDay,
+  CalendarGridType,
+  CalendarTitleData,
+  CalendarViewType,
+  CalendarWeek,
+} from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
 
 /**
@@ -108,15 +114,15 @@ export function getMeetingsForDate(date: Date, meetings: MeetingEvent[]): Meetin
 
 /**
  * Check if two dates are the same day
- * @param date1 - First date
- * @param date2 - Second date
+ * @param firstDate - First date
+ * @param secondDate - Second date
  * @returns True if dates are the same day
  */
-export function isSameDay(date1: Date, date2: Date): boolean {
+export function isSameDay(firstDate: Date, secondDate: Date): boolean {
   return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
   );
 }
 
@@ -128,19 +134,19 @@ export function isSameDay(date1: Date, date2: Date): boolean {
  */
 export function formatCalendarDate(
   date: Date,
-  format: 'short' | 'long' | 'numeric' | 'header' = 'short',
+  format: 'short' | 'long' | 'numeric' | 'header' = 'short', // 'short' is default
 ): string {
   switch (format) {
     case 'short':
-      return formatJST(date, 'MMM d');
+      return formatJST(date, 'MMM d'); // e.g. Aug 25
     case 'long':
-      return formatJST(date, 'EEEE, MMMM d, yyyy');
+      return formatJST(date, 'EEEE, MMMM d, yyyy'); // e.g. Monday, August 25, 2025
     case 'numeric':
-      return date.getDate().toString();
+      return date.getDate().toString(); // e.g. 25
     case 'header':
-      return formatJST(date, 'MMMM yyyy');
+      return formatJST(date, 'MMMM yyyy'); // e.g. August 2025
     default:
-      return formatJSTDate(date);
+      return formatJSTDate(date); // e.g. 2025-08-25
   }
 }
 
@@ -152,7 +158,9 @@ export function formatCalendarDate(
 export function getCurrentWeekDates(date: Date = now()): Date[] {
   const startOfWeek = cloneDate(date);
   const dayOfWeek = date.getDay();
-  startOfWeek.setDate(date.getDate() - dayOfWeek);
+  // Convert Sunday (0) to 7, so Monday becomes 0
+  const mondayBasedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  startOfWeek.setDate(date.getDate() - mondayBasedDayOfWeek);
 
   const weekDates: Date[] = [];
   for (let i = 0; i < 7; i++) {
@@ -292,31 +300,137 @@ export function isPastDate(date: Date): boolean {
 }
 
 /**
- * Get calendar view title based on view type and date
+ * Get the first and last day of a month
  * @param date - Reference date
- * @param view - Calendar view type
- * @returns Formatted title for the view in JST
+ * @returns Object with first and last day of the month
  */
-export function getCalendarViewTitle(date: Date, view: CalendarViewType): string {
+export function getMonthDateRange(date: Date): { firstDay: Date; lastDay: Date } {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const firstDay = fromPartsJST({ year, month, day: 1 });
+
+  // Get last day of the month by going to the first day of next month and subtracting 1 day
+  const nextMonth = month === 11 ? 0 : month + 1;
+  const nextYear = month === 11 ? year + 1 : year;
+  const firstDayOfNextMonth = fromPartsJST({ year: nextYear, month: nextMonth, day: 1 });
+  const lastDay = new Date(firstDayOfNextMonth.getTime() - 24 * 60 * 60 * 1000); // Subtract 1 day
+
+  return { firstDay, lastDay };
+}
+
+/**
+ * Get formatted month date range string
+ * @param date - Reference date
+ * @returns Formatted date range (e.g., "Jan 1, 2025 - Jan 31, 2025")
+ */
+export function getMonthDateRangeString(date: Date): string {
+  const { firstDay, lastDay } = getMonthDateRange(date);
+
+  if (
+    firstDay.getMonth() === lastDay.getMonth() &&
+    firstDay.getFullYear() === lastDay.getFullYear()
+  ) {
+    return `${formatJST(firstDay, 'MMM d, yyyy')} - ${formatJST(lastDay, 'MMM d, yyyy')}`;
+  } else {
+    // Handle edge case where month spans across years
+    return `${formatJST(firstDay, 'MMM d, yyyy')} - ${formatJST(lastDay, 'MMM d, yyyy')}`;
+  }
+}
+
+/**
+ * Get calendar view title based on view type and date
+ * @param date - Reference date. e.g. Mon Aug 25 2025 17:56:01 GMT+0900 (Japan Standard Time)
+ * @param view - Calendar view type.  e.g. 'month', 'week', 'day', 'year'
+ * @param selectedDate - Optional selected date for enhanced display. e.g. Mon Aug 25 2025 17:56:01 GMT+0900 (Japan Standard Time)
+ * @returns Structured calendar title data for enhanced UI rendering
+ */
+export function getCalendarViewTitle(
+  date: Date,
+  view: CalendarViewType,
+  selectedDate?: Date,
+): CalendarTitleData {
+  // 1. Today's date by JST timezone
+  const today = now();
+  // 2. Current selected date by JST timezone. If no selected date is provided, use today's date.
+  const currentSelectedDate = selectedDate || today;
+
+  // 3. Switch case for different view types
   switch (view) {
-    case 'day':
-      return formatCalendarDate(date, 'long');
+    case 'day': {
+      const isToday = isSameDay(date, today);
+      return {
+        mainTitle: formatCalendarDate(date, 'long'),
+        subtitle: isToday ? 'Today' : formatJST(date, 'EEEE'),
+        metadata: {
+          isToday,
+          selectedDate: date,
+          viewType: view,
+        },
+      };
+    }
+
     case 'week': {
       const weekDates = getCurrentWeekDates(date);
+      console.log('weekDates', weekDates);
       const firstDay = weekDates[0];
       const lastDay = weekDates[6];
 
+      let weekTitle: string;
       if (firstDay.getMonth() === lastDay.getMonth()) {
-        return `${formatJST(firstDay, 'MMM d')} - ${lastDay.getDate()}, ${formatJST(firstDay, 'yyyy')}`;
+        weekTitle = `${formatJST(firstDay, 'MMM d')} - ${lastDay.getDate()}, ${formatJST(firstDay, 'yyyy')}`;
       } else {
-        return `${formatJST(firstDay, 'MMM d')} - ${formatJST(lastDay, 'MMM d')}`;
+        weekTitle = `${formatJST(firstDay, 'MMM d')} - ${formatJST(lastDay, 'MMM d')}`;
       }
+
+      return {
+        mainTitle: weekTitle,
+        subtitle: `Week of ${formatJST(firstDay, 'MMM d')}`,
+        metadata: {
+          selectedDate: date,
+          viewType: view,
+        },
+      };
     }
-    case 'month':
-      return formatCalendarDate(date, 'header');
-    case 'year':
-      return formatJST(date, 'yyyy');
+
+    case 'month': {
+      const isCurrentMonth =
+        date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+
+      return {
+        monthAbbr: formatJST(date, 'MMM'),
+        dayNumber: currentSelectedDate.getDate().toString(),
+        mainTitle: formatCalendarDate(date, 'header'),
+        subtitle: getMonthDateRangeString(date),
+        metadata: {
+          isToday: isSameDay(currentSelectedDate, today),
+          isCurrentMonth,
+          selectedDate: currentSelectedDate,
+          viewType: view,
+        },
+      };
+    }
+
+    case 'year': {
+      const isCurrentYear = date.getFullYear() === today.getFullYear();
+
+      return {
+        mainTitle: formatJST(date, 'yyyy'),
+        subtitle: isCurrentYear ? 'Current Year' : formatJST(date, 'yyyy'),
+        metadata: {
+          selectedDate: date,
+          viewType: view,
+        },
+      };
+    }
+
     default:
-      return formatCalendarDate(date, 'header');
+      return {
+        mainTitle: formatCalendarDate(date, 'header'),
+        metadata: {
+          selectedDate: date,
+          viewType: view,
+        },
+      };
   }
 }
