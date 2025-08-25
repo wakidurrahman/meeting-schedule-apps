@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { cloneDate } from './date';
+
 import {
   EMAIL_REGEX,
   NAME_REGEX,
@@ -145,6 +147,71 @@ export const UpdateUserSchema = z.object({
     .optional(),
 });
 
+// Meeting schema
+export const CreateMeetingEventSchema = z
+  .object({
+    title: z.string().min(1, VM.titleRequired).max(100, VM.titleTooLong),
+    description: z.string().optional(),
+    startTime: z.string().min(1, VM.startTimeRequired),
+    endTime: z.string().min(1, VM.endTimeRequired),
+    attendeeIds: z.array(z.string()).optional().default([]),
+  })
+  .refine(
+    (data) => {
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
+      return start < end;
+    },
+    {
+      message: VM.endTimeAfterStart,
+      path: ['endTime'],
+    },
+  )
+  .refine(
+    (data) => {
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
+      const duration = (end.getTime() - start.getTime()) / (1000 * 60);
+      return duration >= 5 && duration <= 480; // 5 minutes to 8 hours
+    },
+    {
+      message: VM.meetingDurationRange,
+      path: ['endTime'],
+    },
+  );
+
+export const EditMeetingSchema = z
+  .object({
+    title: z.string().min(1, VM.titleRequired).max(100, VM.titleTooLong),
+    description: z.string().optional(),
+    startTime: z.string().min(1, VM.startTimeRequired),
+    endTime: z.string().min(1, VM.endTimeRequired),
+    attendeeIds: z.array(z.string()).optional(),
+  })
+  .refine(
+    (data) => {
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
+      return start < end;
+    },
+    {
+      message: VM.endTimeAfterStart,
+      path: ['endTime'],
+    },
+  )
+  .refine(
+    (data) => {
+      const start = cloneDate(data.startTime);
+      const end = cloneDate(data.endTime);
+      const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+      return durationMinutes >= 5 && durationMinutes <= 480; // 5 minutes to 8 hours
+    },
+    {
+      message: VM.meetingDurationRange,
+      path: ['endTime'],
+    },
+  );
+
 // User search schema
 
 export const UserSearchSchema = z.object({
@@ -154,3 +221,5 @@ export const UserSearchSchema = z.object({
   sortDirection: z.enum(SORT_DIRECTION_ENUM).optional(),
   page: z.number().min(1).optional(),
 });
+
+//

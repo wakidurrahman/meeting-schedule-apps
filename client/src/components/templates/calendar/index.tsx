@@ -1,0 +1,101 @@
+import React from 'react';
+
+import Footer from '@/components/organisms/footer';
+import Header from '@/components/organisms/header';
+import { BaseComponentProps } from '@/types/components-common';
+import { buildClassNames } from '@/utils/component';
+import './index.scss';
+
+export interface CalendarTemplateProps extends BaseComponentProps {
+  /**
+   * Calendar header content (toggle sidebar and title)
+   */
+  calendarHeader: React.ReactNode;
+  /**
+   * Main calendar content (calendar grid)
+   */
+  calendarContent: React.ReactNode;
+  /**
+   * Sidebar content (mini calendar, meeting list, filters)
+   */
+  sidebar?: React.ReactNode;
+  /**
+   * Modals and overlays (meeting creation, details, etc.)
+   */
+  modals?: React.ReactNode;
+  /**
+   * Show/hide sidebar
+   */
+  showSidebar?: boolean;
+}
+
+/**
+ * Calendar Template
+ *
+ * Specialized template for calendar views with:
+ * - Dedicated calendar header for toggle sidebar and title
+ * - Main calendar grid area
+ * - Optional sidebar for mini calendar and meeting list
+ * - Modal overlay area
+ * - Optimized layout for calendar functionality
+ */
+const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
+  children,
+
+  calendarHeader,
+  calendarContent,
+  sidebar,
+  modals,
+  showSidebar = true,
+}) => {
+  const templateClasses = buildClassNames('t-calendar');
+
+  return (
+    <div className={templateClasses}>
+      {/* Application main header */}
+      <Header />
+
+      <main className="t-calendar__main">
+        {/* Calendar header - Navigation & Controls */}
+
+        <div className="t-calendar__header">
+          <div className="container-fluid">{calendarHeader}</div>
+        </div>
+
+        {/* Main Calendar Content Area */}
+        <div className="t-calendar__content">
+          <div className="container-fluid">
+            <div className="row g-0">
+              {/* Calendar Grid */}
+              <div
+                className={buildClassNames(
+                  'col',
+                  showSidebar ? 'col-md-9 col-lg-9 col-xl-10' : 'col-12',
+                )}
+              >
+                <div className="t-calendar__calendar">{calendarContent}</div>
+              </div>
+
+              {/* Sidebar */}
+              {showSidebar && sidebar && (
+                <div className="col-md-3 col-lg-3 col-xl-2">
+                  <div className="t-calendar__sidebar">{sidebar}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Legacy children support */}
+        {children && <div className="t-calendar__legacy">{children}</div>}
+      </main>
+
+      <Footer />
+
+      {/* Modals & Overlays */}
+      {modals}
+    </div>
+  );
+};
+
+export default CalendarTemplate;

@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 
 // Import your actual molecular components
-import Card from '@/components/molecules/card';
-import Pagination from '@/components/molecules/pagination';
-import Table from '@/components/molecules/table';
 
 // Import atomic components for demos
 import Alert from '@/components/atoms/alert';
@@ -11,6 +8,9 @@ import Badge from '@/components/atoms/badge';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import Text from '@/components/atoms/text';
+import Card from '@/components/molecules/card';
+import Pagination from '@/components/molecules/pagination';
+import Table from '@/components/molecules/table';
 
 /**
  * Molecules Demo Page

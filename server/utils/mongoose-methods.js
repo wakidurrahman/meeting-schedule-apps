@@ -233,6 +233,70 @@ const createMeetingDoc = async ({
 };
 
 /**
+ * Update a meeting document and return it populated
+ */
+const updateMeetingDoc = async (meetingId, updateData, userId) => {
+  const meeting = await Meeting.findById(meetingId);
+  if (!meeting) {
+    throw new Error(MESSAGES.MEETING_NOT_FOUND || 'Meeting not found');
+  }
+  if (String(meeting.createdBy) !== String(userId)) {
+    throw new Error(MESSAGES.FORBIDDEN || 'Forbidden');
+  }
+
+  // Update only provided fields
+  const updateFields = {};
+  if (updateData.title !== undefined) updateFields.title = updateData.title;
+  if (updateData.description !== undefined) updateFields.description = updateData.description;
+  if (updateData.startTime !== undefined) updateFields.startTime = new Date(updateData.startTime);
+  if (updateData.endTime !== undefined) updateFields.endTime = new Date(updateData.endTime);
+  if (updateData.attendeeIds !== undefined) updateFields.attendees = updateData.attendeeIds;
+
+  const updatedMeeting = await Meeting.findByIdAndUpdate(meetingId, updateFields, { new: true })
+    .populate('attendees')
+    .populate('createdBy');
+
+  return updatedMeeting;
+};
+
+/**
+ * Get meetings by date range
+ */
+const getMeetingsByDateRange = async (startDate, endDate) => {
+  try {
+    return await Meeting.find({
+      startTime: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    })
+      .sort({ startTime: 1 })
+      .populate('attendees')
+      .populate('createdBy');
+  } catch (err) {
+    err.message = err.message || MESSAGES.INTERNAL_ERROR;
+    throw err;
+  }
+};
+
+/**
+ * Get meetings by user ID (created by or attending)
+ */
+const getMeetingsByUserId = async (userId) => {
+  try {
+    return await Meeting.find({
+      $or: [{ createdBy: userId }, { attendees: userId }],
+    })
+      .sort({ startTime: 1 })
+      .populate('attendees')
+      .populate('createdBy');
+  } catch (err) {
+    err.message = err.message || MESSAGES.INTERNAL_ERROR;
+    throw err;
+  }
+};
+
+/**
  * Delete a meeting only if the given user is the creator
  * Returns an object describing the outcome rather than throwing.
  */
@@ -404,6 +468,9 @@ module.exports = {
   listMeetingsForUserPopulated,
   getMeetingByIdPopulated,
   createMeetingDoc,
+  updateMeetingDoc,
+  getMeetingsByDateRange,
+  getMeetingsByUserId,
   deleteMeetingIfOwner,
   // event
   listAllEventsPopulated,

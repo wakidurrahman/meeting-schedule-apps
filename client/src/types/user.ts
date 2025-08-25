@@ -1,3 +1,13 @@
+export type AttendeeUser = {
+  id: string;
+  name: string;
+  email: string;
+};
+export type AttendeesUser = {
+  id: string;
+  name: string;
+};
+
 export type AuthUser = {
   id: string;
   name: string;

@@ -37,9 +37,9 @@ import TextField from '@/components/atoms/text-field';
 import TextareaField from '@/components/atoms/textarea-field';
 import BaseTemplate from '@/components/templates/base-templates';
 import {
-  CREATE_MEETING,
-  type CreateMeetingMutationData,
-  type CreateMeetingMutationVariables,
+  CREATE_MEETING_EVENT,
+  type CreateMeetingMutation,
+  type CreateMeetingMutationInput,
 } from '@/graphql/meeting/mutations';
 import { GET_USERS, type UsersQueryData } from '@/graphql/user/queries';
 
@@ -76,9 +76,9 @@ export default function CreateMeeting(): JSX.Element {
   });
 
   const [createMeeting, { loading, error }] = useMutation<
-    CreateMeetingMutationData,
-    CreateMeetingMutationVariables
-  >(CREATE_MEETING, {
+    CreateMeetingMutation,
+    CreateMeetingMutationInput
+  >(CREATE_MEETING_EVENT, {
     onCompleted: () => navigate('/'),
   });
 

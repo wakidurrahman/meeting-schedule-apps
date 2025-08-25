@@ -1,0 +1,566 @@
+/**
+ * Calendar Organism Styles
+ * 
+ * Comprehensive styling for calendar components with:
+ * - Responsive grid layout
+ * - Meeting event styling
+ * - Interactive states
+ * - Loading states
+ * - Accessibility features
+ */
+
+// Calendar Variables
+:root {
+  --calendar-border-color: #{var(--bs-border-color)};
+  --calendar-header-bg: #{var(--bs-light)};
+  --calendar-today-bg: #{var(--bs-primary)};
+  --calendar-today-text: #{var(--bs-white)};
+  --calendar-selected-bg: #{var(--bs-primary-subtle)};
+  --calendar-hover-bg: #{var(--bs-secondary-subtle)};
+  --calendar-weekend-bg: #{var(--bs-light)};
+  --calendar-other-month-opacity: 0.5;
+  --calendar-event-border-radius: 4px;
+}
+
+// =============================================================================
+// Main Calendar Container
+// =============================================================================
+
+.o-calendar {
+  position: relative;
+  background: var(--bs-white);
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+  box-shadow: var(--bs-box-shadow-sm);
+
+  &--compact {
+    .calendar-organism__navigation {
+      padding: 0.5rem;
+    }
+
+    .calendar-organism__header {
+      padding: 0.75rem;
+    }
+  }
+
+  &--loading {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  // Loading overlay
+  &__loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+
+  &__error {
+    margin: 1rem;
+  }
+
+  &__content {
+    position: relative;
+  }
+}
+
+// =============================================================================
+// Calendar Header (Title + Navigation)
+// =============================================================================
+
+.o-calendar-header {
+  padding: 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-top-left-radius: var(--bs-border-radius);
+  border-top-right-radius: var(--bs-border-radius);
+  background: var(--bs-white);
+
+  &--compact {
+    padding: 0.75rem;
+  }
+
+  &--loading {
+    pointer-events: none;
+  }
+}
+
+// =============================================================================
+// Calendar Grid
+// =============================================================================
+
+.o-calendar-grid {
+  background: var(--bs-white);
+
+  &--loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  &--no-weekends {
+    .calendar-grid__header {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .calendar-grid__week {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  // Grid Header (Weekdays)
+  &__header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    // background: var(--calendar-header-bg);
+    border-bottom: 2px solid var(--calendar-border-color);
+  }
+
+  &__header-cell {
+    padding: 0.5rem 0.5rem;
+
+    border-right: 1px solid var(--calendar-border-color);
+
+    &:first-child {
+      border-left: 1px solid var(--calendar-border-color);
+    }
+
+    &--weekend {
+      // background: var(--calendar-weekend-bg);
+      color: var(--bs-muted);
+    }
+  }
+
+  // Grid Body
+  &__body {
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+  }
+
+  &__week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    flex: 1;
+  }
+
+  // Individual Day Cells
+  &__day {
+    position: relative;
+    min-height: 120px;
+    padding: 0.5rem;
+    border-right: 1px solid var(--calendar-border-color);
+    border-bottom: 1px solid var(--calendar-border-color);
+    background: var(--bs-white);
+    transition: background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    // Day states
+    &--today {
+      background: rgba(var(--bs-primary-rgb), 0.1);
+
+      .calendar-grid__day-number {
+        background: var(--calendar-today-bg);
+        color: var(--calendar-today-text);
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+      }
+    }
+
+    &--selected {
+      background: var(--calendar-selected-bg);
+      border-color: var(--bs-primary);
+    }
+
+    &--hovered {
+      background: var(--calendar-hover-bg);
+    }
+
+    &--weekend {
+      // background: var(--calendar-weekend-bg);
+    }
+
+    &--other-month {
+      background: var(--bs-gray-100);
+      opacity: var(--calendar-other-month-opacity);
+
+      .calendar-grid__day-number {
+        color: var(--bs-muted);
+      }
+    }
+
+    &--has-meetings {
+      .calendar-grid__day-number::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background: var(--bs-primary);
+        border-radius: 50%;
+      }
+    }
+
+    &--clickable {
+      cursor: pointer;
+
+      &:hover {
+        background: var(--calendar-hover-bg);
+      }
+
+      &:focus {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  // Day Header (Date Number + Indicators)
+  &__day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    min-height: 28px;
+  }
+
+  &__day-number {
+    position: relative;
+    font-weight: 500;
+    font-size: 0.9rem;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  &__meeting-count {
+    background: var(--bs-primary);
+    color: var(--bs-white);
+    border-radius: 10px;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  // Day Content (Meetings)
+  &__day-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: hidden;
+  }
+
+  &__more-meetings {
+    text-align: center;
+    padding: 0.125rem;
+
+    small {
+      font-size: 0.7rem;
+    }
+  }
+
+  &__day-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  // Empty State
+  &__empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--bs-muted);
+  }
+
+  // Loading Overlay
+  &__loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 5;
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    &__day {
+      min-height: 80px;
+      padding: 0.25rem;
+    }
+
+    &__day-number {
+      font-size: 0.8rem;
+    }
+
+    &__meeting-count {
+      font-size: 0.7rem;
+      padding: 0.1rem 0.3rem;
+    }
+
+    &__header-cell {
+      padding: 0.75rem 0.25rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    &__day {
+      min-height: 60px;
+      padding: 0.125rem;
+    }
+
+    &__day-header {
+      margin-bottom: 0.25rem;
+    }
+  }
+}
+
+// =============================================================================
+// Calendar Events
+// =============================================================================
+
+.o-calendar-event {
+  position: relative;
+  background: var(--bs-primary-subtle);
+  border: 1px solid var(--bs-primary);
+  border-radius: var(--calendar-event-border-radius);
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.125rem;
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  &--compact {
+    padding: 0.125rem 0.25rem;
+
+    .calendar-event__title {
+      font-size: 0.75rem;
+    }
+  }
+
+  // Meeting status states
+  &--upcoming {
+    background: var(--bs-primary-subtle);
+    border-color: var(--bs-primary);
+  }
+
+  &--ongoing {
+    background: var(--bs-success-subtle);
+    border-color: var(--bs-success);
+
+    .calendar-event__status-dot--ongoing {
+      background: var(--bs-success);
+      animation: pulse 2s infinite;
+    }
+  }
+
+  &--completed {
+    background: var(--bs-secondary-subtle);
+    border-color: var(--bs-secondary);
+    opacity: 0.8;
+  }
+
+  &--cancelled {
+    background: var(--bs-danger-subtle);
+    border-color: var(--bs-danger);
+    text-decoration: line-through;
+  }
+
+  // Interactive states
+  &--clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 2;
+    }
+
+    &:focus {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  // Event content
+  &__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__time {
+    margin-bottom: 0.125rem;
+
+    small {
+      font-size: 0.7rem;
+    }
+  }
+
+  &__title {
+    font-size: 0.8rem;
+    line-height: 1.2;
+    font-weight: 500;
+    color: var(--bs-dark);
+    margin-bottom: 0.125rem;
+  }
+
+  &__attendees {
+    small {
+      font-size: 0.7rem;
+    }
+  }
+
+  &__status {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+  }
+
+  &__status-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+
+    &--upcoming {
+      background: var(--bs-primary);
+    }
+
+    &--ongoing {
+      background: var(--bs-success);
+    }
+
+    &--completed {
+      background: var(--bs-secondary);
+    }
+
+    &--cancelled {
+      background: var(--bs-danger);
+    }
+  }
+
+  // Hover overlay
+  &__hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    .o-calendar-event--clickable:hover & {
+      opacity: 1;
+    }
+  }
+}
+
+// =============================================================================
+// Animations
+// =============================================================================
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+// =============================================================================
+// Dark Mode Support
+// =============================================================================
+
+// @media (prefers-color-scheme: dark) {
+//   :root {
+//     --calendar-border-color: #{var(--bs-border-color-dark)};
+//     --calendar-header-bg: #{var(--bs-dark)};
+//     --calendar-weekend-bg: #{var(--bs-gray-800)};
+//     --calendar-hover-bg: #{var(--bs-gray-700)};
+//     --calendar-selected-bg: #{var(--bs-primary-dark)};
+//   }
+
+//   .calendar-organism {
+//     background: var(--bs-dark);
+//     color: var(--bs-light);
+//   }
+
+//   .calendar-grid__day {
+//     background: var(--bs-dark);
+//     color: var(--bs-light);
+
+//     &--other-month {
+//       color: var(--bs-gray-400);
+//     }
+//   }
+
+//   .calendar-event {
+//     color: var(--bs-dark);
+//   }
+// }
+
+// =============================================================================
+// Print Styles
+// =============================================================================
+
+@media print {
+  .calendar-organism {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .calendar-header__actions,
+  .calendar-navigation {
+    display: none;
+  }
+
+  .calendar-grid__day {
+    min-height: 100px;
+
+    &--clickable {
+      cursor: default;
+    }
+  }
+
+  .calendar-event {
+    background: #f0f0f0 !important;
+    border: 1px solid #000 !important;
+    box-shadow: none;
+
+    &--clickable {
+      cursor: default;
+    }
+  }
+}

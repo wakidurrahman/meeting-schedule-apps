@@ -5,7 +5,7 @@ export interface ModalProps {
   show: boolean;
   onHide: () => void;
   children: React.ReactNode;
-  size?: 'sm' | 'lg' | 'xl';
+  size?: 'sm' | 'lg' | 'xl' | 'md' | 'xs';
   centered?: boolean;
   backdrop?: boolean | 'static';
   keyboard?: boolean;
