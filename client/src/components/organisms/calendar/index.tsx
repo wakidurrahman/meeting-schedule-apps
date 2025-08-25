@@ -87,7 +87,6 @@ const Calendar: React.FC<CalendarProps> = ({
   );
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
 
-  console.log('internalSelectedDate', internalSelectedDate);
   /**
    * All Event Handlers
    *
@@ -254,17 +253,16 @@ const Calendar: React.FC<CalendarProps> = ({
   return (
     <div className={calendarClasses} style={{ minHeight }} {...rest}>
       {/* Calendar Header */}
-
       <CalendarHeader
         title={calendarTitle}
-        onPrevious={handleNavigatePrevious}
-        onNext={handleNavigateNext}
-        onToday={handleNavigateToday}
-        loading={loading}
-        onCreateMeeting={() => onCreateMeeting?.()}
-        className="o-calendar__header"
-        onViewChange={handleViewChange}
         view={currentView}
+        loading={loading}
+        className="o-calendar__header"
+        onCreateMeeting={() => onCreateMeeting?.()}
+        onToday={handleNavigateToday}
+        onNext={handleNavigateNext}
+        onPrevious={handleNavigatePrevious}
+        onViewChange={handleViewChange}
       />
 
       {/* Error State */}

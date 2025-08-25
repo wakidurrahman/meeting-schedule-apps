@@ -66,6 +66,13 @@ export function todayStartJST(): Date {
   assertValid(start, 'todayStartJST');
   return start;
 }
+/** Today at 00:00 **JST** as a UTC instant. Great for “same-day” comparisons in JST. */
+export function cloneDateJST(input: DateInput): Date {
+  const ymd = formatInTimeZone(input, JST_TZ, 'yyyy-MM-dd'); // get JST calendar date
+  const start = zonedTimeToUtc(`${ymd}T00:00:00`, JST_TZ); // convert that wall time to UTC
+  assertValid(start, 'cloneDateJST');
+  return start;
+}
 
 /** Start of given date’s day in JST (00:00 JST) */
 export function startOfDayJST(date: DateInput): Date {
@@ -94,7 +101,6 @@ export function isSameDayJST(a: DateInput, b: DateInput): boolean {
 /** Format a date/time in JST using a date-fns pattern. */
 export function formatJST(date: DateInput, pattern: string = 'yyyy-MM-dd HH:mm'): string {
   const d = normalizeToDate(date);
-  console.log('formatJST', date, pattern, d);
   assertValid(d, 'formatJST');
   return formatInTimeZone(d, JST_TZ, pattern);
 }

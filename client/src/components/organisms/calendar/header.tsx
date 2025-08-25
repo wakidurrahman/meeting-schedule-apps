@@ -5,13 +5,12 @@
  * - Previous/Next navigation buttons
  * - Today button to jump to current date
  * - Calendar title (e.g., "January 2025")
- * - Optional create meeting button
+ * -  Add Event and Add Task buttons
  */
 
 import React, { useCallback } from 'react';
 
 import Button from '@/components/atoms/button';
-import Heading from '@/components/atoms/heading';
 import Text from '@/components/atoms/text';
 import { CALENDAR_VIEW_LABELS } from '@/constants/const';
 import type { CalendarTitleData, CalendarViewType } from '@/types/calendar';
@@ -33,7 +32,7 @@ const renderStructuredTitle = (titleData: CalendarTitleData): JSX.Element => {
     return (
       <div className="d-flex align-items-center gap-3">
         {/* Month abbreviation and day number card */}
-        <div className="bg-light rounded p-0 border border-gray-200" style={{ minWidth: '80px' }}>
+        <div className="bg-light rounded p-0 border" style={{ minWidth: '80px' }}>
           <Text color="muted" className="text-center mb-0 " weight="medium">
             {monthAbbr}
           </Text>
@@ -73,7 +72,7 @@ const renderStructuredTitle = (titleData: CalendarTitleData): JSX.Element => {
 };
 
 export interface CalendarHeaderProps extends BaseComponentProps {
-  title: string | CalendarTitleData;
+  title: CalendarTitleData;
   loading?: boolean;
   compactMode?: boolean;
   availableViews?: CalendarViewType[];
@@ -101,6 +100,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onCreateMeeting,
   ...rest
 }) => {
+  // Manage classes
   const headerClasses = buildClassNames(
     'o-calendar-header',
     compactMode && 'o-calendar-header--compact',
@@ -108,15 +108,21 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     className,
   );
 
+  /**
+   * Event handlers
+   *
+   * HandleViewClick: Handles view change
+   * HandleCreateTask: Handles create task
+   */
+
+  // Handle view change
   const handleViewClick = (newView: CalendarViewType) => {
     if (!disabled && newView !== view) {
       onViewChange(newView);
     }
   };
-  const handleCreateMeeting = useCallback(() => {
-    onCreateMeeting?.();
-  }, [onCreateMeeting]);
 
+  // Handle create task
   const handleCreateTask = useCallback(() => {
     onCreateMeeting?.();
   }, [onCreateMeeting]);
@@ -125,15 +131,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     <div className={headerClasses} {...rest}>
       <div className="d-flex flex-column flex-lg-row  gap-3">
         {/* Center section - Title */}
-        <div className="flex-grow-1">
-          {typeof title === 'string' ? (
-            <Heading level={4} color="primary" className="text-center mb-0">
-              {title}
-            </Heading>
-          ) : (
-            renderStructuredTitle(title)
-          )}
-        </div>
+        <div className="flex-grow-1">{renderStructuredTitle(title)}</div>
 
         {/* Right section - Actions */}
         <div className="d-flex align-items-center gap-2">
@@ -215,10 +213,11 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               })}
             </ul>
           </div>
-          <Button variant="primary" size="sm" onClick={() => handleCreateMeeting()}>
+          <Button variant="primary" size="sm" onClick={onCreateMeeting}>
             <i className="bi bi-plus-lg me-1" />
             Add Event
           </Button>
+          {/* todo: add task button */}
           <Button variant="primary" size="sm" onClick={() => handleCreateTask()}>
             <i className="bi bi-plus-lg me-1" />
             Add Task

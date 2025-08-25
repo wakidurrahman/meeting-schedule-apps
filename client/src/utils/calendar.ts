@@ -114,15 +114,15 @@ export function getMeetingsForDate(date: Date, meetings: MeetingEvent[]): Meetin
 
 /**
  * Check if two dates are the same day
- * @param date1 - First date
- * @param date2 - Second date
+ * @param firstDate - First date
+ * @param secondDate - Second date
  * @returns True if dates are the same day
  */
-export function isSameDay(date1: Date, date2: Date): boolean {
+export function isSameDay(firstDate: Date, secondDate: Date): boolean {
   return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
   );
 }
 
@@ -134,19 +134,19 @@ export function isSameDay(date1: Date, date2: Date): boolean {
  */
 export function formatCalendarDate(
   date: Date,
-  format: 'short' | 'long' | 'numeric' | 'header' = 'short',
+  format: 'short' | 'long' | 'numeric' | 'header' = 'short', // 'short' is default
 ): string {
   switch (format) {
     case 'short':
-      return formatJST(date, 'MMM d');
+      return formatJST(date, 'MMM d'); // e.g. Aug 25
     case 'long':
-      return formatJST(date, 'EEEE, MMMM d, yyyy');
+      return formatJST(date, 'EEEE, MMMM d, yyyy'); // e.g. Monday, August 25, 2025
     case 'numeric':
-      return date.getDate().toString();
+      return date.getDate().toString(); // e.g. 25
     case 'header':
-      return formatJST(date, 'MMMM yyyy');
+      return formatJST(date, 'MMMM yyyy'); // e.g. August 2025
     default:
-      return formatJSTDate(date);
+      return formatJSTDate(date); // e.g. 2025-08-25
   }
 }
 
@@ -158,7 +158,9 @@ export function formatCalendarDate(
 export function getCurrentWeekDates(date: Date = now()): Date[] {
   const startOfWeek = cloneDate(date);
   const dayOfWeek = date.getDay();
-  startOfWeek.setDate(date.getDate() - dayOfWeek);
+  // Convert Sunday (0) to 7, so Monday becomes 0
+  const mondayBasedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  startOfWeek.setDate(date.getDate() - mondayBasedDayOfWeek);
 
   const weekDates: Date[] = [];
   for (let i = 0; i < 7; i++) {
@@ -338,9 +340,9 @@ export function getMonthDateRangeString(date: Date): string {
 
 /**
  * Get calendar view title based on view type and date
- * @param date - Reference date
- * @param view - Calendar view type
- * @param selectedDate - Optional selected date for enhanced display
+ * @param date - Reference date. e.g. Mon Aug 25 2025 17:56:01 GMT+0900 (Japan Standard Time)
+ * @param view - Calendar view type.  e.g. 'month', 'week', 'day', 'year'
+ * @param selectedDate - Optional selected date for enhanced display. e.g. Mon Aug 25 2025 17:56:01 GMT+0900 (Japan Standard Time)
  * @returns Structured calendar title data for enhanced UI rendering
  */
 export function getCalendarViewTitle(
@@ -348,9 +350,12 @@ export function getCalendarViewTitle(
   view: CalendarViewType,
   selectedDate?: Date,
 ): CalendarTitleData {
+  // 1. Today's date by JST timezone
   const today = now();
+  // 2. Current selected date by JST timezone. If no selected date is provided, use today's date.
   const currentSelectedDate = selectedDate || today;
 
+  // 3. Switch case for different view types
   switch (view) {
     case 'day': {
       const isToday = isSameDay(date, today);
@@ -367,6 +372,7 @@ export function getCalendarViewTitle(
 
     case 'week': {
       const weekDates = getCurrentWeekDates(date);
+      console.log('weekDates', weekDates);
       const firstDay = weekDates[0];
       const lastDay = weekDates[6];
 
