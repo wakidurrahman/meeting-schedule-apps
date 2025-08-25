@@ -361,8 +361,6 @@ const EditMeetingPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Attendees */}
-
                       {/* Attendees Selection */}
                       <Controller
                         name="attendeeIds"
