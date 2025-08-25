@@ -50,7 +50,6 @@ export interface MeetingDetailTemplateProps extends BaseComponentProps {
  */
 const MeetingDetailTemplate: React.FC<MeetingDetailTemplateProps> = ({
   children,
-  className,
   breadcrumb,
   meetingHeader,
   meetingContent,
@@ -59,7 +58,7 @@ const MeetingDetailTemplate: React.FC<MeetingDetailTemplateProps> = ({
   showSidebar = false,
   centered = false,
 }) => {
-  const templateClasses = buildClassNames('t-meeting-detail', className);
+  const templateClasses = buildClassNames('t-meeting-detail');
 
   return (
     <div className={templateClasses}>
@@ -79,7 +78,11 @@ const MeetingDetailTemplate: React.FC<MeetingDetailTemplateProps> = ({
             <div
               className={buildClassNames(
                 'col',
-                centered ? 'col-md-8 col-lg-6' : showSidebar ? 'col-lg-8 col-xl-9' : 'col-12',
+                centered
+                  ? 'col-md-8 col-lg-6'
+                  : showSidebar
+                    ? 'col-md-8 col-lg-8 col-xl-9'
+                    : 'col-12',
               )}
             >
               <div className="t-meeting-detail__content">{meetingContent}</div>
@@ -87,7 +90,7 @@ const MeetingDetailTemplate: React.FC<MeetingDetailTemplateProps> = ({
 
             {/* Sidebar */}
             {showSidebar && !centered && sidebar && (
-              <div className="col-lg-4 col-xl-3">
+              <div className="col-md-4 col-lg-4 col-xl-3">
                 <div className="t-meeting-detail__sidebar">{sidebar}</div>
               </div>
             )}

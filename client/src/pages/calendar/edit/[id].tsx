@@ -32,6 +32,7 @@ import Card, {
   CardText,
   CardTitle,
 } from '@/components/molecules/card';
+import Modal from '@/components/organisms/modal';
 import MeetingDetailTemplate from '@/components/templates/meeting/meeting-detail';
 import { ValidationMessages } from '@/constants/messages';
 import {
@@ -260,13 +261,14 @@ const EditMeetingPage: React.FC = () => {
           <div className="d-flex gap-2">
             <Button
               variant="outline-danger"
-              size="sm"
               onClick={() => setShowDeleteConfirm(true)}
               disabled={deleteLoading}
             >
-              {deleteLoading ? 'Deleting...' : 'Delete Meeting'}
+              <i className="bi bi-trash me-2" />
+              {deleteLoading ? 'Deleting...' : 'Delete'}
             </Button>
-            <Button variant="outline-secondary" size="sm" onClick={() => navigate('/calendar')}>
+            <Button variant="outline-secondary" href="/calendar">
+              <i className="bi bi-box-arrow-up-right me-2" />
               Cancel
             </Button>
           </div>
@@ -472,41 +474,33 @@ const EditMeetingPage: React.FC = () => {
         </>
       }
       modals={
-        showDeleteConfirm && (
-          <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Confirm Delete</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowDeleteConfirm(false)}
-                  />
-                </div>
-                <div className="modal-body">
-                  <p>Are you sure you want to delete this meeting?</p>
-                  <p className="text-muted small">
-                    <strong>{meeting.title}</strong>
-                    <br />
-                    This action cannot be undone.
-                  </p>
-                </div>
-                <div className="modal-footer">
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => setShowDeleteConfirm(false)}
-                    disabled={deleteLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button variant="danger" onClick={handleDelete} disabled={deleteLoading}>
-                    {deleteLoading ? 'Deleting...' : 'Delete Meeting'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+        showDeleteConfirm &&
+        meeting && (
+          <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
+            <Modal.Header closeButton onClose={() => setShowDeleteConfirm(false)}>
+              <Modal.Title>Delete Meeting</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Text>Are you sure you want to delete this meeting?</Text>
+              <Text color="muted" weight="medium">
+                {meeting.title}
+              </Text>
+              <Text color="danger">This action cannot be undone.</Text>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="outline-secondary"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={handleDelete} disabled={deleteLoading}>
+                <i className="bi bi-trash me-2" />
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </Button>
+            </Modal.Footer>
+          </Modal>
         )
       }
     />

@@ -1,6 +1,6 @@
-# Meeting Scheduler Implementation with Calendar Guide
+# Meeting Scheduler Implementation with Calendar UI.
 
-## 📅 Overview v1.0.0 (2025-08-19)
+## 📅 Overview v1.0.1 (2025-08-19)
 
 This document provides a comprehensive guide to the **completed** Meeting Scheduler implementation - a full-stack internal virtual meeting scheduler application similar to Google Calendar or Microsoft Teams. The implementation follows atomic design principles, uses specialized templates, and is **ready for production deployment**.
 
@@ -16,8 +16,8 @@ This document provides a comprehensive guide to the **completed** Meeting Schedu
 
 ### **Design Principles**
 
-- **Atomic Design Pattern**: Components organized as atoms → molecules → organisms → templates.
-- **Specialized Templates**: Dedicated meeting templates (CalendarTemplate, MeetingDashboardTemplate, MeetingDetailTemplate)
+- **Atomic Design Pattern**: Components organized as `atoms` → `molecules` → `organisms` → `templates`.
+- **Specialized Templates**: Dedicated meeting templates (`CalendarTemplate`, `MeetingDashboardTemplate`, `MeetingDetailTemplate`)
 - **JST Timezone Support**: All date/time functions use Japan Standard Time.
 - **Type Safety**: Comprehensive TypeScript types for all components.
 - **Conflict Prevention**: Real-time meeting conflict detection (server and client-side with Subscription).
@@ -57,7 +57,9 @@ client/src/
 │   │   ├── calendar/               # ✅ Complete calendar system (6 components)
 │   │   └── meetings/               # ✅ Meeting modal components
 │   └── templates/
-│       └── meeting-templates/      # ✅ Specialized templates (3 templates)
+│       ├── calendar/               # ✅ Complete calendar template
+│       ├── dashboard/              # ✅ Complete dashboard template
+│       └── meeting/                # ✅ Specialized meeting template
 ├── pages/
 │   ├── calendar/                   # ✅ Full calendar interface (590 lines)
 │   ├── dashboard/                  # ✅ Meeting dashboard (450 lines)
@@ -82,13 +84,13 @@ client/src/
 
 ## 🎨 Meeting Templates
 
-### **CalendarTemplate** (`/components/templates/calendar/index.tsx`)
+### **CalendarTemplate**
 
 **Purpose**: Specialized layout for calendar views with dedicated areas for calendar grid and sidebar.
 
 ```tsx
 <CalendarTemplate
-  calendarHeader={<CalendarNavigation />}
+  calendarHeader={<calendarHeader />}
   calendarContent={<CalendarGrid />}
   sidebar={<MiniCalendar />}
   modals={<MeetingModals />}
@@ -98,9 +100,9 @@ client/src/
 
 **Features**:
 
-- Dedicated calendar header for navigation controls
+- Dedicated calendar header for toggle sidebar and title
 - Main calendar content area with responsive grid
-- Optional sidebar for mini-calendar and meeting list
+- Optional sidebar for `mini-calendar` and meeting list
 - Modal overlay area for meeting creation/details
 - Responsive design with collapsible sidebar
 
@@ -108,11 +110,10 @@ client/src/
 
 ```
 ┌─────────────────────────────────────┐
-│ Header (Navigation Bar)             │
-├─────────────────────────────────────┤
-│ Calendar Header (Controls)          │
+│ Header (With Toggle Bar)            │
 ├─────────────────────────────────────┤
 │ Calendar Content    │ Sidebar       │
+│ (Calendar Header)   │ (Mini Cal)    │
 │ (Calendar Grid)     │ (Mini Cal)    │
 │                     │ (Meetings)    │
 ├─────────────────────────────────────┤
@@ -120,7 +121,7 @@ client/src/
 └─────────────────────────────────────┘
 ```
 
-### **MeetingDashboardTemplate** (`/components/templates/meeting-templates/MeetingDashboardTemplate.tsx`)
+### **MeetingDashboardTemplate**
 
 **Purpose**: Layout for meeting management dashboard with stats and quick actions.
 
@@ -141,7 +142,7 @@ client/src/
 - Modal support for meeting operations
 - Responsive column layout
 
-### **MeetingDetailTemplate** (`/components/templates/meeting-templates/MeetingDetailTemplate.tsx`)
+### **MeetingDetailTemplate**
 
 **Purpose**: Layout for meeting detail/edit pages with breadcrumbs and actions.
 

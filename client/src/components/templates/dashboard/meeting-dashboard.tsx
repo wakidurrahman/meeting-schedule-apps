@@ -52,6 +52,7 @@ const MeetingDashboardTemplate: React.FC<MeetingDashboardTemplateProps> = ({
 
   return (
     <div className={templateClasses}>
+      {/* Application main header */}
       <Header />
 
       <main className="t-meeting-dashboard__main py-4">
@@ -65,14 +66,17 @@ const MeetingDashboardTemplate: React.FC<MeetingDashboardTemplateProps> = ({
           <div className="row">
             {/* Main Content Area */}
             <div
-              className={buildClassNames('col', showQuickActions ? 'col-lg-9 col-xl-9' : 'col-12')}
+              className={buildClassNames(
+                'col',
+                showQuickActions ? 'col-md-9 col-lg-9 col-xl-9' : 'col-12',
+              )}
             >
               <div className="t-meeting-dashboard__content">{mainContent}</div>
             </div>
 
             {/* Quick Actions Sidebar */}
             {showQuickActions && quickActions && (
-              <div className="col-lg-3 col-xl-3">
+              <div className="col-md-3 col-lg-3 col-xl-3">
                 <div className="t-meeting-dashboard__sidebar">{quickActions}</div>
               </div>
             )}

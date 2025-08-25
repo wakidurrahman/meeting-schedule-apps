@@ -8,9 +8,9 @@ import './index.scss';
 
 export interface CalendarTemplateProps extends BaseComponentProps {
   /**
-   * Calendar header content (navigation, view controls, create button)
+   * Calendar header content (toggle sidebar and title)
    */
-  calendarHeader?: React.ReactNode;
+  calendarHeader: React.ReactNode;
   /**
    * Main calendar content (calendar grid)
    */
@@ -33,7 +33,7 @@ export interface CalendarTemplateProps extends BaseComponentProps {
  * Calendar Template
  *
  * Specialized template for calendar views with:
- * - Dedicated calendar header section
+ * - Dedicated calendar header for toggle sidebar and title
  * - Main calendar grid area
  * - Optional sidebar for mini calendar and meeting list
  * - Modal overlay area
@@ -41,14 +41,14 @@ export interface CalendarTemplateProps extends BaseComponentProps {
  */
 const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
   children,
-  className,
+
   calendarHeader,
   calendarContent,
   sidebar,
   modals,
   showSidebar = true,
 }) => {
-  const templateClasses = buildClassNames('t-calendar', className);
+  const templateClasses = buildClassNames('t-calendar');
 
   return (
     <div className={templateClasses}>
@@ -57,11 +57,10 @@ const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
 
       <main className="t-calendar__main">
         {/* Calendar header - Navigation & Controls */}
-        {calendarHeader && (
-          <div className="t-calendar__header">
-            <div className="container-fluid">{calendarHeader}</div>
-          </div>
-        )}
+
+        <div className="t-calendar__header">
+          <div className="container-fluid">{calendarHeader}</div>
+        </div>
 
         {/* Main Calendar Content Area */}
         <div className="t-calendar__content">
