@@ -94,6 +94,7 @@ export function isSameDayJST(a: DateInput, b: DateInput): boolean {
 /** Format a date/time in JST using a date-fns pattern. */
 export function formatJST(date: DateInput, pattern: string = 'yyyy-MM-dd HH:mm'): string {
   const d = normalizeToDate(date);
+  console.log('formatJST', date, pattern, d);
   assertValid(d, 'formatJST');
   return formatInTimeZone(d, JST_TZ, pattern);
 }

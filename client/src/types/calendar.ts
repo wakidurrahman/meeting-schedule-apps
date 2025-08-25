@@ -66,6 +66,28 @@ export interface TimeSlot {
 
 export type CalendarViewType = 'day' | 'week' | 'month' | 'year';
 
+/**
+ * Enhanced calendar title data structure
+ * Supports complex title layouts with multiple display elements
+ */
+export interface CalendarTitleData {
+  /** Primary month abbreviation (e.g., "JAN") - mainly for month view */
+  monthAbbr?: string;
+  /** Day number for current/selected date (e.g., "10") - mainly for month view */
+  dayNumber?: string;
+  /** Main title displayed prominently (e.g., "January 2025") */
+  mainTitle: string;
+  /** Secondary subtitle or date range (e.g., "Jan 1, 2025 - Jan 31, 2025") */
+  subtitle?: string;
+  /** Optional view-specific metadata */
+  metadata?: {
+    isToday?: boolean;
+    isCurrentMonth?: boolean;
+    selectedDate?: Date;
+    viewType?: CalendarViewType;
+  };
+}
+
 // Calendar Component Types
 export interface CalendarProps extends BaseComponentProps {
   /**
@@ -120,9 +142,10 @@ export interface CalendarHeaderProps extends BaseComponentProps {
    */
   view: CalendarViewType;
   /**
-   * Calendar title
+   * Enhanced calendar title with structured data
+   * Supports both simple string (legacy) and structured title format
    */
-  title: string;
+  title: string | CalendarTitleData;
   /**
    * Callback when view changes
    */
