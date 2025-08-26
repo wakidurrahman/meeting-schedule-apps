@@ -66,7 +66,7 @@ const Calendar: React.FC<CalendarProps> = ({
   error = null,
   view = 'month',
   selectedDate,
-  showWeekends = true,
+  showWeekends = false,
   onDateClick,
   onMeetingClick,
   onDateDoubleClick,

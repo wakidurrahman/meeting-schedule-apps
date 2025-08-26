@@ -9,7 +9,7 @@
  * - Responsive layout
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import CalendarEvent from './event';
 
@@ -45,16 +45,17 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   view,
   selectedDate,
   hoveredDate,
-  showWeekends = true,
+  showWeekends = false,
   loading = false,
   compactMode = false,
+  className,
   onDateClick,
   onDateDoubleClick,
   onMeetingClick,
   onDateHover,
-  className,
   ...rest
 }) => {
+  // 1. CSS classes
   const gridClasses = buildClassNames(
     'o-calendar-grid',
     `o-calendar-grid--${view}`,
@@ -64,52 +65,65 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     className,
   );
 
+  // 2. Weekday helper function
   const weekDay = (index: number) => {
     // In Monday-first week: Saturday is index 5, Sunday is index 6
     return index === 5 || index === 6;
   };
 
-  const handleDateClick = (date: Date) => {
-    onDateClick?.(date);
-  };
+  // 3. Date click handler
+  const handleDateClick = useCallback(
+    (date: Date) => {
+      onDateClick?.(date);
+    },
+    [onDateClick],
+  );
 
-  const handleDateDoubleClick = (date: Date) => {
-    onDateDoubleClick?.(date);
-  };
+  // 4. Date double click handler
+  const handleDateDoubleClick = useCallback(
+    (date: Date) => {
+      onDateDoubleClick?.(date);
+    },
+    [onDateDoubleClick],
+  );
 
-  const handleDateMouseEnter = (date: Date) => {
-    onDateHover?.(date);
-  };
+  // 5. Date mouse enter handler
+  const handleDateMouseEnter = useCallback(
+    (date: Date) => {
+      onDateHover?.(date);
+    },
+    [onDateHover],
+  );
 
-  const handleDateMouseLeave = () => {
+  // 6. Date mouse leave handler
+  const handleDateMouseLeave = useCallback(() => {
     onDateHover?.(null);
-  };
+  }, [onDateHover]);
 
   return (
     <div className={gridClasses} {...rest}>
       {/* Weekday Headers */}
       <div className="o-calendar-grid__header">
-        {WEEKDAY_LABELS.map((weekday, index) => {
-          if (!showWeekends && weekDay(index)) {
+        {WEEKDAY_LABELS.map((day) => {
+          // Skip weekends if not shown
+          if (!showWeekends && (day.weekday === 5 || day.weekday === 6)) {
             return null;
           }
 
           return (
             <div
-              key={index}
+              key={day.weekday}
               className={buildClassNames(
                 'o-calendar-grid__header-cell',
-                weekDay(index) && 'o-calendar-grid__header-cell--weekend',
+                (day.weekday === 5 || day.weekday === 6) && 'o-calendar-grid__header-cell--weekend',
                 'text-center',
               )}
             >
-              {/* <span className="d-none d-md-inline">{weekday.short}</span>
-              <span className="d-md-none">{weekday.mini}</span> */}
-              <Text as="span" weight="medium" className="m-0 d-none d-md-inline">
-                {weekday.short}
+              <Text as="span" weight="medium" className="d-none d-md-inline">
+                {day.short}
               </Text>
-              <Text as="span" weight="medium" className="m-0 d-md-none">
-                {weekday.mini}
+              <Text as="span" weight="medium" className=" d-md-none">
+                {day.mini}
               </Text>
             </div>
           );

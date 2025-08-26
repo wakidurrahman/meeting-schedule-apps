@@ -96,6 +96,8 @@
 // =============================================================================
 
 .o-calendar-grid {
+  $root: &;
+
   background: var(--bs-white);
 
   &--loading {
@@ -247,6 +249,18 @@
     font-size: 0.9rem;
     min-width: 20px;
     text-align: center;
+
+    #{$root}__day--today & {
+      background: var(--bs-secondary);
+      color: var(--bs-white);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
   }
 
   &__meeting-count {
@@ -413,8 +427,6 @@
   }
 
   &__time {
-    margin-bottom: 0.125rem;
-
     small {
       font-size: 0.7rem;
     }

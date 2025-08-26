@@ -5,10 +5,10 @@
  * - Previous/Next navigation buttons
  * - Today button to jump to current date
  * - Calendar title (e.g., "January 2025")
- * -  Add Event and Add Task buttons
+ * - Add Event and Add Task buttons
  */
 
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import Button from '@/components/atoms/button';
 import Text from '@/components/atoms/text';
@@ -24,9 +24,13 @@ const DEFAULT_VIEWS: CalendarViewType[] = ['year', 'month', 'week', 'day'];
  * @param titleData - Structured title data
  * @returns JSX element with structured title layout
  */
-const renderStructuredTitle = (titleData: CalendarTitleData): JSX.Element => {
-  const { monthAbbr, dayNumber, mainTitle, subtitle, metadata } = titleData;
-
+const StructuredTitle: React.FC<CalendarTitleData> = ({
+  monthAbbr,
+  dayNumber,
+  mainTitle,
+  subtitle,
+  metadata,
+}) => {
   // Enhanced layout for month view (matching expected design)
   if (metadata?.viewType === 'month' && monthAbbr && dayNumber) {
     return (
@@ -73,11 +77,11 @@ const renderStructuredTitle = (titleData: CalendarTitleData): JSX.Element => {
 
 export interface CalendarHeaderProps extends BaseComponentProps {
   title: CalendarTitleData;
-  loading?: boolean;
-  compactMode?: boolean;
-  availableViews?: CalendarViewType[];
-  disabled?: boolean;
   view: CalendarViewType;
+  availableViews?: CalendarViewType[];
+  compactMode?: boolean;
+  disabled?: boolean;
+  loading?: boolean;
   onViewChange: (view: CalendarViewType) => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -112,7 +116,6 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
    * Event handlers
    *
    * HandleViewClick: Handles view change
-   * HandleCreateTask: Handles create task
    */
 
   // Handle view change
@@ -122,16 +125,13 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     }
   };
 
-  // Handle create task
-  const handleCreateTask = useCallback(() => {
-    onCreateMeeting?.();
-  }, [onCreateMeeting]);
-
   return (
     <div className={headerClasses} {...rest}>
       <div className="d-flex flex-column flex-lg-row  gap-3">
         {/* Center section - Title */}
-        <div className="flex-grow-1">{renderStructuredTitle(title)}</div>
+        <div className="flex-grow-1">
+          <StructuredTitle {...title} />
+        </div>
 
         {/* Right section - Actions */}
         <div className="d-flex align-items-center gap-2">
@@ -218,7 +218,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             Add Event
           </Button>
           {/* todo: add task button */}
-          <Button variant="primary" size="sm" onClick={() => handleCreateTask()}>
+          <Button variant="primary" size="sm" onClick={onCreateMeeting}>
             <i className="bi bi-plus-lg me-1" />
             Add Task
           </Button>

@@ -5,19 +5,42 @@ export const JST_TZ = 'Asia/Tokyo' as const;
 
 export type DateInput = string | number | Date;
 
+/**
+ * Normalize a date input to a Date object
+ * @param input - The date input to normalize
+ * @returns A Date object
+ */
 function normalizeToDate(input: DateInput): Date {
+  // If the input is a Date object, return it
+  // e.g. new Date() -> new Date()
   if (input instanceof Date) return input;
+
+  // If the input is a number, return a new Date object
+  // e.g. 1724688000 -> new Date(1724688000)
   if (typeof input === 'number') return new Date(input);
+
+  // If the input is a string and is a number, return a new Date object
+  // e.g. '1724688000' -> new Date(1724688000)
   if (typeof input === 'string' && /^\d+$/.test(input)) {
+    // convert to number and check if it's a timestamp in seconds or milliseconds
     const n = Number(input);
+    // if the input is a timestamp in seconds, convert to milliseconds
     const ms = input.length === 10 ? n * 1000 : n; // seconds vs ms
+    // return a new Date object
     return new Date(ms);
   }
+
+  // other cases, return a new Date object
   return new Date(input);
 }
 
-function assertValid(d: Date, ctx: string) {
-  if (isNaN(d.getTime())) throw new Error(`Invalid Date in ${ctx}`);
+/**
+ * Assert a date is valid
+ * @param d - The date to assert
+ * @param ctx - The context of the date
+ */
+function assertValid(date: Date, ctx: string) {
+  if (isNaN(date.getTime())) throw new Error(`Invalid Date in ${ctx}`);
 }
 
 /**
@@ -47,16 +70,16 @@ export function fromPartsJST(parts: {
 
 /** Clone any DateInput safely. Replaces: new Date(date) and new Date(firstDayOfGrid) */
 export function cloneDate(input: DateInput): Date {
-  const d = normalizeToDate(input);
-  assertValid(d, 'cloneDate(normalize)');
-  return new Date(d.getTime());
+  const date = normalizeToDate(input);
+  assertValid(date, 'cloneDate(normalize)');
+  return new Date(date.getTime());
 }
 
 /** Now (instant). Safe to use, but for "today" logic prefer todayStartJST(). Replaces: new Date() */
 export function now(): Date {
-  const d = new Date();
-  assertValid(d, 'now');
-  return d;
+  const date = new Date();
+  assertValid(date, 'now');
+  return date;
 }
 
 /** Today at 00:00 **JST** as a UTC instant. Great for “same-day” comparisons in JST. */
@@ -64,13 +87,6 @@ export function todayStartJST(): Date {
   const ymd = formatInTimeZone(now(), JST_TZ, 'yyyy-MM-dd'); // get JST calendar date
   const start = zonedTimeToUtc(`${ymd}T00:00:00`, JST_TZ); // convert that wall time to UTC
   assertValid(start, 'todayStartJST');
-  return start;
-}
-/** Today at 00:00 **JST** as a UTC instant. Great for “same-day” comparisons in JST. */
-export function cloneDateJST(input: DateInput): Date {
-  const ymd = formatInTimeZone(input, JST_TZ, 'yyyy-MM-dd'); // get JST calendar date
-  const start = zonedTimeToUtc(`${ymd}T00:00:00`, JST_TZ); // convert that wall time to UTC
-  assertValid(start, 'cloneDateJST');
   return start;
 }
 
@@ -126,10 +142,18 @@ export function formatJSTDate(date: DateInput): string {
 }
 
 /** Convenience: time-only (JST). */
+/**
+ * Format a date to time in JST
+ * @param date - The date to format
+ * @returns The formatted time in JST
+ */
 export function formatJSTTime(date: DateInput): string {
-  const d = normalizeToDate(date);
-  assertValid(d, 'formatJSTTime');
-  return formatInTimeZone(d, JST_TZ, 'HH:mm');
+  // Normalize the date and validate it
+  const dateTime = normalizeToDate(date);
+  // Validate the date
+  assertValid(dateTime, 'formatJSTTime');
+  // Format the time in JST (HH:mm)
+  return formatInTimeZone(dateTime, JST_TZ, 'HH:mm');
 }
 
 /** Time slots for a given calendar **day in JST** (returns UTC instants). */

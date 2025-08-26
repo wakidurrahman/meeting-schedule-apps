@@ -51,14 +51,17 @@ export type Meetings = {
  * - AttendeeAvailability: The availability of an attendee
  */
 
+export type MeetingStatusType = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+
 export interface MeetingEvent {
   id: string;
   title: string;
   description?: string;
   startTime: Date;
   endTime: Date;
-  attendees?: Array<AttendeesUser>;
+  attendees?: AttendeesUser[];
   createdBy?: AttendeesUser;
+  status?: MeetingStatusType; // todo: add cancelled status
   isAllDay?: boolean;
 }
 
