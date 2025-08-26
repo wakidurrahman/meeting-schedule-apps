@@ -351,18 +351,6 @@ interface CalendarProps extends BaseComponentProps {
   loading?: boolean;
   showWeekends?: boolean;
 }
-
-// Meeting Modal Props
-interface MeetingModalProps extends BaseComponentProps {
-  show: boolean;
-  onHide: () => void;
-  meeting?: MeetingEvent | null;
-  selectedDate?: Date;
-  availableUsers?: Array<{ id: string; name: string; email: string }>;
-  loading?: boolean;
-  onSave?: (meetingData: MeetingFormData) => void;
-  onDelete?: (meetingId: string) => void;
-}
 ```
 
 ---

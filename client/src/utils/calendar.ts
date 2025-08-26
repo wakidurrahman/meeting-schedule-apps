@@ -626,3 +626,21 @@ export function getCalendarViewTitle(
       };
   }
 }
+
+export const isMonthGrid = (
+  grid: CalendarGridType | WeekGridType | DayGridType,
+): grid is CalendarGridType => {
+  return 'weeks' in grid;
+};
+
+export const isWeekGrid = (
+  grid: CalendarGridType | WeekGridType | DayGridType,
+): grid is WeekGridType => {
+  return 'days' in grid && 'timeSlots' in grid && Array.isArray((grid as WeekGridType).days);
+};
+
+export const isDayGrid = (
+  grid: CalendarGridType | WeekGridType | DayGridType,
+): grid is DayGridType => {
+  return 'date' in grid && 'timeSlots' in grid && !('days' in grid);
+};

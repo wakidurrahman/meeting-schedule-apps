@@ -60,13 +60,6 @@ export interface CalendarProps extends BaseComponentProps {
   minHeight?: string;
 }
 
-export interface CalendarState {
-  currentDate: Date;
-  view: CalendarViewType;
-  selectedDate: Date | null;
-  hoveredDate: Date | null;
-}
-
 const Calendar: React.FC<CalendarProps> = ({
   meetings = [],
   loading = false,

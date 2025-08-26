@@ -24,7 +24,13 @@ import type {
 } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
 import type { MeetingEvent } from '@/types/meeting';
-import { formatCalendarDate, isSameDay } from '@/utils/calendar';
+import {
+  formatCalendarDate,
+  isDayGrid,
+  isMonthGrid,
+  isSameDay,
+  isWeekGrid,
+} from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
 
 export interface CalendarGridProps extends BaseComponentProps {
@@ -42,23 +48,6 @@ export interface CalendarGridProps extends BaseComponentProps {
   onMeetingClick?: (meeting: MeetingEvent, event: React.MouseEvent) => void;
   onDateHover?: (date: Date | null) => void;
 }
-
-// Type guards
-const isMonthGrid = (
-  grid: CalendarGridType | WeekGridType | DayGridType,
-): grid is CalendarGridType => {
-  return 'weeks' in grid;
-};
-
-const isWeekGrid = (grid: CalendarGridType | WeekGridType | DayGridType): grid is WeekGridType => {
-  return 'days' in grid && 'timeSlots' in grid && Array.isArray((grid as WeekGridType).days);
-};
-
-const isDayGrid = (grid: CalendarGridType | WeekGridType | DayGridType): grid is DayGridType => {
-  return 'date' in grid && 'timeSlots' in grid && !('days' in grid);
-};
-
-// Calendar Grid Component
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({
   calendarGrid,
@@ -87,7 +76,6 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   // 2. Weekday helper function
   const weekDay = (index: number) => {
-    // In Monday-first week: Saturday is index 5, Sunday is index 6
     return index === 5 || index === 6;
   };
 
@@ -120,26 +108,15 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     onDateHover?.(null);
   }, [onDateHover]);
 
-  // Render different layouts based on view type
-  if (isMonthGrid(calendarGrid)) {
-    return renderMonthView(calendarGrid);
-  } else if (isWeekGrid(calendarGrid)) {
-    return renderWeekView(calendarGrid);
-  } else if (isDayGrid(calendarGrid)) {
-    return renderDayView(calendarGrid);
-  }
-
-  return <div>Unsupported view type</div>;
-
   // Month view renderer
-  function renderMonthView(grid: CalendarGridType) {
+  const MonthView: React.FC<{ grid: CalendarGridType }> = ({ grid }) => {
     return (
       <div className={gridClasses} {...rest}>
         {/* Weekday Headers */}
         <div className="o-calendar-grid__header">
           {WEEKDAY_LABELS.map((day) => {
             // Skip weekends if not shown
-            if (!showWeekends && (day.weekday === 5 || day.weekday === 6)) {
+            if (!showWeekends && weekDay(day.weekday)) {
               return null;
             }
 
@@ -148,8 +125,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
                 key={day.weekday}
                 className={buildClassNames(
                   'o-calendar-grid__header-cell',
-                  (day.weekday === 5 || day.weekday === 6) &&
-                    'o-calendar-grid__header-cell--weekend',
+                  weekDay(day.weekday) && 'o-calendar-grid__header-cell--weekend',
                   'text-center',
                 )}
               >
@@ -285,10 +261,9 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         )}
       </div>
     );
-  }
-
+  };
   // Week view renderer
-  function renderWeekView(grid: WeekGridType) {
+  const WeekView: React.FC<{ grid: WeekGridType }> = ({ grid }) => {
     return (
       <div className={gridClasses} {...rest}>
         {/* Week Header - Days */}
@@ -401,10 +376,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         )}
       </div>
     );
-  }
+  };
 
   // Day view renderer
-  function renderDayView(grid: DayGridType) {
+  const DayView: React.FC<{ grid: DayGridType }> = ({ grid }) => {
     return (
       <div className={gridClasses} {...rest}>
         {/* Day Header */}
@@ -475,7 +450,17 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         )}
       </div>
     );
+  };
+  // Render different layouts based on view type
+  if (isMonthGrid(calendarGrid)) {
+    return <MonthView grid={calendarGrid} />;
+  } else if (isWeekGrid(calendarGrid)) {
+    return <WeekView grid={calendarGrid} />;
+  } else if (isDayGrid(calendarGrid)) {
+    return <DayView grid={calendarGrid} />;
   }
+
+  return <div>Unsupported view type</div>;
 };
 
 export default CalendarGrid;

@@ -77,7 +77,7 @@
   font-size: 0.7rem;
   color: var(--mini-calendar-text-muted);
   font-weight: 500;
-  text-transform: uppercase;
+  // text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -89,7 +89,7 @@
 
 .o-mini-calendar__day {
   position: relative;
-  width: var(--mini-calendar-day-size);
+  // width: var(--mini-calendar-day-size);
   height: var(--mini-calendar-day-size);
   border: none;
   background: transparent;
@@ -194,16 +194,6 @@
 }
 
 // Dark mode support (if needed)
-@media (prefers-color-scheme: dark) {
-  .o-mini-calendar {
-    --mini-calendar-border-color: var(--bs-gray-600);
-    --mini-calendar-bg: var(--bs-gray-800);
-    --mini-calendar-text-color: var(--bs-gray-100);
-    --mini-calendar-text-muted: var(--bs-gray-400);
-    --mini-calendar-day-hover: var(--bs-gray-700);
-    --mini-calendar-day-other-month: var(--bs-gray-500);
-  }
-}
 
 // Responsive adjustments
 @media (max-width: 576px) {

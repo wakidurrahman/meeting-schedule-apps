@@ -115,10 +115,10 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
         <div className="o-mini-calendar__header">
           <div className="d-flex justify-content-between align-items-center mb-2">
             <Button
-              variant="outline-secondary"
+              variant="outline-primary"
               size="sm"
               onClick={handleNavigatePrevious}
-              className="o-mini-calendar__nav-btn"
+              className="o-mini-calendar__nav-btn d-flex align-items-center justify-content-center"
               aria-label="Previous month"
             >
               <i className="bi bi-chevron-left" />
@@ -129,10 +129,10 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
             </Text>
 
             <Button
-              variant="outline-secondary"
+              variant="outline-primary"
               size="sm"
               onClick={handleNavigateNext}
-              className="o-mini-calendar__nav-btn"
+              className="o-mini-calendar__nav-btn d-flex align-items-center justify-content-center"
               aria-label="Next month"
             >
               <i className="bi bi-chevron-right" />
@@ -148,7 +148,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
           {WEEKDAY_LABELS.map((day) => (
             <div key={day.weekday} className="o-mini-calendar__weekday">
               <Text as="span" weight="medium" className="o-mini-calendar__weekday-text">
-                {compact ? day.mini : day.short}
+                {compact ? day.mini : day.extraShort}
               </Text>
             </div>
           ))}
