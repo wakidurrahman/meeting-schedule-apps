@@ -16,11 +16,18 @@ import CalendarHeader from './header';
 import './index.scss';
 
 import Spinner from '@/components/atoms/spinner';
-import type { CalendarGridType, CalendarViewType } from '@/types/calendar';
+import type {
+  CalendarGridType,
+  CalendarViewType,
+  DayGridType,
+  WeekGridType,
+} from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
 import type { MeetingEvent } from '@/types/meeting';
 import {
   generateCalendarGrid,
+  generateDayGrid,
+  generateWeekGrid,
   getCalendarViewTitle,
   navigateDay,
   navigateMonth,
@@ -228,13 +235,20 @@ const Calendar: React.FC<CalendarProps> = ({
    * - currentDate: Date
    * - currentView: CalendarViewType
    */
-  const calendarGrid = useMemo<CalendarGridType>(() => {
-    if (currentView === 'month') {
-      return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
+  const calendarGrid = useMemo<CalendarGridType | WeekGridType | DayGridType>(() => {
+    switch (currentView) {
+      case 'month':
+        return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
+      case 'week':
+        return generateWeekGrid(currentDate, meetings, 6, 22); // 6 AM to 10 PM
+      case 'day':
+        return generateDayGrid(currentDate, meetings, 6, 22); // 6 AM to 10 PM
+      case 'year':
+        // For year view, we'll still use the month grid for now
+        return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
+      default:
+        return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
     }
-    // For other views, we'll still use the month grid as base
-    // TODO: Implement week/day/year specific grids...
-    return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
   }, [currentDate, currentView, meetings]);
 
   // 10. Calendar title

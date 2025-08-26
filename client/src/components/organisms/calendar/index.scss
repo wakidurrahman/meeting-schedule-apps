@@ -121,6 +121,20 @@
     grid-template-columns: repeat(7, 1fr);
     // background: var(--calendar-header-bg);
     border-bottom: 2px solid var(--calendar-border-color);
+
+    // Week view header
+    &--week {
+      grid-template-columns: 80px repeat(7, 1fr);
+      align-items: center;
+    }
+
+    // Day view header
+    &--day {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+    }
   }
 
   &__header-cell {
@@ -149,6 +163,146 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     flex: 1;
+  }
+
+  // Week view specific styles
+  &__time-header {
+    padding: 0.75rem;
+    border-right: 1px solid var(--calendar-border-color);
+    background: var(--bs-gray-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+
+  &__week-day-header {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    border-right: 1px solid var(--calendar-border-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: var(--calendar-hover-bg);
+    }
+
+    &--today {
+      background: rgba(var(--bs-primary-rgb), 0.1);
+      color: var(--bs-primary);
+    }
+
+    &--selected {
+      background: var(--calendar-selected-bg);
+      border-color: var(--bs-primary);
+    }
+  }
+
+  &__day-name {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  &__week-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__time-row {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    min-height: 60px;
+    border-bottom: 1px solid var(--calendar-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__time-label {
+    padding: 0.75rem;
+    border-right: 1px solid var(--calendar-border-color);
+    background: var(--bs-gray-50);
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    font-size: 0.8rem;
+    color: var(--bs-muted);
+  }
+
+  &__time-slot {
+    padding: 0.25rem;
+    border-right: 1px solid var(--calendar-border-color);
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: var(--calendar-hover-bg);
+    }
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  // Day view specific styles
+  &__day-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__day-title {
+    margin: 0;
+  }
+
+  &__day-body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__day-time-slot {
+    display: flex;
+    align-items: flex-start;
+    min-height: 60px;
+    border-bottom: 1px solid var(--calendar-border-color);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__day-slot-content {
+    flex: 1;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: var(--calendar-hover-bg);
+    }
+  }
+
+  // Meeting styles for week and day views
+  &__week-meeting,
+  &__day-meeting {
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+  }
+
+  &__week-meeting {
+    padding: 0.25rem;
+    border-radius: 3px;
+    background: var(--bs-primary-subtle);
+    border-left: 3px solid var(--bs-primary);
+  }
+
+  &__day-meeting {
+    padding: 0.5rem;
+    border-radius: 4px;
+    background: var(--bs-primary-subtle);
+    border-left: 4px solid var(--bs-primary);
   }
 
   // Individual Day Cells
@@ -193,9 +347,10 @@
       background: var(--calendar-hover-bg);
     }
 
-    &--weekend {
-      // background: var(--calendar-weekend-bg);
-    }
+    // Weekend styles (if needed in the future)
+    // &--weekend {
+    //   background: var(--calendar-weekend-bg);
+    // }
 
     &--other-month {
       background: var(--bs-gray-100);
@@ -322,6 +477,50 @@
 
   // Responsive adjustments
   @media (max-width: 768px) {
+    &__header {
+      &--week {
+        grid-template-columns: 60px repeat(7, minmax(80px, 1fr));
+      }
+    }
+
+    &__time-header {
+      padding: 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    &__week-day-header {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.8rem;
+    }
+
+    &__time-row {
+      grid-template-columns: 60px repeat(7, minmax(80px, 1fr));
+      min-height: 50px;
+    }
+
+    &__time-label {
+      padding: 0.5rem 0.25rem;
+      font-size: 0.7rem;
+    }
+
+    &__time-slot {
+      padding: 0.125rem;
+    }
+
+    &__day-time-slot {
+      min-height: 50px;
+    }
+
+    &__week-meeting {
+      font-size: 0.7rem;
+      padding: 0.125rem;
+    }
+
+    &__day-meeting {
+      font-size: 0.75rem;
+      padding: 0.25rem;
+    }
+
     &__day {
       min-height: 80px;
       padding: 0.25rem;
@@ -343,6 +542,39 @@
   }
 
   @media (max-width: 576px) {
+    &__header {
+      &--week {
+        grid-template-columns: 50px repeat(5, 1fr);
+      }
+
+      &--day {
+        padding: 0.5rem;
+      }
+    }
+
+    &__time-row {
+      grid-template-columns: 50px repeat(5, 1fr);
+    }
+
+    &__time-header,
+    &__time-label {
+      padding: 0.25rem;
+      font-size: 0.65rem;
+    }
+
+    &__week-day-header {
+      padding: 0.25rem;
+      font-size: 0.7rem;
+    }
+
+    &__day-title {
+      font-size: 1rem;
+    }
+
+    &__day-time-slot {
+      min-height: 40px;
+    }
+
     &__day {
       min-height: 60px;
       padding: 0.125rem;

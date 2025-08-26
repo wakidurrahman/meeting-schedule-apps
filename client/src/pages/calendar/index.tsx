@@ -20,6 +20,7 @@ import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
 import Calendar from '@/components/organisms/calendar';
 import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meeting-modal';
+import MiniCalendar from '@/components/organisms/mini-calendar';
 import CalendarTemplate from '@/components/templates/calendar';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import { useToast } from '@/hooks/use-toast';
@@ -308,6 +309,15 @@ const CalendarPage: React.FC = () => {
     () => (
       <div className="px-1">
         {/* Mini Calendar */}
+        <div className="mb-4">
+          <MiniCalendar
+            selectedDate={selectedDate || currentDate}
+            currentDate={currentDate}
+            onDateClick={handleDateClick}
+            onMonthChange={handleDateChange}
+            showNavigation={true}
+          />
+        </div>
 
         <Heading level={6} className="mb-3">
           Quick Navigation
@@ -356,7 +366,17 @@ const CalendarPage: React.FC = () => {
         </div>
       </div>
     ),
-    [meetings, renderTodaysMeetings, todayMeetings, thisWeekMeetings, upcomingMeetings],
+    [
+      selectedDate,
+      currentDate,
+      handleDateClick,
+      handleDateChange,
+      meetings,
+      renderTodaysMeetings,
+      todayMeetings,
+      thisWeekMeetings,
+      upcomingMeetings,
+    ],
   );
 
   // Main calendar content

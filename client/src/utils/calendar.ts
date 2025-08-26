@@ -16,6 +16,11 @@ import {
   CalendarTitleData,
   CalendarViewType,
   CalendarWeek,
+  DayGridType,
+  TimeSlot,
+  TimeSlotHour,
+  WeekGridDay,
+  WeekGridType,
 } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
 
@@ -336,6 +341,193 @@ export function getMonthDateRangeString(date: Date): string {
     // Handle edge case where month spans across years
     return `${formatJST(firstDay, 'MMM d, yyyy')} - ${formatJST(lastDay, 'MMM d, yyyy')}`;
   }
+}
+
+/**
+ * Generate time slots for a given date range
+ * @param date - Base date for the time slots
+ * @param startHour - Start hour (0-23)
+ * @param endHour - End hour (1-24, where 24 means end of day)
+ * @param interval - Interval in minutes
+ * @returns Array of time slot hours
+ */
+export function generateTimeSlots(
+  date: Date,
+  startHour: number = 0,
+  endHour: number = 24,
+  interval: number = 60,
+): TimeSlotHour[] {
+  // Input validation
+  if (!date || isNaN(date.getTime())) {
+    throw new Error('generateTimeSlots: Invalid date provided');
+  }
+
+  const slots: TimeSlotHour[] = [];
+
+  // Ensure safe hour ranges
+  const safeEndHour = Math.min(Math.max(endHour, 0), 24);
+  const safeStartHour = Math.min(Math.max(startHour, 0), 23);
+  const safeInterval = Math.max(interval, 1); // Minimum 1 minute interval
+
+  // If start >= end, return empty slots
+  if (safeStartHour >= safeEndHour) {
+    return slots;
+  }
+
+  for (let hour = safeStartHour; hour < safeEndHour; hour++) {
+    // Create display time for this hour
+    const displayTime = formatJST(
+      fromPartsJST({
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        day: date.getDate(),
+        hour,
+        minute: 0,
+      }),
+      'h:mm a',
+    );
+
+    const hourSlots: TimeSlot[] = [];
+
+    // Generate slots within this hour
+    for (let minute = 0; minute < 60; minute += safeInterval) {
+      // Calculate start time
+      const start = fromPartsJST({
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        day: date.getDate(),
+        hour,
+        minute,
+      });
+
+      // Calculate end time with proper overflow handling
+      let endHour = hour;
+      let endMinute = minute + safeInterval;
+      let endDay = date.getDate();
+      let endMonth = date.getMonth();
+      let endYear = date.getFullYear();
+
+      // Handle minute overflow
+      if (endMinute >= 60) {
+        endHour += Math.floor(endMinute / 60);
+        endMinute = endMinute % 60;
+      }
+
+      // Handle hour overflow (next day)
+      if (endHour >= 24) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + Math.floor(endHour / 24));
+        endDay = nextDay.getDate();
+        endMonth = nextDay.getMonth();
+        endYear = nextDay.getFullYear();
+        endHour = endHour % 24;
+      }
+
+      const end = fromPartsJST({
+        year: endYear,
+        month: endMonth,
+        day: endDay,
+        hour: endHour,
+        minute: endMinute,
+      });
+
+      hourSlots.push({
+        start,
+        end,
+        isAvailable: true,
+        meetings: [],
+      });
+    }
+
+    // Only add slots if we have valid ones
+    if (hourSlots.length > 0) {
+      slots.push({
+        hour,
+        displayTime,
+        slots: hourSlots,
+      });
+    }
+  }
+
+  return slots;
+}
+
+/**
+ * Generate week grid for a given date
+ * @param date - Reference date (will find the week containing this date)
+ * @param meetings - Array of meetings to include
+ * @param startHour - Start hour for time slots (default: 6)
+ * @param endHour - End hour for time slots (default: 22)
+ * @returns Week grid with days and time slots
+ */
+export function generateWeekGrid(
+  date: Date,
+  meetings: MeetingEvent[] = [],
+  startHour: number = 6,
+  endHour: number = 22,
+): WeekGridType {
+  // Input validation
+  if (!date || isNaN(date.getTime())) {
+    throw new Error('generateWeekGrid: Invalid date provided');
+  }
+
+  const today = now();
+  const weekDates = getCurrentWeekDates(date);
+  const timeSlots = generateTimeSlots(date, startHour, endHour, 60);
+
+  const days: WeekGridDay[] = weekDates.map((weekDate) => {
+    const dayMeetings = getMeetingsForDate(weekDate, meetings);
+
+    return {
+      date: cloneDate(weekDate),
+      isToday: isSameDay(weekDate, today),
+      isCurrentMonth: weekDate.getMonth() === date.getMonth(),
+      dayNumber: weekDate.getDate(),
+      dayName: formatJST(weekDate, 'EEE'), // "Mon", "Tue", etc.
+      fullDayName: formatJST(weekDate, 'EEEE'), // "Monday", "Tuesday", etc.
+      meetings: dayMeetings,
+    };
+  });
+
+  return {
+    days,
+    timeSlots,
+    currentWeek: weekDates[0],
+    totalDays: 7,
+  };
+}
+
+/**
+ * Generate day grid for a given date
+ * @param date - Target date
+ * @param meetings - Array of meetings to include
+ * @param startHour - Start hour for time slots (default: 6)
+ * @param endHour - End hour for time slots (default: 22)
+ * @returns Day grid with time slots
+ */
+export function generateDayGrid(
+  date: Date,
+  meetings: MeetingEvent[] = [],
+  startHour: number = 6,
+  endHour: number = 22,
+): DayGridType {
+  // Input validation
+  if (!date || isNaN(date.getTime())) {
+    throw new Error('generateDayGrid: Invalid date provided');
+  }
+
+  const today = now();
+  const dayMeetings = getMeetingsForDate(date, meetings);
+  const timeSlots = generateTimeSlots(date, startHour, endHour, 60);
+
+  return {
+    date: cloneDate(date),
+    isToday: isSameDay(date, today),
+    dayName: formatJST(date, 'EEE'), // "Mon", "Tue", etc.
+    fullDayName: formatJST(date, 'EEEE'), // "Monday", "Tuesday", etc.
+    timeSlots,
+    meetings: dayMeetings,
+  };
 }
 
 /**

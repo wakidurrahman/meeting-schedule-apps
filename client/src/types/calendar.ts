@@ -64,6 +64,39 @@ export interface TimeSlot {
   meetings: MeetingEvent[];
 }
 
+// Time-based grid types for week and day views
+export interface TimeSlotHour {
+  hour: number; // 0-23
+  displayTime: string; // "8:00 AM"
+  slots: TimeSlot[];
+}
+
+export interface WeekGridDay {
+  date: Date;
+  isToday: boolean;
+  isCurrentMonth: boolean;
+  dayNumber: number;
+  dayName: string; // "Mon", "Tue", etc.
+  fullDayName: string; // "Monday", "Tuesday", etc.
+  meetings: MeetingEvent[];
+}
+
+export interface WeekGridType {
+  days: WeekGridDay[];
+  timeSlots: TimeSlotHour[];
+  currentWeek: Date; // First day of the week
+  totalDays: number;
+}
+
+export interface DayGridType {
+  date: Date;
+  isToday: boolean;
+  dayName: string;
+  fullDayName: string;
+  timeSlots: TimeSlotHour[];
+  meetings: MeetingEvent[];
+}
+
 export type CalendarViewType = 'day' | 'week' | 'month' | 'year';
 
 /**
@@ -178,9 +211,13 @@ export interface CalendarHeaderProps extends BaseComponentProps {
 
 export interface CalendarGridProps extends BaseComponentProps {
   /**
-   * Calendar grid data
+   * Calendar grid data - supports month, week, and day grids
    */
-  calendarGrid: CalendarGridType;
+  calendarGrid: CalendarGridType | WeekGridType | DayGridType;
+  /**
+   * Current view type
+   */
+  view: CalendarViewType;
   /**
    * Currently selected date
    */
