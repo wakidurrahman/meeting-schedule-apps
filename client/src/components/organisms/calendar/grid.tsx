@@ -3,6 +3,8 @@
  *
  * Displays the main calendar grid with:
  * - Monthly grid layout (5 weeks x 7 days) = 35 days
+ * - Weekly grid layout (7 days)
+ * - Day grid layout (24 hours)
  * - Meeting events within each day
  * - Day numbers and states (today, selected, other month)
  * - Click handlers for dates and meetings
@@ -76,6 +78,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   // 2. Weekday helper function
   const weekDay = (index: number) => {
+    // return true if the day is a weekend
     return index === 5 || index === 6;
   };
 
