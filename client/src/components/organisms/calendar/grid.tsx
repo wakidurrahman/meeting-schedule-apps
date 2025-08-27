@@ -251,7 +251,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
               <div className="text-center text-muted p-5">
                 <i className="bi bi-calendar-x fs-1 mb-3 d-block" aria-hidden="true" />
                 <Text className="mb-0">No meetings scheduled</Text>
-                <small>Double-click a date to create a meeting</small>
+                <Text as="small">Double-click a date to create a meeting</Text>
               </div>
             </div>
           )}
