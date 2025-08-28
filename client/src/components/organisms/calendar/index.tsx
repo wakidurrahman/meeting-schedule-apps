@@ -233,9 +233,9 @@ const Calendar: React.FC<CalendarProps> = ({
       case 'month':
         return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
       case 'week':
-        return generateWeekGrid(currentDate, meetings, 6, 22); // 6 AM to 10 PM
+        return generateWeekGrid(currentDate, meetings, 1, 24); // 1 AM to 11 PM
       case 'day':
-        return generateDayGrid(currentDate, meetings, 6, 22); // 6 AM to 10 PM
+        return generateDayGrid(currentDate, meetings, 1, 24); // 1 AM to 11 PM
       case 'year':
         // For year view, we'll still use the month grid for now
         return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);

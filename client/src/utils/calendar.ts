@@ -463,8 +463,8 @@ export function generateTimeSlots(
 export function generateWeekGrid(
   date: Date,
   meetings: MeetingEvent[] = [],
-  startHour: number = 6,
-  endHour: number = 22,
+  startHour: number = 1,
+  endHour: number = 23,
 ): WeekGridType {
   // Input validation
   if (!date || isNaN(date.getTime())) {
