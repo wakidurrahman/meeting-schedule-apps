@@ -1017,14 +1017,16 @@ sequenceDiagram
     AM->>AM: jwt.verify(token, JWT_SECRET)
     AM->>AM: req.userId = payload.userId
     AM->>+GQL: Request with req.userId in context
+    deactivate AM
     GQL->>GQL: requireAuth(context) validates req.userId
     alt User Authenticated
         GQL->>+DB: Execute Query/Mutation
         DB-->>-GQL: Result
-        GQL-->>-C: Response
+        GQL-->>C: Response
     else User Not Authenticated
-        GQL-->>-C: GraphQLError: NOT_AUTHENTICATED
+        GQL-->>C: GraphQLError: NOT_AUTHENTICATED
     end
+    deactivate GQL
 ```
 
 ### 📊 **Current Calendar Grid System**
