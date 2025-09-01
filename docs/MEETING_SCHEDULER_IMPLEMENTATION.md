@@ -996,6 +996,7 @@ graph TD
 ### 🔐 **Authentication & Authorization Flow**
 
 ```mermaid
+graph TD
 sequenceDiagram
     participant C as Client (React)
     participant AM as Auth Middleware
