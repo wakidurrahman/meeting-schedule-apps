@@ -996,15 +996,14 @@ graph TD
 ### 🔐 **Authentication & Authorization Flow**
 
 ```mermaid
-graph TD
 sequenceDiagram
-    participant C as Client (React)
-    participant AM as Auth Middleware
-    participant GQL as GraphQL Resolver
+    participant C as Client
+    participant AM as AuthMiddleware
+    participant GQL as GraphQLResolver
     participant DB as Database
-    participant JWT as JWT Service
+    participant JWT as JWTService
 
-    %% Authentication Process
+    Note over C,JWT: Authentication Process
     C->>+GQL: login mutation
     GQL->>+DB: findUserDocByEmail(email)
     DB-->>-GQL: user document
@@ -1013,8 +1012,8 @@ sequenceDiagram
     JWT-->>-GQL: token
     GQL-->>-C: {token, user, tokenExpiration}
 
-    %% Subsequent Requests
-    C->>+AM: GraphQL Request + Authorization: Bearer token
+    Note over C,GQL: Subsequent Requests
+    C->>+AM: GraphQL Request + Authorization Bearer token
     AM->>AM: jwt.verify(token, JWT_SECRET)
     AM->>AM: req.userId = payload.userId
     AM->>+GQL: Request with req.userId in context
