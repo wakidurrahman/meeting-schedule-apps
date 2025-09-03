@@ -22,12 +22,17 @@ import Calendar from '@/components/organisms/calendar';
 import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meeting-modal';
 import MiniCalendar from '@/components/organisms/mini-calendar';
 import CalendarTemplate from '@/components/templates/calendar';
-import { GET_MEETINGS } from '@/graphql/meeting/queries';
+import {
+  DateRangeQueryData,
+  GET_MEETINGS_BY_DATE_RANGE,
+  MeetingsByDateRangeQueryData,
+} from '@/graphql/meeting/queries';
+import { useCalendarPrefetch } from '@/hooks/use-calendar-prefetch';
 import { useToast } from '@/hooks/use-toast';
 import type { CalendarViewType } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
 import { AttendeesUser } from '@/types/user';
-import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
+import { formatCalendarDate, getOptimizedDateRange } from '@/utils/calendar';
 import { cloneDate, now } from '@/utils/date';
 import { formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 
@@ -65,45 +70,99 @@ const CalendarPage: React.FC = () => {
   // Sidebar state
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
 
-  // Calculate date range for current view
-  const dateRange = useMemo(() => {
-    const { start, end } = getMonthBoundaries(currentDate.getFullYear(), currentDate.getMonth());
-    return { start, end };
-  }, [currentDate]);
+  // Calculate date range for current view Old (09/03/2025)
+  // const dateRange = useMemo(() => {
+  //   const { start, end } = getMonthBoundaries(currentDate.getFullYear(), currentDate.getMonth());
+  //   return { start, end };
+  // }, [currentDate]);
 
-  // Fetch meetings for current month
+  //  ✅ OPTIMIZED: Calculate date range based on current view
+  const dateRange = useMemo(() => {
+    return getOptimizedDateRange(currentDate, calendarView);
+  }, [currentDate, calendarView]);
+
+  // Fetch meetings for current month Old (09/03/2025)
+  // const {
+  //   data: meetingsData,
+  //   loading: meetingsLoading,
+  //   error: meetingsError,
+  //   refetch: refetchMeetings,
+  // } = useQuery<MeetingsQueryData>(GET_MEETINGS, {
+  //   variables: {
+  //     // Note: This query would need to be enhanced to support date ranges
+  //     // For now, it fetches all meetings and we filter client-side
+  //   },
+  //   // errorPolicy: 'partial',
+  // });
+
+  // ✅ OPTIMIZED: Use date-range specific query
   const {
     data: meetingsData,
     loading: meetingsLoading,
     error: meetingsError,
     refetch: refetchMeetings,
-  } = useQuery<MeetingsQueryData>(GET_MEETINGS, {
+  } = useQuery<MeetingsByDateRangeQueryData, DateRangeQueryData>(GET_MEETINGS_BY_DATE_RANGE, {
     variables: {
-      // Note: This query would need to be enhanced to support date ranges
-      // For now, it fetches all meetings and we filter client-side
+      dateRange: {
+        startDate: dateRange.start.toISOString(),
+        endDate: dateRange.end.toISOString(),
+      },
     },
-    // errorPolicy: 'partial',
+    // Enable caching based on date range
+    fetchPolicy: 'cache-first',
+    notifyOnNetworkStatusChange: true,
   });
 
-  // Transform GraphQL meetings to calendar format
-  const meetings = useMemo<MeetingEvent[]>(() => {
-    if (!meetingsData?.meetings?.meetingsList) return [];
+  // 🚀 PERFORMANCE OPTIMIZATION: Prefetch adjacent date ranges for smooth navigation
+  useCalendarPrefetch(currentDate, calendarView);
 
-    return meetingsData.meetings.meetingsList
-      .map((meeting) => ({
-        id: meeting.id,
-        title: meeting.title,
-        description: meeting.description,
-        startTime: new Date(meeting.startTime),
-        endTime: new Date(meeting.endTime),
-        attendees: meeting.attendees?.map((user) => ({ id: user.id, name: user.name })) || [],
-        createdBy: meeting.createdBy,
-      }))
-      .filter((meeting) => {
-        // Filter meetings within current view range
-        return meeting.startTime >= dateRange.start && meeting.startTime <= dateRange.end;
-      });
-  }, [meetingsData, dateRange]);
+  /**
+   * Transform GraphQL meetings to calendar format Old (09/03/2025)
+   * 🚨 Current Performance Problem Identified
+   * 🔥 Root Cause: ALL meetings loaded regardless of calendar view
+   * 
+   * Performance Impact:
+   * - 10 meetings: ~2KB data transfer ✅ Acceptable
+   * - 100 meetings: ~20KB data transfer ⚠️ Noticeable delay
+   * - 1,000 meetings: ~200KB data transfer ❌ Significant lag (2-3 seconds)
+   * - 10,000 meetings: ~2MB data transfer ❌ Unusable (10+ seconds)
+
+   */
+  // const meetings = useMemo<MeetingEvent[]>(() => {
+  //   if (!meetingsData?.meetings?.meetingsList) return [];
+
+  //   return meetingsData.meetings.meetingsList
+  //     .map((meeting) => ({
+  //       id: meeting.id,
+  //       title: meeting.title,
+  //       description: meeting.description,
+  //       startTime: new Date(meeting.startTime),
+  //       endTime: new Date(meeting.endTime),
+  //       attendees: meeting.attendees?.map((user) => ({ id: user.id, name: user.name })) || [],
+  //       createdBy: meeting.createdBy,
+  //     }))
+  //     .filter((meeting) => {
+  //       // 🚨 Performance Problem Identified
+  //       // Filter meetings within current view range ⚠️ INEFFICIENT
+  //       return meeting.startTime >= dateRange.start && meeting.startTime <= dateRange.end;
+  //     });
+  // }, [meetingsData, dateRange]);
+
+  // ✅ OPTIMIZED: No client-side filtering needed - server does it
+  const meetings = useMemo<MeetingEvent[]>(() => {
+    if (!meetingsData?.meetingsByDateRange) return [];
+
+    return meetingsData.meetingsByDateRange.map((meeting) => ({
+      id: meeting.id,
+      title: meeting.title,
+      description: meeting.description || '',
+      startTime: cloneDate(meeting.startTime),
+      endTime: cloneDate(meeting.endTime),
+      attendees: meeting.attendees?.map((user) => ({ id: user.id, name: user.name })) || [],
+      createdBy: meeting.createdBy,
+    }));
+    // No filtering needed - server already filtered by date range
+  }, [meetingsData]);
 
   // Today's Meetings
   const todayMeetings = useMemo(() => meetings.length, [meetings]);

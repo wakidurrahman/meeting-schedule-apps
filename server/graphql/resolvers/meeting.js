@@ -71,7 +71,7 @@ const meetingResolvers = {
     try {
       // step 01: validate the user by requireAuth
       requireAuth(context);
-      // step 02: get meetings in date range
+      // step 02: get meetings in date range. Server-side filtering at database level
       const meetings = await getMeetingsByDateRange(dateRange.startDate, dateRange.endDate);
       // step 03: return the meetings
       return meetings.map(formatMeeting);

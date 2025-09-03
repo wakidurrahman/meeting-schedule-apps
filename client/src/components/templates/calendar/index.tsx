@@ -41,7 +41,6 @@ export interface CalendarTemplateProps extends BaseComponentProps {
  */
 const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
   children,
-
   calendarHeader,
   calendarContent,
   sidebar,

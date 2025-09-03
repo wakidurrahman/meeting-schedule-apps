@@ -76,8 +76,26 @@ export const apolloClient = new ApolloClient({
   link: from([authLink, httpLink]),
 
   // Initialize a new in-memory cache
-  cache: new InMemoryCache(),
-
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          meetingsByDateRange: {
+            // Custom cache key based on date range
+            keyArgs: ['dateRange', ['startDate', 'endDate']],
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            merge(existing = [], incoming) {
+              // Merge strategy for overlapping date ranges
+              return incoming;
+            },
+          },
+        },
+      },
+      Meeting: {
+        keyFields: ['id'],
+      },
+    },
+  }),
   // Enable Apollo DevTools in development
   connectToDevTools: true,
 });

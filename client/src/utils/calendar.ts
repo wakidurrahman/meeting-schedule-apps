@@ -644,3 +644,135 @@ export const isDayGrid = (
 ): grid is DayGridType => {
   return 'date' in grid && 'timeSlots' in grid && !('days' in grid);
 };
+
+/**
+ * Get date boundaries for any calendar view
+ * @param date - Reference date
+ * @param view - Calendar view type
+ * @returns Object with start and end dates
+ */
+
+export function getViewDateBoundaries(
+  date: Date,
+  view: CalendarViewType,
+): { start: Date; end: Date } {
+  switch (view) {
+    case 'month':
+      return getMonthBoundaries(date.getFullYear(), date.getMonth());
+    case 'week': {
+      const weekDates = getCurrentWeekDates(date);
+      return {
+        start: fromPartsJST({
+          year: weekDates[0].getFullYear(),
+          month: weekDates[0].getMonth(),
+          day: weekDates[0].getDate(),
+          hour: 0,
+          minute: 0,
+          second: 0,
+        }),
+        end: fromPartsJST({
+          year: weekDates[6].getFullYear(),
+          month: weekDates[6].getMonth(),
+          day: weekDates[6].getDate(),
+          hour: 23,
+          minute: 59,
+          second: 59,
+        }),
+      };
+    }
+    case 'day': {
+      return {
+        start: fromPartsJST({
+          year: date.getFullYear(),
+          month: date.getMonth(),
+          day: date.getDate(),
+          hour: 0,
+          minute: 0,
+          second: 0,
+        }),
+        end: fromPartsJST({
+          year: date.getFullYear(),
+          month: date.getMonth(),
+          day: date.getDate(),
+          hour: 23,
+          minute: 59,
+          second: 59,
+        }),
+      };
+    }
+    case 'year': {
+      return {
+        start: fromPartsJST({ year: date.getFullYear(), month: 0, day: 1 }),
+        end: fromPartsJST({
+          year: date.getFullYear(),
+          month: 11,
+          day: 31,
+          hour: 23,
+          minute: 59,
+          second: 59,
+        }),
+      };
+    }
+    default:
+      return getMonthBoundaries(date.getFullYear(), date.getMonth());
+  }
+}
+
+/**
+ * Get optimized date range for any calendar view
+ * Loads slightly more date to handle navigation without new queries.
+ * @param date - Reference date
+ * @param view - Calendar view type
+ * @returns Object with start and end dates
+ */
+
+export function getOptimizedDateRange(
+  date: Date,
+  view: CalendarViewType,
+): { start: Date; end: Date } {
+  const baseRange = getViewDateBoundaries(date, view);
+
+  switch (view) {
+    case 'month': {
+      // Load previous and next month for smooth navigation
+      const prevMonth = new Date(baseRange.start);
+      prevMonth.setMonth(prevMonth.getMonth() - 1);
+      const nextMonth = new Date(baseRange.end);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      return {
+        start: prevMonth,
+        end: nextMonth,
+      };
+    }
+    case 'week': {
+      // Load previous and next week
+      const prevWeek = new Date(baseRange.start);
+      prevWeek.setDate(prevWeek.getDate() - 7);
+      const nextWeek = new Date(baseRange.end);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+
+      return { start: prevWeek, end: nextWeek };
+    }
+    case 'day': {
+      // Load previous and next day
+      const prevDay = new Date(baseRange.start);
+      prevDay.setDate(prevDay.getDate() - 1);
+      const nextDay = new Date(baseRange.end);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      return { start: prevDay, end: nextDay };
+    }
+    case 'year': {
+      // Load previous and next year
+      const prevYear = new Date(baseRange.start);
+      prevYear.setFullYear(prevYear.getFullYear() - 1);
+      const nextYear = new Date(baseRange.end);
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+
+      return { start: prevYear, end: nextYear };
+    }
+    default:
+      return baseRange;
+  }
+}
