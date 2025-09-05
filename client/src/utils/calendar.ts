@@ -735,9 +735,9 @@ export function getOptimizedDateRange(
   switch (view) {
     case 'month': {
       // Load previous and next month for smooth navigation
-      const prevMonth = new Date(baseRange.start);
+      const prevMonth = cloneDate(baseRange.start);
       prevMonth.setMonth(prevMonth.getMonth() - 1);
-      const nextMonth = new Date(baseRange.end);
+      const nextMonth = cloneDate(baseRange.end);
       nextMonth.setMonth(nextMonth.getMonth() + 1);
 
       return {
@@ -747,27 +747,27 @@ export function getOptimizedDateRange(
     }
     case 'week': {
       // Load previous and next week
-      const prevWeek = new Date(baseRange.start);
+      const prevWeek = cloneDate(baseRange.start);
       prevWeek.setDate(prevWeek.getDate() - 7);
-      const nextWeek = new Date(baseRange.end);
+      const nextWeek = cloneDate(baseRange.end);
       nextWeek.setDate(nextWeek.getDate() + 7);
 
       return { start: prevWeek, end: nextWeek };
     }
     case 'day': {
       // Load previous and next day
-      const prevDay = new Date(baseRange.start);
+      const prevDay = cloneDate(baseRange.start);
       prevDay.setDate(prevDay.getDate() - 1);
-      const nextDay = new Date(baseRange.end);
+      const nextDay = cloneDate(baseRange.end);
       nextDay.setDate(nextDay.getDate() + 1);
 
       return { start: prevDay, end: nextDay };
     }
     case 'year': {
       // Load previous and next year
-      const prevYear = new Date(baseRange.start);
+      const prevYear = cloneDate(baseRange.start);
       prevYear.setFullYear(prevYear.getFullYear() - 1);
-      const nextYear = new Date(baseRange.end);
+      const nextYear = cloneDate(baseRange.end);
       nextYear.setFullYear(nextYear.getFullYear() + 1);
 
       return { start: prevYear, end: nextYear };
