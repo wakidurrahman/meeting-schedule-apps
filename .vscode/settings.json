@@ -17,5 +17,25 @@
   ],
   // Search both projects for tsconfig paths
   "typescript.preferences.importModuleSpecifier": "shortest",
-  "typescript.tsdk": "client/node_modules/typescript/lib"
+  "typescript.tsdk": "client/node_modules/typescript/lib",
+
+  // Debugging settings
+  "debug.allowBreakpointsEverywhere": true,
+  "debug.inlineValues": "on",
+  "debug.showInlineBreakpointCandidates": true,
+  "debug.terminal.clearBeforeReusing": true,
+  "debug.javascript.autoAttachFilter": "smart",
+  "debug.javascript.suggestPrettyPrinting": true,
+
+  // Terminal settings for debugging
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.splitCwd": "workspaceRoot",
+
+  // Files to exclude from search during debugging
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/build": true
+  }
 }
