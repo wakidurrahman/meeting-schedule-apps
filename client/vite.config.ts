@@ -10,7 +10,19 @@ export default defineConfig({
     },
   },
   build: {
+    target: 'esnext',
+    outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        format: 'esm',
+        // Cache-busting: Including content hashes in filenames so updates invalidate old cache
+        // to ensure users get the latest assets without manual refresh
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
+      },
+    },
   },
   css: {
     preprocessorOptions: {
@@ -23,6 +35,18 @@ export default defineConfig({
           'legacy-js-api',
         ],
       },
+    },
+  },
+  define: {
+    'process.env': process.env,
+  },
+  json: {
+    stringify: true,
+  },
+
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext',
     },
   },
   server: {
