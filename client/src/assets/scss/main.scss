@@ -194,30 +194,6 @@ body {
 // Calendar Quick Fixes
 // =============================================================================
 
-// Ensure calendar container has proper styling
-.calendar-organism {
-  .calendar-grid__day {
-    // Ensure proper day cell styling
-    border: 1px solid var(--bs-border-color);
-
-    &--today {
-      background-color: rgba(var(--bs-primary-rgb), 0.1);
-      border-color: var(--bs-primary);
-    }
-
-    &--selected {
-      background-color: rgba(var(--bs-primary-rgb), 0.2);
-      border-color: var(--bs-primary);
-    }
-  }
-
-  .calendar-grid__header-cell {
-    background-color: var(--bs-light);
-    font-weight: 600;
-    border: 1px solid var(--bs-border-color);
-  }
-}
-
 // Ensure template styling works
 .t-calendar-template {
   .t-calendar-template__sidebar {

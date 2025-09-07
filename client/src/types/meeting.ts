@@ -4,16 +4,18 @@ import type { AttendeeUser, AttendeesUser } from '@/types/user';
  * Meeting
  *
  * Type definitions for:
- * - Meeting: A meeting
- * - MeetingInput: The input for a meeting
+ * - Meeting: A meeting event
+ * - MeetingInput: The input for a meeting event
+ * - Meetings: A list of meetings
  */
+
 export type Meeting = {
   id: string;
   title: string;
   description: string | null;
   startTime: string;
   endTime: string;
-  attendees?: Array<AttendeeUser>;
+  attendees?: AttendeeUser[];
   createdBy?: AttendeesUser;
   createdAt?: string;
   updatedAt?: string;
@@ -33,7 +35,7 @@ export type Meetings = {
   description: string | null;
   startTime: string;
   endTime: string;
-  attendees?: Array<AttendeeUser>;
+  attendees?: AttendeeUser[];
   createdBy?: AttendeesUser;
   createdAt: string;
   updatedAt: string;
@@ -44,11 +46,12 @@ export type Meetings = {
  * Meeting Event
  *
  * Type definitions for:
- * - MeetingEvent: A meeting event
- * - MeetingConflict: A meeting conflict
- * - MeetingFormData: The form data for a meeting
- * - MeetingValidationResult: The validation result for a meeting
- * - AttendeeAvailability: The availability of an attendee
+ * - MeetingStatusType: The status of a meeting.
+ * - MeetingEvent: A meeting event.
+ * - MeetingConflict: A meeting conflict.
+ * - MeetingFormData: The form data for a meeting.
+ * - MeetingValidationResult: The validation result for a meeting.
+ * - AttendeeAvailability: The availability of an attendee.
  */
 
 export type MeetingStatusType = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';

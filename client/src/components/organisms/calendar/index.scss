@@ -34,11 +34,7 @@
   box-shadow: var(--bs-box-shadow-sm);
 
   &--compact {
-    .calendar-organism__navigation {
-      padding: 0.5rem;
-    }
-
-    .calendar-organism__header {
+    .o-calendar__header {
       padding: 0.75rem;
     }
   }
@@ -785,17 +781,17 @@
 // =============================================================================
 
 @media print {
-  .calendar-organism {
+  .o-calendar {
     box-shadow: none;
     border: 1px solid #000;
   }
 
-  .calendar-header__actions,
-  .calendar-navigation {
+  .o-calendar-header__actions,
+  .o-calendar-navigation {
     display: none;
   }
 
-  .calendar-grid__day {
+  .o-calendar-grid__day {
     min-height: 100px;
 
     &--clickable {
@@ -803,7 +799,7 @@
     }
   }
 
-  .calendar-event {
+  .o-calendar-event {
     background: #f0f0f0 !important;
     border: 1px solid #000 !important;
     box-shadow: none;
