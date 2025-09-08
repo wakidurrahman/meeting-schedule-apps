@@ -34,6 +34,7 @@
  * - SCSS bundle is imported once here (Bootstrap 5 + custom variables).
  * - Bootstrap JS bundle is imported for interactive components (collapse, etc.).
  */
+
 import { ApolloProvider } from '@apollo/client';
 import React from 'react';
 import ReactDOM from 'react-dom';

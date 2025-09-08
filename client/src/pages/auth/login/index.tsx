@@ -25,13 +25,14 @@ import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
+import Card from '@/components/molecules/card';
 import BaseTemplate from '@/components/templates/base-templates';
 import { useAuthContext } from '@/context/AuthContext';
 import { LOGIN, type LoginMutationData } from '@/graphql/auth/mutations';
@@ -91,9 +92,9 @@ export default function Login(): JSX.Element {
     <BaseTemplate>
       <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body">
+          <div className="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
+            <Card className="border-0">
+              <Card.Body>
                 <Heading level={5} className="mb-3">
                   Login
                 </Heading>
@@ -116,14 +117,37 @@ export default function Login(): JSX.Element {
                   />
                   {error && <Alert variant="danger">{error.message}</Alert>}
                   <div className="d-flex justify-content-center mt-5">
-                    <Button type="submit" variant="primary" disabled={loading || isSubmitting}>
+                    <Button
+                      type="submit"
+                      className="w-100 shadow-sm"
+                      variant="primary"
+                      disabled={loading || isSubmitting}
+                    >
                       {loading ? 'Loading...' : 'Log In'}
                     </Button>
                   </div>
                 </form>
+                <hr className="my-4" />
+                <div className="btn-group gap-2 w-100 justify-content-center">
+                  <Link to="#" className="btn btn-outline-dark rounded-1" aria-current="page">
+                    <i className="bi bi-google text-primary"></i>
+                  </Link>
+                  <Link to="#" className="btn btn-outline-dark rounded-1">
+                    <i className="bi bi-facebook text-primary"></i>
+                  </Link>
+                  <Link to="#" className="btn btn-outline-dark rounded-1">
+                    <i className="bi bi-apple text-primary"></i>
+                  </Link>
+                  <Link to="#" className="btn btn-outline-dark rounded-1">
+                    <i className="bi bi-twitter text-primary"></i>
+                  </Link>
+                </div>
+                <p className="text-muted text-center mt-4">
+                  Don&apos;t have an account? <Link to="/register">Sign up</Link>
+                </p>
                 {process.env.NODE_ENV !== 'production' && <DevTool control={control} />}
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
           </div>
         </div>
       </div>
