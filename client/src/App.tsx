@@ -32,6 +32,13 @@ function PrivateRoute({ children }: { children: JSX.Element }) {
 }
 
 /**
+ * TODO: Bundle Size
+ * Current: No code splitting implemented
+ * Impact: Large initial bundle download
+ * Solution: Route-based code splitting
+ */
+
+/**
  * App
  * @returns {JSX.Element} The app
  */
