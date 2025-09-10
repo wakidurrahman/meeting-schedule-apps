@@ -17,12 +17,14 @@ import CalendarEvent from './event';
 
 import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
+import MiniCalendar from '@/components/organisms/mini-calendar';
 import { WEEKDAY_LABELS } from '@/constants/const';
 import type {
   CalendarGridType,
   CalendarViewType,
   DayGridType,
   WeekGridType,
+  YearGridType,
 } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
 import type { MeetingEvent } from '@/types/meeting';
@@ -32,11 +34,12 @@ import {
   isMonthGrid,
   isSameDay,
   isWeekGrid,
+  isYearGrid,
 } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
 
 export interface CalendarGridProps extends BaseComponentProps {
-  calendarGrid: CalendarGridType | WeekGridType | DayGridType;
+  calendarGrid: CalendarGridType | WeekGridType | DayGridType | YearGridType;
   view: CalendarViewType;
   selectedDate?: Date | null;
   hoveredDate?: Date | null;
@@ -454,6 +457,63 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
       </div>
     );
   };
+
+  // Year view renderer
+  const YearView: React.FC<{ grid: YearGridType }> = ({ grid }) => {
+    return (
+      <div className="o-calendar-grid o-calendar-grid--year">
+        <div className="o-calendar-grid__year-container">
+          {grid.months.map((monthData) => {
+            const isCurrentMonth = monthData.month === grid.currentMonth;
+            const hasSelectedDate =
+              selectedDate &&
+              selectedDate.getFullYear() === monthData.year &&
+              selectedDate.getMonth() === monthData.month;
+
+            return (
+              <div key={monthData.month} className="o-calendar-grid__year-month">
+                <div className="o-calendar-grid__year-month-header">
+                  <Text
+                    weight="semibold"
+                    className={buildClassNames(
+                      'o-calendar-grid__year-month-title',
+                      isCurrentMonth && 'o-calendar-grid__year-month-title--current',
+                    )}
+                  >
+                    {monthData.monthName}
+                  </Text>
+                  {monthData.meetingCount > 0 && (
+                    <span className="o-calendar-grid__year-month-badge">
+                      {monthData.meetingCount}
+                    </span>
+                  )}
+                </div>
+                <MiniCalendar
+                  selectedDate={hasSelectedDate ? selectedDate : undefined}
+                  currentDate={monthData.firstDay}
+                  onDateClick={handleDateClick}
+                  onMonthChange={() => {
+                    // Handle month navigation if needed
+                  }}
+                  showNavigation={false}
+                  compact={true}
+                  className="o-calendar-grid__year-mini-calendar"
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Grid loading overlay */}
+        {loading && (
+          <div className="o-calendar-grid__loading-overlay">
+            <Spinner variant="grow" color="primary" size="lg" />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Render different layouts based on view type
   if (isMonthGrid(calendarGrid)) {
     return <MonthView grid={calendarGrid} />;
@@ -461,6 +521,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
     return <WeekView grid={calendarGrid} />;
   } else if (isDayGrid(calendarGrid)) {
     return <DayView grid={calendarGrid} />;
+  } else if (isYearGrid(calendarGrid)) {
+    return <YearView grid={calendarGrid} />;
   }
 
   return <div>Unsupported view type</div>;

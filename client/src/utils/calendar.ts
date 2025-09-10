@@ -14,6 +14,7 @@ import {
   CalendarDay,
   CalendarGridType,
   CalendarTitleData,
+  CalendarViewDirection,
   CalendarViewType,
   CalendarWeek,
   DayGridType,
@@ -21,6 +22,8 @@ import {
   TimeSlotHour,
   WeekGridDay,
   WeekGridType,
+  YearGridMonth,
+  YearGridType,
 } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
 
@@ -183,14 +186,14 @@ export function getCurrentWeekDates(date: Date = now()): Date[] {
  * @param direction - 'next' or 'previous'
  * @returns New date for navigation
  */
-export function navigateMonth(currentDate: Date, direction: 'next' | 'previous'): Date {
-  const newDate = cloneDate(currentDate);
+export function navigateMonth(currentDate: Date, direction: CalendarViewDirection): Date {
+  const navigatedDate = cloneDate(currentDate);
   if (direction === 'next') {
-    newDate.setMonth(newDate.getMonth() + 1);
+    navigatedDate.setMonth(navigatedDate.getMonth() + 1);
   } else {
-    newDate.setMonth(newDate.getMonth() - 1);
+    navigatedDate.setMonth(navigatedDate.getMonth() - 1);
   }
-  return newDate;
+  return navigatedDate;
 }
 
 /**
@@ -199,14 +202,14 @@ export function navigateMonth(currentDate: Date, direction: 'next' | 'previous')
  * @param direction - 'next' or 'previous'
  * @returns New date for navigation
  */
-export function navigateWeek(currentDate: Date, direction: 'next' | 'previous'): Date {
-  const newDate = cloneDate(currentDate);
+export function navigateWeek(currentDate: Date, direction: CalendarViewDirection): Date {
+  const navigatedDate = cloneDate(currentDate);
   if (direction === 'next') {
-    newDate.setDate(newDate.getDate() + 7);
+    navigatedDate.setDate(navigatedDate.getDate() + 7);
   } else {
-    newDate.setDate(newDate.getDate() - 7);
+    navigatedDate.setDate(navigatedDate.getDate() - 7);
   }
-  return newDate;
+  return navigatedDate;
 }
 
 /**
@@ -215,14 +218,14 @@ export function navigateWeek(currentDate: Date, direction: 'next' | 'previous'):
  * @param direction - 'next' or 'previous'
  * @returns New date for navigation
  */
-export function navigateDay(currentDate: Date, direction: 'next' | 'previous'): Date {
-  const newDate = cloneDate(currentDate);
+export function navigateDay(currentDate: Date, direction: CalendarViewDirection): Date {
+  const navigatedDate = cloneDate(currentDate);
   if (direction === 'next') {
-    newDate.setDate(newDate.getDate() + 1);
+    navigatedDate.setDate(navigatedDate.getDate() + 1);
   } else {
-    newDate.setDate(newDate.getDate() - 1);
+    navigatedDate.setDate(navigatedDate.getDate() - 1);
   }
-  return newDate;
+  return navigatedDate;
 }
 
 /**
@@ -531,6 +534,65 @@ export function generateDayGrid(
 }
 
 /**
+ * Generate year grid for a given year
+ * @param year - Target year
+ * @param meetings - Array of meetings to include
+ * @param currentMonth - Current/selected month for highlighting (optional)
+ * @returns Year grid with 12 months
+ */
+export function generateYearGrid(
+  year: number,
+  meetings: MeetingEvent[] = [],
+  currentMonth?: number,
+): YearGridType {
+  // Input validation
+  if (!year || year < 1900 || year > 3000) {
+    throw new Error('generateYearGrid: Invalid year provided');
+  }
+
+  const today = now();
+  const months: YearGridMonth[] = [];
+  let totalMeetings = 0;
+
+  // Generate data for all 12 months
+  for (let month = 0; month < 12; month++) {
+    // Get meetings for this specific month
+    const monthMeetings = meetings.filter((meeting) => {
+      return meeting.startTime.getFullYear() === year && meeting.startTime.getMonth() === month;
+    });
+
+    // Generate calendar grid for this month
+    const calendarGrid = generateCalendarGrid(year, month, monthMeetings);
+
+    // Get month boundaries using existing utility function
+    const monthDate = fromPartsJST({ year, month, day: 1 });
+    const { firstDay, lastDay } = getMonthDateRange(monthDate);
+
+    // Create month data
+    const monthData: YearGridMonth = {
+      month,
+      year,
+      monthName: formatJST(firstDay, 'MMMM'), // "January", "February", etc.
+      monthAbbr: formatJST(firstDay, 'MMM'), // "Jan", "Feb", etc.
+      calendarGrid,
+      meetingCount: monthMeetings.length,
+      firstDay,
+      lastDay,
+    };
+
+    months.push(monthData);
+    totalMeetings += monthMeetings.length;
+  }
+
+  return {
+    year,
+    months,
+    totalMeetings,
+    currentMonth: currentMonth !== undefined ? currentMonth : today.getMonth(),
+  };
+}
+
+/**
  * Get calendar view title based on view type and date
  * @param date - Reference date. e.g. Mon Aug 25 2025 17:56:01 GMT+0900 (Japan Standard Time)
  * @param view - Calendar view type.  e.g. 'month', 'week', 'day', 'year'
@@ -628,21 +690,27 @@ export function getCalendarViewTitle(
 }
 
 export const isMonthGrid = (
-  grid: CalendarGridType | WeekGridType | DayGridType,
+  grid: CalendarGridType | WeekGridType | DayGridType | YearGridType,
 ): grid is CalendarGridType => {
   return 'weeks' in grid;
 };
 
 export const isWeekGrid = (
-  grid: CalendarGridType | WeekGridType | DayGridType,
+  grid: CalendarGridType | WeekGridType | DayGridType | YearGridType,
 ): grid is WeekGridType => {
   return 'days' in grid && 'timeSlots' in grid && Array.isArray((grid as WeekGridType).days);
 };
 
 export const isDayGrid = (
-  grid: CalendarGridType | WeekGridType | DayGridType,
+  grid: CalendarGridType | WeekGridType | DayGridType | YearGridType,
 ): grid is DayGridType => {
   return 'date' in grid && 'timeSlots' in grid && !('days' in grid);
+};
+
+export const isYearGrid = (
+  grid: CalendarGridType | WeekGridType | DayGridType | YearGridType,
+): grid is YearGridType => {
+  return 'months' in grid && 'year' in grid && Array.isArray((grid as YearGridType).months);
 };
 
 /**
@@ -736,8 +804,8 @@ export function getOptimizedDateRange(
     case 'month': {
       // Load previous and next month for smooth navigation
       const prevMonth = cloneDate(baseRange.start);
-      prevMonth.setMonth(prevMonth.getMonth() - 1);
       const nextMonth = cloneDate(baseRange.end);
+      prevMonth.setMonth(prevMonth.getMonth() - 1);
       nextMonth.setMonth(nextMonth.getMonth() + 1);
 
       return {
@@ -748,8 +816,8 @@ export function getOptimizedDateRange(
     case 'week': {
       // Load previous and next week
       const prevWeek = cloneDate(baseRange.start);
-      prevWeek.setDate(prevWeek.getDate() - 7);
       const nextWeek = cloneDate(baseRange.end);
+      prevWeek.setDate(prevWeek.getDate() - 7);
       nextWeek.setDate(nextWeek.getDate() + 7);
 
       return { start: prevWeek, end: nextWeek };
@@ -757,8 +825,8 @@ export function getOptimizedDateRange(
     case 'day': {
       // Load previous and next day
       const prevDay = cloneDate(baseRange.start);
-      prevDay.setDate(prevDay.getDate() - 1);
       const nextDay = cloneDate(baseRange.end);
+      prevDay.setDate(prevDay.getDate() - 1);
       nextDay.setDate(nextDay.getDate() + 1);
 
       return { start: prevDay, end: nextDay };
@@ -766,8 +834,8 @@ export function getOptimizedDateRange(
     case 'year': {
       // Load previous and next year
       const prevYear = cloneDate(baseRange.start);
-      prevYear.setFullYear(prevYear.getFullYear() - 1);
       const nextYear = cloneDate(baseRange.end);
+      prevYear.setFullYear(prevYear.getFullYear() - 1);
       nextYear.setFullYear(nextYear.getFullYear() + 1);
 
       return { start: prevYear, end: nextYear };

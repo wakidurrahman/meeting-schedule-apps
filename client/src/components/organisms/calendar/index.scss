@@ -809,3 +809,138 @@
     }
   }
 }
+
+// =============================================================================
+// Year View Styles
+// =============================================================================
+
+.o-calendar-grid--year {
+  .o-calendar-grid__year-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+
+    // Responsive layout for different screen sizes
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr); // 3 columns on tablet+
+    }
+
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(4, 1fr); // 4 columns on desktop
+      gap: 2rem;
+    }
+  }
+
+  .o-calendar-grid__year-month {
+    background: var(--bs-white);
+    border: 1px solid var(--calendar-border-color);
+    border-radius: var(--bs-border-radius);
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: var(--bs-box-shadow-sm);
+
+    &:hover {
+      box-shadow: var(--bs-box-shadow);
+      transform: translateY(-2px);
+    }
+  }
+
+  .o-calendar-grid__year-month-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--calendar-header-bg);
+    border-bottom: 1px solid var(--calendar-border-color);
+  }
+
+  .o-calendar-grid__year-month-title {
+    font-size: 0.9rem;
+    margin: 0;
+
+    &--current {
+      color: var(--bs-primary);
+      font-weight: 600;
+    }
+  }
+
+  .o-calendar-grid__year-month-badge {
+    background: var(--bs-primary);
+    color: var(--bs-white);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--bs-border-radius-pill);
+    min-width: 1.25rem;
+    text-align: center;
+  }
+
+  .o-calendar-grid__year-mini-calendar {
+    // Override mini-calendar styles for year view
+    .o-mini-calendar__header {
+      display: none; // Hide navigation in year view
+    }
+
+    .o-mini-calendar__grid {
+      padding: 0.5rem;
+    }
+
+    .o-mini-calendar__weekdays {
+      margin-bottom: 0.25rem;
+    }
+
+    .o-mini-calendar__weekday-text {
+      font-size: 0.7rem;
+      color: var(--bs-secondary);
+    }
+
+    .o-mini-calendar__day {
+      width: 1.75rem;
+      height: 1.75rem;
+      font-size: 0.75rem;
+      border-radius: var(--bs-border-radius-sm);
+
+      &--today {
+        background: var(--calendar-today-bg);
+        color: var(--calendar-today-text);
+        font-weight: 600;
+      }
+
+      &--selected {
+        background: var(--calendar-selected-bg);
+        color: var(--bs-primary);
+        border: 1px solid var(--bs-primary);
+      }
+
+      &--other-month {
+        opacity: var(--calendar-other-month-opacity);
+      }
+
+      &--has-meetings {
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 2px;
+          right: 2px;
+          width: 4px;
+          height: 4px;
+          background: var(--bs-success);
+          border-radius: 50%;
+        }
+      }
+
+      &--clickable:hover {
+        background: var(--calendar-hover-bg);
+      }
+    }
+  }
+
+  // Loading state for year view
+  .o-calendar-grid__loading-overlay {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(2px);
+  }
+}

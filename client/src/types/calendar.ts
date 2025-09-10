@@ -77,7 +77,26 @@ export interface DayGridType {
   meetings: MeetingEvent[];
 }
 
+export interface YearGridMonth {
+  month: number; // 0-11
+  year: number;
+  monthName: string; // "January", "February", etc.
+  monthAbbr: string; // "Jan", "Feb", etc.
+  calendarGrid: CalendarGridType;
+  meetingCount: number;
+  firstDay: Date;
+  lastDay: Date;
+}
+
+export interface YearGridType {
+  year: number;
+  months: YearGridMonth[];
+  totalMeetings: number;
+  currentMonth?: number; // Current month (0-11) for highlighting
+}
+
 export type CalendarViewType = 'day' | 'week' | 'month' | 'year';
+export type CalendarViewDirection = 'next' | 'previous';
 
 export interface CalendarTitleData {
   /** Primary month abbreviation (e.g., "JAN") - mainly for month view */

@@ -1,4 +1,7 @@
 import { CalendarViewType } from '@/types/calendar';
+import { now } from '@/utils/date';
+
+export const CURRENT_DATE = now();
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const NAME_REGEX = /^[a-zA-Z\s'-]+$/;

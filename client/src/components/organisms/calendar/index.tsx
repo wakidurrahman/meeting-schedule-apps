@@ -21,6 +21,7 @@ import type {
   CalendarViewType,
   DayGridType,
   WeekGridType,
+  YearGridType,
 } from '@/types/calendar';
 import { BaseComponentProps } from '@/types/components-common';
 import type { MeetingEvent } from '@/types/meeting';
@@ -28,6 +29,7 @@ import {
   generateCalendarGrid,
   generateDayGrid,
   generateWeekGrid,
+  generateYearGrid,
   getCalendarViewTitle,
   navigateDay,
   navigateMonth,
@@ -109,20 +111,20 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // 2. Navigation handlers previous date
   const handleNavigatePrevious = useCallback(() => {
-    let newDate: Date;
+    let navigatedPreviousDate: Date;
 
     switch (currentView) {
       case 'month':
-        newDate = navigateMonth(currentDate, 'previous');
+        navigatedPreviousDate = navigateMonth(currentDate, 'previous');
         break;
       case 'week':
-        newDate = navigateWeek(currentDate, 'previous');
+        navigatedPreviousDate = navigateWeek(currentDate, 'previous');
         break;
       case 'day':
-        newDate = navigateDay(currentDate, 'previous');
+        navigatedPreviousDate = navigateDay(currentDate, 'previous');
         break;
       case 'year':
-        newDate = fromPartsJST({
+        navigatedPreviousDate = fromPartsJST({
           year: currentDate.getFullYear() - 1,
           month: currentDate.getMonth(),
           day: currentDate.getDate(),
@@ -130,40 +132,40 @@ const Calendar: React.FC<CalendarProps> = ({
 
         break;
       default:
-        newDate = navigateMonth(currentDate, 'previous');
+        navigatedPreviousDate = navigateMonth(currentDate, 'previous');
     }
 
-    setCurrentDate(newDate);
-    onDateChange?.(newDate);
+    setCurrentDate(navigatedPreviousDate);
+    onDateChange?.(navigatedPreviousDate);
   }, [currentDate, currentView, onDateChange]);
 
   // 3. Navigation handlers next date
   const handleNavigateNext = useCallback(() => {
-    let newDate: Date;
+    let navigatedNextDate: Date;
 
     switch (currentView) {
       case 'month':
-        newDate = navigateMonth(currentDate, 'next');
+        navigatedNextDate = navigateMonth(currentDate, 'next');
         break;
       case 'week':
-        newDate = navigateWeek(currentDate, 'next');
+        navigatedNextDate = navigateWeek(currentDate, 'next');
         break;
       case 'day':
-        newDate = navigateDay(currentDate, 'next');
+        navigatedNextDate = navigateDay(currentDate, 'next');
         break;
       case 'year':
-        newDate = new Date(
+        navigatedNextDate = new Date(
           currentDate.getFullYear() + 1,
           currentDate.getMonth(),
           currentDate.getDate(),
         );
         break;
       default:
-        newDate = navigateMonth(currentDate, 'next');
+        navigatedNextDate = navigateMonth(currentDate, 'next');
     }
 
-    setCurrentDate(newDate);
-    onDateChange?.(newDate);
+    setCurrentDate(navigatedNextDate);
+    onDateChange?.(navigatedNextDate);
   }, [currentDate, currentView, onDateChange]);
 
   // 4. Navigation handlers today date
@@ -186,7 +188,6 @@ const Calendar: React.FC<CalendarProps> = ({
   // 6. Date interaction handlers
   const handleDateClick = useCallback(
     (date: Date) => {
-      console.log('date', date);
       setInternalSelectedDate(date);
       onDateClick?.(date);
     },
@@ -196,7 +197,6 @@ const Calendar: React.FC<CalendarProps> = ({
   // 7. Date double click handler
   const handleDateDoubleClick = useCallback(
     (date: Date) => {
-      console.log('date double click', date);
       onDateDoubleClick?.(date);
     },
     [onDateDoubleClick],
@@ -228,7 +228,7 @@ const Calendar: React.FC<CalendarProps> = ({
    * - currentDate: Date
    * - currentView: CalendarViewType
    */
-  const calendarGrid = useMemo<CalendarGridType | WeekGridType | DayGridType>(() => {
+  const calendarGrid = useMemo<CalendarGridType | WeekGridType | DayGridType | YearGridType>(() => {
     switch (currentView) {
       case 'month':
         return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
@@ -237,8 +237,7 @@ const Calendar: React.FC<CalendarProps> = ({
       case 'day':
         return generateDayGrid(currentDate, meetings, 1, 24); // 1 AM to 11 PM
       case 'year':
-        // For year view, we'll still use the month grid for now
-        return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
+        return generateYearGrid(currentDate.getFullYear(), meetings, currentDate.getMonth());
       default:
         return generateCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), meetings);
     }
