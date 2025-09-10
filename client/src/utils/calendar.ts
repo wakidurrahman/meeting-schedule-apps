@@ -10,6 +10,7 @@
 
 import { cloneDate, formatJST, formatJSTDate, fromPartsJST, now } from './date';
 
+import { CURRENT_DATE } from '@/constants/const';
 import {
   CalendarDay,
   CalendarGridType,
@@ -26,86 +27,6 @@ import {
   YearGridType,
 } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
-
-/**
- * Generate calendar grid for a given month and year
- * @param year - Target year
- * @param month - Target month (0-11)
- * @param meetings - Array of meetings to include
- * @returns Calendar grid with days and meetings
- */
-export function generateCalendarGrid(
-  year: number,
-  month: number,
-  meetings: MeetingEvent[] = [],
-): CalendarGridType {
-  // 1. Today's date in JST instance
-  const today = now();
-
-  // 2. Get the first day of the month and the first day of the grid
-  const firstDayOfMonth = fromPartsJST({ year, month, day: 1 });
-  const firstDayOfGrid = cloneDate(firstDayOfMonth);
-
-  // 3. Start from the first Monday of the week containing the first day of the month
-  const dayOfWeek = firstDayOfMonth.getDay();
-  // Convert Sunday (0) to 7, so Monday becomes 0
-  const mondayBasedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  firstDayOfGrid.setDate(firstDayOfGrid.getDate() - mondayBasedDayOfWeek);
-
-  // 4. Generate weeks array
-  const weeks: CalendarWeek[] = [];
-  // 5. Start from the first day of the month
-  const currentDate = cloneDate(firstDayOfGrid);
-  // 6. Week number
-  let weekNumber = 0;
-
-  // 7. Generate 5 weeks (35 days) to ensure full month coverage
-  while (weeks.length < 5) {
-    // 8. Days in the week
-    const days: CalendarDay[] = [];
-    // 9. Generate 7 days for the week
-    for (let i = 0; i < 7; i++) {
-      // 10. Get meetings for the current date
-      const dayMeetings = getMeetingsForDate(currentDate, meetings);
-
-      // 11. Create a calendar day object
-      const calendarDay: CalendarDay = {
-        date: cloneDate(currentDate),
-        isToday: isSameDay(currentDate, today),
-        isCurrentMonth: currentDate.getMonth() === month,
-        isPreviousMonth:
-          currentDate.getMonth() < month || (month === 0 && currentDate.getMonth() === 11),
-        isNextMonth:
-          currentDate.getMonth() > month || (month === 11 && currentDate.getMonth() === 0),
-        dayNumber: currentDate.getDate(),
-        meetings: dayMeetings,
-      };
-      // 12. Add the calendar day to the days array
-      days.push(calendarDay);
-      // 13. Increment the current date by 1 day
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    // 14. Add the days to the weeks array
-    weeks.push({
-      days,
-      weekNumber: weekNumber++,
-    });
-
-    // Stop if we've covered the entire month and are into the next month
-    if (currentDate.getMonth() !== month && weeks.length >= 4) {
-      break;
-    }
-  }
-
-  // 15. Return the calendar grid
-  return {
-    weeks,
-    currentMonth: month,
-    currentYear: year,
-    totalDays: weeks.length * 7,
-  };
-}
 
 /**
  * Get meetings for a specific date
@@ -453,6 +374,86 @@ export function generateTimeSlots(
   }
 
   return slots;
+}
+
+/**
+ * Generate calendar grid for a given month and year
+ * @param year - Target year
+ * @param month - Target month (0-11)
+ * @param meetings - Array of meetings to include
+ * @returns Calendar grid with days and meetings
+ */
+export function generateCalendarGrid(
+  year: number,
+  month: number,
+  meetings: MeetingEvent[] = [],
+): CalendarGridType {
+  // 1. Today's date in JST instance
+  const today = CURRENT_DATE;
+
+  // 2. Get the first day of the month and the first day of the grid
+  const firstDayOfMonth = fromPartsJST({ year, month, day: 1 });
+  const firstDayOfGrid = cloneDate(firstDayOfMonth);
+
+  // 3. Start from the first Monday of the week containing the first day of the month
+  const dayOfWeek = firstDayOfMonth.getDay();
+  // Convert Sunday (0) to 7, so Monday becomes 0
+  const mondayBasedDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  firstDayOfGrid.setDate(firstDayOfGrid.getDate() - mondayBasedDayOfWeek);
+
+  // 4. Generate weeks array
+  const weeks: CalendarWeek[] = [];
+  // 5. Start from the first day of the month
+  const currentDate = cloneDate(firstDayOfGrid);
+  // 6. Week number
+  let weekNumber = 0;
+
+  // 7. Generate 5 weeks (35 days) to ensure full month coverage
+  while (weeks.length < 5) {
+    // 8. Days in the week
+    const days: CalendarDay[] = [];
+    // 9. Generate 7 days for the week
+    for (let i = 0; i < 7; i++) {
+      // 10. Get meetings for the current date
+      const dayMeetings = getMeetingsForDate(currentDate, meetings);
+
+      // 11. Create a calendar day object
+      const calendarDay: CalendarDay = {
+        date: cloneDate(currentDate),
+        isToday: isSameDay(currentDate, today),
+        isCurrentMonth: currentDate.getMonth() === month,
+        isPreviousMonth:
+          currentDate.getMonth() < month || (month === 0 && currentDate.getMonth() === 11),
+        isNextMonth:
+          currentDate.getMonth() > month || (month === 11 && currentDate.getMonth() === 0),
+        dayNumber: currentDate.getDate(),
+        meetings: dayMeetings,
+      };
+      // 12. Add the calendar day to the days array
+      days.push(calendarDay);
+      // 13. Increment the current date by 1 day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // 14. Add the days to the weeks array
+    weeks.push({
+      days,
+      weekNumber: weekNumber++,
+    });
+
+    // Stop if we've covered the entire month and are into the next month
+    if (currentDate.getMonth() !== month && weeks.length >= 4) {
+      break;
+    }
+  }
+
+  // 15. Return the calendar grid
+  return {
+    weeks,
+    currentMonth: month,
+    currentYear: year,
+    totalDays: weeks.length * 7,
+  };
 }
 
 /**

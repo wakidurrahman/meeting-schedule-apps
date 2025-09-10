@@ -15,7 +15,7 @@ import CalendarGrid from './grid';
 import CalendarHeader from './header';
 import './index.scss';
 
-import Spinner from '@/components/atoms/spinner';
+import { CURRENT_DATE } from '@/constants/const';
 import type {
   CalendarGridType,
   CalendarViewType,
@@ -36,7 +36,7 @@ import {
   navigateWeek,
 } from '@/utils/calendar';
 import { buildClassNames } from '@/utils/component';
-import { fromPartsJST, now } from '@/utils/date';
+import { fromPartsJST } from '@/utils/date';
 
 export interface CalendarProps extends BaseComponentProps {
   // Data
@@ -73,7 +73,6 @@ const Calendar: React.FC<CalendarProps> = ({
   onMeetingClick,
   onDateDoubleClick,
   onCreateMeeting,
-
   onViewChange,
   onDateChange,
   compactMode = false,
@@ -82,7 +81,7 @@ const Calendar: React.FC<CalendarProps> = ({
   ...rest
 }) => {
   // 1. State management
-  const [currentDate, setCurrentDate] = useState<Date>(selectedDate || now());
+  const [currentDate, setCurrentDate] = useState<Date>(selectedDate || CURRENT_DATE);
   const [currentView, setCurrentView] = useState<CalendarViewType>(view);
   const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(
     selectedDate || null,
@@ -170,7 +169,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // 4. Navigation handlers today date
   const handleNavigateToday = useCallback(() => {
-    const today = now();
+    const today = CURRENT_DATE;
     setCurrentDate(today);
     setInternalSelectedDate(today);
     onDateChange?.(today);
@@ -178,9 +177,9 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // 5. Navigation handlers view change
   const handleViewChange = useCallback(
-    (newView: CalendarViewType) => {
-      setCurrentView(newView);
-      onViewChange?.(newView);
+    (view: CalendarViewType) => {
+      setCurrentView(view);
+      onViewChange?.(view);
     },
     [onViewChange],
   );
@@ -294,13 +293,6 @@ const Calendar: React.FC<CalendarProps> = ({
           compactMode={compactMode}
         />
       </div>
-
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="o-calendar__loading-overlay">
-          <Spinner variant="grow" color="primary" size="lg" />
-        </div>
-      )}
     </div>
   );
 };

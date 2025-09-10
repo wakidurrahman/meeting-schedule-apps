@@ -44,7 +44,7 @@ const CalendarPage: React.FC = () => {
 
   // Calendar state
   const [currentDate, setCurrentDate] = useState<Date>(CURRENT_DATE);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined | null>(undefined);
   const [calendarView, setCalendarView] = useState<CalendarViewType>('month');
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
 

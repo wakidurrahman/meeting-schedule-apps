@@ -1,9 +1,10 @@
+import { useApolloClient } from '@apollo/client';
+import { useCallback, useEffect } from 'react';
+
 import { GET_MEETINGS_BY_DATE_RANGE } from '@/graphql/meeting/queries';
 import type { CalendarViewType } from '@/types/calendar';
 import { getOptimizedDateRange } from '@/utils/calendar';
 import { cloneDate } from '@/utils/date';
-import { useApolloClient } from '@apollo/client';
-import { useCallback, useEffect } from 'react';
 
 export const useCalendarPrefetch = (currentDate: Date, view: CalendarViewType) => {
   const client = useApolloClient();
