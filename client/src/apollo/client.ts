@@ -14,6 +14,13 @@ import { setContext } from '@apollo/client/link/context';
 
 import { TOKEN_KEY } from '@/context/AuthContext';
 
+// Global type declaration for debugging
+declare global {
+  interface Window {
+    apolloClient: ApolloClient<unknown>;
+  }
+}
+
 /**
  * HTTP Link Configuration
  *
@@ -76,8 +83,26 @@ export const apolloClient = new ApolloClient({
   link: from([authLink, httpLink]),
 
   // Initialize a new in-memory cache
-  cache: new InMemoryCache(),
-
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          meetingsByDateRange: {
+            // Custom cache key based on date range
+            keyArgs: ['dateRange', ['startDate', 'endDate']],
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            merge(existing = [], incoming) {
+              // Merge strategy for overlapping date ranges
+              return incoming;
+            },
+          },
+        },
+      },
+      Meeting: {
+        keyFields: ['id'],
+      },
+    },
+  }),
   // Enable Apollo DevTools in development
   connectToDevTools: true,
 });
@@ -87,10 +112,5 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Apollo Client initialized:', apolloClient);
 
   // Make apolloClient available globally for debugging
-  declare global {
-    interface Window {
-      apolloClient: ApolloClient<unknown>;
-    }
-  }
   window.apolloClient = apolloClient;
 }

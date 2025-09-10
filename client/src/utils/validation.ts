@@ -28,49 +28,66 @@ export const passwordValidationErrors = {
 } as const;
 
 /**
+ * Password validation result interface
+ */
+export interface PasswordValidationResult {
+  errorMessage: string;
+  status: boolean;
+}
+
+/**
  * Validates a password against security requirements
  * @param password - The password to validate
- * @returns Array of error messages for failed validations
+ * @returns Array of validation results with error messages and status flags
  */
-export const validatePassword = (password: string): string[] => {
+export const validatePassword = (password: string): PasswordValidationResult[] => {
   if (!password) {
-    return [passwordValidationErrors.required];
+    return [
+      {
+        errorMessage: passwordValidationErrors.required,
+        status: false,
+      },
+    ];
   }
 
   // Define validation rules as an array of {test, errorMessage} pairs
+  // Note: test function returns true when requirement is MET (opposite of previous logic)
   const validationRules = [
     {
-      test: (pwd: string) => pwd.length < 8,
+      test: (pwd: string) => pwd.length >= 8,
       errorMessage: passwordValidationErrors.too_short,
     },
     {
-      test: (pwd: string) => pwd.length > 50,
+      test: (pwd: string) => pwd.length <= 50,
       errorMessage: passwordValidationErrors.too_long,
     },
     {
-      test: (pwd: string) => /\s/.test(pwd),
+      test: (pwd: string) => !/\s/.test(pwd),
       errorMessage: passwordValidationErrors.no_whitespace,
     },
     {
-      test: (pwd: string) => !/\d/.test(pwd),
+      test: (pwd: string) => /\d/.test(pwd),
       errorMessage: passwordValidationErrors.missing_digits,
     },
     {
-      test: (pwd: string) => !/[A-Z]/.test(pwd),
+      test: (pwd: string) => /[A-Z]/.test(pwd),
       errorMessage: passwordValidationErrors.missing_uppercase,
     },
     {
-      test: (pwd: string) => !/[a-z]/.test(pwd),
+      test: (pwd: string) => /[a-z]/.test(pwd),
       errorMessage: passwordValidationErrors.missing_lowercase,
     },
     {
-      test: (pwd: string) => !/[@$!%*?&]/.test(pwd),
+      test: (pwd: string) => /[@$!%*?&]/.test(pwd),
       errorMessage: passwordValidationErrors.missing_special,
     },
   ];
 
-  // Apply all rules and collect error messages
-  return validationRules.filter((rule) => rule.test(password)).map((rule) => rule.errorMessage);
+  // Apply all rules and return status for each
+  return validationRules.map((rule) => ({
+    errorMessage: rule.errorMessage,
+    status: rule.test(password),
+  }));
 };
 
 // Register schema

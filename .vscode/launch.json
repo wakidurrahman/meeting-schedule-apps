@@ -1,0 +1,58 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🚀 Debug Client (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/client/src",
+      "sourceMaps": true,
+      "userDataDir": true,
+      "preLaunchTask": "npm: dev - client",
+      "timeout": 30000
+    },
+    {
+      "name": "🔧 Debug Server (Nodemon)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "restart": true,
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "name": "🧪 Debug Server Tests",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "test"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "test"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Debug Full Stack",
+      "configurations": [
+        "🔧 Debug Server (Nodemon)",
+        "🚀 Debug Client (Chrome)"
+      ],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "fullstack",
+        "order": 1
+      }
+    }
+  ]
+}

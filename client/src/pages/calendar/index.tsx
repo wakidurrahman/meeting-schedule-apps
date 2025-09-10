@@ -20,155 +20,212 @@ import Spinner from '@/components/atoms/spinner';
 import Text from '@/components/atoms/text';
 import Calendar from '@/components/organisms/calendar';
 import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meeting-modal';
+import MiniCalendar from '@/components/organisms/mini-calendar';
 import CalendarTemplate from '@/components/templates/calendar';
-import { GET_MEETINGS } from '@/graphql/meeting/queries';
+import { CURRENT_DATE } from '@/constants/const';
+import {
+  DateRangeQueryData,
+  GET_MEETINGS_BY_DATE_RANGE,
+  MeetingsByDateRangeQueryData,
+} from '@/graphql/meeting/queries';
+import { useCalendarPrefetch } from '@/hooks/use-calendar-prefetch';
 import { useToast } from '@/hooks/use-toast';
 import type { CalendarViewType } from '@/types/calendar';
 import { MeetingEvent } from '@/types/meeting';
-import { AttendeesUser } from '@/types/user';
-import { formatCalendarDate, getMonthBoundaries } from '@/utils/calendar';
-import { cloneDate, now } from '@/utils/date';
+import { formatCalendarDate, getOptimizedDateRange } from '@/utils/calendar';
+import { cloneDate } from '@/utils/date';
 import { formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
-
-interface MeetingsQueryData {
-  meetings: {
-    meetingsList: Array<{
-      id: string;
-      title: string;
-      description?: string;
-      startTime: string;
-      endTime: string;
-      attendees?: Array<AttendeesUser>;
-      createdBy: AttendeesUser;
-      createdAt: string;
-      updatedAt: string;
-    }>;
-  };
-}
 
 const CalendarPage: React.FC = () => {
   // Authentication (commented out until context is available)
   // const { user } = useAuth();
+
   const { addSuccess } = useToast();
 
   // Calendar state
-  const [currentDate, setCurrentDate] = useState<Date>(now());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentDate, setCurrentDate] = useState<Date>(CURRENT_DATE);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined | null>(undefined);
   const [calendarView, setCalendarView] = useState<CalendarViewType>('month');
-
-  // Modal state
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [selectedMeeting, setSelectedMeeting] = useState<MeetingEvent | null>(null);
-
-  // Sidebar state
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
 
-  // Calculate date range for current view
-  const dateRange = useMemo(() => {
-    const { start, end } = getMonthBoundaries(currentDate.getFullYear(), currentDate.getMonth());
-    return { start, end };
-  }, [currentDate]);
+  // Modal state
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
+  const [selectedMeeting, setSelectedMeeting] = useState<MeetingEvent | null>(null);
 
-  // Fetch meetings for current month
+  //  ✅ OPTIMIZED: Calculate date range based on current view
+  const dateRange = useMemo(() => {
+    return getOptimizedDateRange(currentDate, calendarView);
+  }, [currentDate, calendarView]);
+
+  // ✅ OPTIMIZED: Use date-range specific query
   const {
     data: meetingsData,
     loading: meetingsLoading,
     error: meetingsError,
     refetch: refetchMeetings,
-  } = useQuery<MeetingsQueryData>(GET_MEETINGS, {
+  } = useQuery<MeetingsByDateRangeQueryData, DateRangeQueryData>(GET_MEETINGS_BY_DATE_RANGE, {
     variables: {
-      // Note: This query would need to be enhanced to support date ranges
-      // For now, it fetches all meetings and we filter client-side
+      dateRange: {
+        startDate: dateRange.start.toISOString(),
+        endDate: dateRange.end.toISOString(),
+      },
     },
-    // errorPolicy: 'partial',
+    // Enable caching based on date range
+    fetchPolicy: 'cache-first',
+    notifyOnNetworkStatusChange: true, // ✅ OPTIMIZATION: Notify on network status change
   });
 
-  // Transform GraphQL meetings to calendar format
+  // 🚀 PERFORMANCE OPTIMIZATION: Prefetch adjacent date ranges for smooth navigation
+  useCalendarPrefetch(currentDate, calendarView);
+
+  /**
+   * Transform GraphQL meetings to calendar format Old (09/03/2025)
+   * 🚨 Current Performance Problem Identified
+   * 🔥 Root Cause: ALL meetings loaded regardless of calendar view
+   * 
+   * Performance Impact:
+   * - 10 meetings: ~2KB data transfer ✅ Acceptable
+   * - 100 meetings: ~20KB data transfer ⚠️ Noticeable delay
+   * - 1,000 meetings: ~200KB data transfer ❌ Significant lag (2-3 seconds)
+   * - 10,000 meetings: ~2MB data transfer ❌ Unusable (10+ seconds)
+
+   */
+  // const meetings = useMemo<MeetingEvent[]>(() => {
+  //   if (!meetingsData?.meetings?.meetingsList) return [];
+
+  //   return meetingsData.meetings.meetingsList
+  //     .map((meeting) => ({
+  //       id: meeting.id,
+  //       title: meeting.title,
+  //       description: meeting.description,
+  //       startTime: new Date(meeting.startTime),
+  //       endTime: new Date(meeting.endTime),
+  //       attendees: meeting.attendees?.map((user) => ({ id: user.id, name: user.name })) || [],
+  //       createdBy: meeting.createdBy,
+  //     }))
+  //     .filter((meeting) => {
+  //       // 🚨 Performance Problem Identified
+  //       // Filter meetings within current view range ⚠️ INEFFICIENT
+  //       return meeting.startTime >= dateRange.start && meeting.startTime <= dateRange.end;
+  //     });
+  // }, [meetingsData, dateRange]);
+
+  // ✅ OPTIMIZED: No client-side filtering needed - server does it
   const meetings = useMemo<MeetingEvent[]>(() => {
-    if (!meetingsData?.meetings?.meetingsList) return [];
+    if (!meetingsData?.meetingsByDateRange) return [];
 
-    return meetingsData.meetings.meetingsList
-      .map((meeting) => ({
-        id: meeting.id,
-        title: meeting.title,
-        description: meeting.description,
-        startTime: new Date(meeting.startTime),
-        endTime: new Date(meeting.endTime),
-        attendees: meeting.attendees?.map((user) => ({ id: user.id, name: user.name })) || [],
-        createdBy: meeting.createdBy,
-      }))
-      .filter((meeting) => {
-        // Filter meetings within current view range
-        return meeting.startTime >= dateRange.start && meeting.startTime <= dateRange.end;
-      });
-  }, [meetingsData, dateRange]);
+    return meetingsData.meetingsByDateRange.map((meeting) => ({
+      id: meeting.id,
+      title: meeting.title,
+      description: meeting.description || '',
+      startTime: cloneDate(meeting.startTime),
+      endTime: cloneDate(meeting.endTime),
+      attendees: meeting.attendees?.map((user) => ({ id: user.id, name: user.name })) || [],
+      createdBy: meeting.createdBy,
+    }));
+    // No filtering needed - server already filtered by date range
+  }, [meetingsData]);
 
-  // Today's Meetings
-  const todayMeetings = useMemo(() => meetings.length, [meetings]);
+  // Total Meetings
+  const totalMeetings = useMemo(() => meetings.length, [meetings]);
 
-  // This Week's Meetings
+  // Get the today's meetings.
+  const getTodaysMeetings = useCallback((meetings: MeetingEvent[]) => {
+    // Get the today's date.
+    const today = CURRENT_DATE;
+    // Filter the meetings for the today's date.
+    return meetings.filter((meeting) => meeting.startTime.toDateString() === today.toDateString());
+  }, []);
+
+  // This Week's Meetings. By using filter function to get the meetings for the current week.
   const thisWeekMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
-      const weekStart = now();
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      const weekStart = CURRENT_DATE;
       const weekEnd = cloneDate(weekStart);
+
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
       weekEnd.setDate(weekEnd.getDate() + 6);
+
       return meeting.startTime >= weekStart && meeting.startTime <= weekEnd;
     });
   }, [meetings]);
 
-  // Upcoming Meetings
+  // Upcoming Meetings. By using filter function to get the meetings for the upcoming days.
   const upcomingMeetings = useMemo(() => {
-    return meetings.filter((meeting) => meeting.startTime > now());
+    return meetings.filter((meeting) => meeting.startTime > CURRENT_DATE);
   }, [meetings]);
 
   // Calendar event handlers
+
+  // Handle Date On Click event and update the selected date
   const handleDateClick = useCallback((date: Date) => {
     setSelectedDate(date);
   }, []);
 
-  const handleDateDoubleClick = useCallback((date: Date) => {
-    setSelectedDate(date);
-    setShowCreateModal(true);
-  }, []);
-
-  const handleMeetingClick = useCallback((meeting: MeetingEvent) => {
-    setSelectedMeeting(meeting);
-    setShowDetailsModal(true);
-  }, []);
-
-  const handleCreateMeeting = useCallback((date?: Date) => {
-    if (date) {
-      setSelectedDate(date);
-    }
-    setShowCreateModal(true);
-  }, []);
-
-  const handleViewChange = useCallback((view: CalendarViewType) => {
-    setCalendarView(view);
-  }, []);
-
+  // Handle Date On Change event and update the current date.
   const handleDateChange = useCallback((date: Date) => {
     setCurrentDate(date);
   }, []);
 
-  // Modal handlers
+  // Handle View Change event and update the calendar view.
+  const handleViewChange = useCallback((view: CalendarViewType) => {
+    setCalendarView(view);
+  }, []);
+
+  // Handle Date On Double Click event and update the selected date and show the create modal.
+  const handleDateDoubleClick = useCallback((date: Date) => {
+    // set the selected date and show the create modal.
+    setSelectedDate(date);
+    // show the create modal.
+    setShowCreateModal(true);
+  }, []);
+
+  // Handle Meeting On Click event and update the selected meeting and show the details modal.
+  const handleMeetingClick = useCallback((meeting: MeetingEvent) => {
+    // set the selected meeting and show the details modal.
+    setSelectedMeeting(meeting);
+    // show the details modal.
+    setShowDetailsModal(true);
+  }, []);
+
+  // Handle Create Meeting event and update the selected date and show the create modal.
+  const handleCreateMeeting = useCallback((date?: Date) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+    // show the create modal.
+    setShowCreateModal(true);
+  }, []);
+
+  // Handle Close Create Modal event and update the selected date to null.
   const handleCloseCreateModal = useCallback(() => {
+    // Hide the create modal.
     setShowCreateModal(false);
+    // set the selected date to null.
     setSelectedDate(null);
   }, []);
 
+  // Handle Close Details Modal event and update the selected meeting to null.
   const handleCloseDetailsModal = useCallback(() => {
+    // Hide the details modal.
     setShowDetailsModal(false);
+    // Set the selected meeting to null.
     setSelectedMeeting(null);
   }, []);
 
+  /**
+   * Handle Meeting Created event and update the selected date to null, refetch the meetings and add a success toast.
+   */
   const handleMeetingCreated = useCallback(
     (meeting?: MeetingEvent) => {
+      // set the show create modal to false.
       setShowCreateModal(false);
+      // set the selected date to null.
       setSelectedDate(null);
+      // refetch the meetings.
       refetchMeetings();
+      // add a success toast.
       addSuccess({
         title: 'Meeting Created',
         subtitle: 'just now',
@@ -178,10 +235,16 @@ const CalendarPage: React.FC = () => {
     [refetchMeetings, addSuccess],
   );
 
+  /**
+   * Handle Meeting Updated event and update the selected meeting to null, refetch the meetings and add a success toast.
+   */
   const handleMeetingUpdated = useCallback(() => {
+    // set the show details modal to false.
     setShowDetailsModal(false);
+    // Set the selected meeting to null.
     setSelectedMeeting(null);
-    refetchMeetings();
+    // Refetch the meetings.
+    refetchMeetings(); // Refetch the meetings.
     addSuccess({
       title: 'Meeting Updated',
       subtitle: 'just now',
@@ -189,10 +252,17 @@ const CalendarPage: React.FC = () => {
     });
   }, [refetchMeetings, addSuccess, selectedMeeting]);
 
+  /**
+   * Handle Meeting Deleted event and update the selected meeting to null, refetch the meetings and add a success toast.
+   */
   const handleMeetingDeleted = useCallback(() => {
+    // set the show details modal to false.
     setShowDetailsModal(false);
+    // set the selected meeting to null.
     setSelectedMeeting(null);
+    // refetch the meetings.
     refetchMeetings();
+    // add a success toast.
     addSuccess({
       title: 'Meeting Deleted',
       subtitle: 'just now',
@@ -200,17 +270,18 @@ const CalendarPage: React.FC = () => {
     });
   }, [refetchMeetings, addSuccess, selectedMeeting]);
 
+  // Handle Toggle Sidebar event and update the show sidebar state.
   const handleToggleSidebar = useCallback(() => {
+    // Set the show sidebar state.
     setShowSidebar(!showSidebar);
   }, [showSidebar]);
 
-  // Helper function to filter today's meetings
-  const getTodaysMeetings = useCallback((meetings: MeetingEvent[]) => {
-    const today = now();
-    return meetings.filter((meeting) => meeting.startTime.toDateString() === today.toDateString());
-  }, []);
-
   // Helper function to render today's meetings section
+  /**
+   * Render today's meetings section
+   * @param meetings - The meetings to render
+   * @returns The rendered today's meetings section
+   */
   const renderTodaysMeetings = useCallback(
     (meetings: MeetingEvent[]) => {
       const todaysMeetings = getTodaysMeetings(meetings);
@@ -273,7 +344,13 @@ const CalendarPage: React.FC = () => {
     [getTodaysMeetings, handleMeetingClick],
   );
 
-  // Calendar header component
+  /**
+   * Render calendar header component
+   * @param handleToggleSidebar - The function to toggle the sidebar
+   * @param selectedDate - The selected date
+   *
+   * @returns The rendered calendar header component
+   */
   const calendarHeader = useMemo(
     () => (
       <div className="d-flex gap-3 align-items-center ">
@@ -304,10 +381,33 @@ const CalendarPage: React.FC = () => {
   );
 
   // Sidebar content
+  /**
+   * Render sidebar component
+   * @param selectedDate - The selected date
+   * @param currentDate - The current date
+   * @param handleDateClick - The function to handle date click
+   * @param handleDateChange - The function to handle date change
+   * @param meetings - The meetings to render
+   * @param renderTodaysMeetings - The function to render today's meetings
+   * @param totalMeetings - The total meetings
+   * @param thisWeekMeetings - The this week's meetings
+   * @param upcomingMeetings - The upcoming meetings
+   * @returns The rendered sidebar component
+   */
+
   const sidebar = useMemo(
     () => (
       <div className="px-1">
         {/* Mini Calendar */}
+        <div className="mb-4">
+          <MiniCalendar
+            selectedDate={selectedDate || currentDate}
+            currentDate={currentDate}
+            onDateClick={handleDateClick}
+            onMonthChange={handleDateChange}
+            showNavigation={true}
+          />
+        </div>
 
         <Heading level={6} className="mb-3">
           Quick Navigation
@@ -333,7 +433,7 @@ const CalendarPage: React.FC = () => {
                 Total Meetings:
               </Text>
               <Text as="span" weight="medium" color="dark" className="m-0">
-                {todayMeetings}
+                {totalMeetings}
               </Text>
             </div>
             <div className="d-flex justify-content-between">
@@ -356,10 +456,36 @@ const CalendarPage: React.FC = () => {
         </div>
       </div>
     ),
-    [meetings, renderTodaysMeetings, todayMeetings, thisWeekMeetings, upcomingMeetings],
+    [
+      selectedDate,
+      currentDate,
+      handleDateClick,
+      handleDateChange,
+      meetings,
+      renderTodaysMeetings,
+      totalMeetings,
+      thisWeekMeetings,
+      upcomingMeetings,
+    ],
   );
 
-  // Main calendar content
+  /**
+   *  Main calendar content
+   *
+   * Render calendar content
+   * @param meetings - The meetings to render
+   * @param calendarView - The calendar view
+   * @param selectedDate - The selected date
+   * @param meetingsLoading - The loading state
+   * @param meetingsError - The error state
+   * @param handleDateClick - The function to handle date click
+   * @param handleMeetingClick - The function to handle meeting click
+   * @param handleCreateMeeting - The function to handle create meeting
+   * @param handleViewChange - The function to handle view change
+   * @param handleDateChange - The function to handle date change
+   * @param handleDateDoubleClick - The function to handle date double click
+   * @returns The rendered calendar content
+   */
   const calendarContent = useMemo(() => {
     if (meetingsLoading) {
       return (
@@ -417,7 +543,23 @@ const CalendarPage: React.FC = () => {
     handleDateDoubleClick,
   ]);
 
-  // Modal components (real modals with full functionality)
+  /**
+   * Modal components (real modals with full functionality)
+   *
+   * Render modal components
+   * @param showCreateModal - The state to show the create modal
+   * @param showDetailsModal - The state to show the details modal
+   * @param selectedDate - The selected date
+   * @param selectedMeeting - The selected meeting
+   * @param meetings - The meetings to render
+   * @param handleCloseCreateModal - The function to handle close create modal
+   * @param handleCloseDetailsModal - The function to handle close details modal
+   * @param handleMeetingCreated - The function to handle meeting created
+   * @param handleMeetingUpdated - The function to handle meeting updated
+   * @param handleMeetingDeleted - The function to handle meeting deleted
+   * @returns The rendered modal components
+   */
+
   const modals = useMemo(
     () => (
       <>

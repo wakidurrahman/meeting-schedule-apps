@@ -23,4 +23,6 @@ const meetingSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+meetingSchema.index({ startTime: 1, endTime: 1 }); // for date range queries
+
 module.exports = mongoose.model('Meeting', meetingSchema);

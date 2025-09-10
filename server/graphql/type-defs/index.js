@@ -5,11 +5,11 @@
 
 const scalars = require('../shared/scalars');
 
+const authTypeDefs = require('./auth');
 const bookingTypeDefs = require('./booking');
 const eventTypeDefs = require('./event');
 const meetingTypeDefs = require('./meeting');
 const userTypeDefs = require('./user');
-const authTypeDefs = require('./auth');
 
 // Base types that other files extend
 const baseTypes = `

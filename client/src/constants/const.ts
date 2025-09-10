@@ -1,4 +1,7 @@
 import { CalendarViewType } from '@/types/calendar';
+import { now } from '@/utils/date';
+
+export const CURRENT_DATE = now();
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const NAME_REGEX = /^[a-zA-Z\s'-]+$/;
@@ -8,13 +11,13 @@ export const USER_ROLE_ENUM = ['ADMIN', 'USER'] as const;
 export const USER_SEARCH_ROLE_ENUM = ['ALL', 'ADMIN', 'USER'] as const;
 
 export const WEEKDAY_LABELS = [
-  { full: 'Monday', short: 'Mon', mini: 'M' },
-  { full: 'Tuesday', short: 'Tue', mini: 'T' },
-  { full: 'Wednesday', short: 'Wed', mini: 'W' },
-  { full: 'Thursday', short: 'Thu', mini: 'T' },
-  { full: 'Friday', short: 'Fri', mini: 'F' },
-  { full: 'Saturday', short: 'Sat', mini: 'S' },
-  { full: 'Sunday', short: 'Sun', mini: 'S' },
+  { full: 'Monday', short: 'Mon', extraShort: 'Mo', mini: 'M', weekday: 0 },
+  { full: 'Tuesday', short: 'Tue', extraShort: 'Tu', mini: 'T', weekday: 1 },
+  { full: 'Wednesday', short: 'Wed', extraShort: 'We', mini: 'W', weekday: 2 },
+  { full: 'Thursday', short: 'Thu', extraShort: 'Th', mini: 'T', weekday: 3 },
+  { full: 'Friday', short: 'Fri', extraShort: 'Fr', mini: 'F', weekday: 4 },
+  { full: 'Saturday', short: 'Sat', extraShort: 'Sa', mini: 'S', weekday: 5 },
+  { full: 'Sunday', short: 'Sun', extraShort: 'Su', mini: 'S', weekday: 6 },
 ];
 
 export const CALENDAR_VIEW_LABELS: Record<

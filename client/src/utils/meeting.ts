@@ -17,8 +17,10 @@ import type {
   MeetingConflict,
   MeetingEvent,
   MeetingFormData,
+  MeetingStatusType,
   MeetingValidationResult,
 } from '@/types/meeting';
+import { AttendeesUser } from '@/types/user';
 
 /**
  * Check for meeting time conflicts
@@ -218,13 +220,13 @@ export function calculateMeetingDurationMinutes(startTime: Date, endTime: Date):
 export function formatMeetingTimeRange(
   startTime: Date,
   endTime: Date,
-  format: 'short' | 'long' | 'duration' = 'short',
+  format: 'short' | 'long' | 'duration' = 'short', // default to short format
 ): string {
   switch (format) {
     case 'short': {
       const start = formatJSTTime(startTime);
       const end = formatJSTTime(endTime);
-      // return in 24 hour format base on the start time and end time e
+      // return in 24 hour format base on the start time and end time e.g. 10:00 - 11:00
       return `${start} - ${end}`;
     }
 
@@ -259,19 +261,16 @@ export function formatMeetingTimeRange(
  * @param maxDisplay - Maximum number to display before "and X more"
  * @returns Formatted attendee string
  */
-export function formatAttendeeList(
-  attendees: Array<{ id: string; name: string }>,
-  maxDisplay: number = 3,
-): string {
+export function formatAttendeeList(attendees: AttendeesUser[], maxDisplay: number = 3): string {
   if (attendees.length === 0) {
     return 'No attendees';
   }
 
   if (attendees.length <= maxDisplay) {
-    return attendees.map((a) => a.name).join(', ');
+    return attendees.map((attendee) => attendee.name).join(', ');
   }
 
-  const displayNames = attendees.slice(0, maxDisplay).map((a) => a.name);
+  const displayNames = attendees.slice(0, maxDisplay).map((attendee) => attendee.name);
   const remaining = attendees.length - maxDisplay;
 
   return `${displayNames.join(', ')} and ${remaining} more`;
@@ -363,7 +362,6 @@ export function getDefaultMeetingTimes(
   referenceDate: Date = now(),
   durationMinutes: number = 60,
 ): { startTime: string; endTime: string } {
-  console.log('referenceDate', referenceDate);
   const now = cloneDate(referenceDate);
 
   // Round up to next 30-minute interval
@@ -419,14 +417,22 @@ export function groupMeetingsByDate(meetings: MeetingEvent[]): Map<string, Meeti
  * Get meeting status based on start/end times
  * @param meeting - Meeting to check status for
  * @returns Meeting status
+ *
+ * - upcoming: the meeting is in the future
+ * - ongoing: the meeting is in the past
+ * - completed: the meeting is in the future
+ * - cancelled: the meeting is cancelled
  */
-export function getMeetingStatus(
-  meeting: MeetingEvent,
-): 'upcoming' | 'ongoing' | 'completed' | 'cancelled' {
+export function getMeetingStatus(meeting: MeetingEvent): MeetingStatusType {
+  // todo: add cancelled status (if the meeting is cancelled, the status should be cancelled)
+  // Get the current time in JST
   const currentTime = now();
+  // Get the start time of the meeting
   const startTime = cloneDate(meeting.startTime);
+  // Get the end time of the meeting
   const endTime = cloneDate(meeting.endTime);
 
+  // If the current time is before the start time, the meeting is upcoming
   if (currentTime < startTime) {
     return 'upcoming';
   } else if (currentTime >= startTime && currentTime <= endTime) {

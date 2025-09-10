@@ -41,7 +41,6 @@ export interface CalendarTemplateProps extends BaseComponentProps {
  */
 const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
   children,
-
   calendarHeader,
   calendarContent,
   sidebar,
@@ -52,17 +51,18 @@ const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
 
   return (
     <div className={templateClasses}>
-      {/* Application main header */}
+      {/* Application Main Header */}
       <Header />
 
+      {/* Main Calendar Content */}
       <main className="t-calendar__main">
-        {/* Calendar header - Navigation & Controls */}
+        {/* Calendar Header */}
 
         <div className="t-calendar__header">
           <div className="container-fluid">{calendarHeader}</div>
         </div>
 
-        {/* Main Calendar Content Area */}
+        {/* Main Calendar Content */}
         <div className="t-calendar__content">
           <div className="container-fluid">
             <div className="row g-0">
@@ -70,7 +70,7 @@ const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
               <div
                 className={buildClassNames(
                   'col',
-                  showSidebar ? 'col-md-9 col-lg-9 col-xl-10' : 'col-12',
+                  showSidebar ? 'col-md-9 col-lg-9 col-xl-9' : 'col-12',
                 )}
               >
                 <div className="t-calendar__calendar">{calendarContent}</div>
@@ -78,7 +78,7 @@ const CalendarTemplate: React.FC<CalendarTemplateProps> = ({
 
               {/* Sidebar */}
               {showSidebar && sidebar && (
-                <div className="col-md-3 col-lg-3 col-xl-2">
+                <div className="col-md-3 col-lg-3 col-xl-3">
                   <div className="t-calendar__sidebar">{sidebar}</div>
                 </div>
               )}

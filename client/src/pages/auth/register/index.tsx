@@ -40,7 +40,7 @@
  *
  * Accessibility and UX
  * - Inputs use `error` props to render invalid styles and messages
- * - Submit button disabled while `loading || isSubmitting || passwordValidationErrors.length > 0`
+ * - Submit button disabled while `loading || isSubmitting || any password validation failed`
  * - Password requirements clearly displayed with real-time feedback
  * - Dev tools: RHF DevTool is rendered only in non‑production builds
  */
@@ -49,18 +49,23 @@ import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
 import Heading from '@/components/atoms/heading';
 import TextField from '@/components/atoms/text-field';
+import Card from '@/components/molecules/card';
 import BaseTemplate from '@/components/templates/base-templates';
 import { REGISTER, type RegisterMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
 import type { UserRegisterInput } from '@/types/user';
-import { RegisterSchema, validatePassword } from '@/utils/validation';
+import {
+  RegisterSchema,
+  validatePassword,
+  type PasswordValidationResult,
+} from '@/utils/validation';
 
 export default function Register(): JSX.Element {
   // Navigate user to login page after successful registration
@@ -72,7 +77,9 @@ export default function Register(): JSX.Element {
 
   // Password validation state
   const [password, setPassword] = useState('');
-  const [passwordValidationErrors, setPasswordValidationErrors] = useState<string[]>([]);
+  const [passwordValidationResults, setPasswordValidationResults] = useState<
+    PasswordValidationResult[]
+  >([]);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
   // RHF instance
@@ -100,7 +107,7 @@ export default function Register(): JSX.Element {
   // Validate password as user types
   useEffect(() => {
     if (!password) {
-      setPasswordValidationErrors([]);
+      setPasswordValidationResults([]);
       return;
     }
 
@@ -108,8 +115,8 @@ export default function Register(): JSX.Element {
       setPasswordTouched(true);
     }
 
-    const errors = validatePassword(password);
-    setPasswordValidationErrors(errors);
+    const results = validatePassword(password);
+    setPasswordValidationResults(results);
   }, [password, passwordTouched]);
   // Register mutation hook with Apollo Client
   const [registerMutation, { loading, error }] = useMutation<
@@ -140,16 +147,18 @@ export default function Register(): JSX.Element {
     registerMutation({ variables: { input: values } });
   };
 
+  console.log('passwordValidationResults', passwordValidationResults);
+
   return (
     <BaseTemplate>
       <div className="container">
         <div className="row justify-content-center">
-          <div className="col-md-6">
+          <div className="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
             {/* Register card */}
-            <div className="card">
-              <div className="card-body">
+            <Card className="border-0">
+              <Card.Body className="border-0">
                 <Heading level={5} className="mb-3">
-                  Register
+                  Start your free user account.
                 </Heading>
                 {/* Register form */}
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -184,18 +193,34 @@ export default function Register(): JSX.Element {
                     })}
                   />
 
-                  {/* Display password validation errors */}
-                  {passwordTouched && passwordValidationErrors.length > 0 && (
-                    <div className="alert alert-warning mb-3" role="alert">
-                      <small className="fw-bold d-block mb-2">Password requirements:</small>
-                      <ul className="mb-0 ps-3">
-                        {passwordValidationErrors.map((error, index) => (
-                          <li key={`password-validation-${index}`} className="small">
-                            {error}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  {/* Display password validation results */}
+                  {passwordTouched && passwordValidationResults.length > 0 && (
+                    <Card className="border-0">
+                      <Card.Title>
+                        <small className="fw-bold d-block mb-2">Password requirements:</small>
+                      </Card.Title>
+                      <Card.Body className="p-0">
+                        <ul className="list-group mb-0 border-0">
+                          {passwordValidationResults.map((result, index) => (
+                            <li
+                              key={`password-validation-${index}`}
+                              className="list-group-item small border-0"
+                            >
+                              <i
+                                className={`me-2 ${
+                                  result.status
+                                    ? 'bi bi-check-circle-fill text-success'
+                                    : 'bi bi-x-circle-fill text-danger'
+                                }`}
+                              ></i>
+                              <span className={result.status ? 'text-success' : 'text-danger'}>
+                                {result.errorMessage}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </Card.Body>
+                    </Card>
                   )}
                   {/* Error message from server state */}
                   {error && <Alert variant="danger">{error.message}</Alert>}
@@ -203,17 +228,42 @@ export default function Register(): JSX.Element {
                   <div className="d-flex justify-content-center mt-5">
                     <Button
                       type="submit"
+                      className="w-100 shadow-sm"
                       variant="primary"
-                      disabled={loading || isSubmitting || passwordValidationErrors.length > 0}
+                      disabled={
+                        loading ||
+                        isSubmitting ||
+                        passwordValidationResults.some((result) => !result.status)
+                      }
                     >
-                      {loading ? 'Loading...' : 'Sign up'}
+                      {loading ? 'Loading...' : 'Create Account'}
                     </Button>
                   </div>
                 </form>
+                <hr className="my-4" />
+                <div className="btn-group gap-2 w-100 justify-content-center">
+                  <Link to="#" className="btn btn-outline-dark rounded-1" aria-current="page">
+                    <i className="bi bi-google text-primary"></i>
+                  </Link>
+                  <Link to="#" className="btn btn-outline-dark rounded-1">
+                    <i className="bi bi-facebook text-primary"></i>
+                  </Link>
+                  <Link to="#" className="btn btn-outline-dark rounded-1">
+                    <i className="bi bi-apple text-primary"></i>
+                  </Link>
+                  <Link to="#" className="btn btn-outline-dark rounded-1">
+                    <i className="bi bi-twitter text-primary"></i>
+                  </Link>
+                </div>
+
+                <p className="text-muted text-center mt-3">
+                  Already have an account? <Link to="/login">Sign in</Link>
+                </p>
+
                 {/* DevTools */}
                 {process.env.NODE_ENV !== 'production' && <DevTool control={control} />}
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
           </div>
         </div>
       </div>

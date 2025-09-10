@@ -19,71 +19,27 @@ import { formatAttendeeList, formatMeetingTimeRange, getMeetingStatus } from '@/
 
 export interface CalendarEventProps extends BaseComponentProps {
   meeting: MeetingEvent;
-  onClick?: (meeting: MeetingEvent, event: React.MouseEvent) => void;
-  onDoubleClick?: (meeting: MeetingEvent, event: React.MouseEvent) => void;
   compactMode?: boolean;
   showTime?: boolean;
   showAttendees?: boolean;
   maxTitleLength?: number;
+  onClick?: (meeting: MeetingEvent, event: React.MouseEvent) => void;
 }
 
 const CalendarEvent: React.FC<CalendarEventProps> = ({
   meeting,
-  onClick,
-  onDoubleClick,
   compactMode = false,
   showTime = true,
-  showAttendees = true,
+  showAttendees = false,
   maxTitleLength = 30,
   className,
+  onClick,
   ...rest
 }) => {
-  /**
-   * All Event Handlers
-   *
-   * *This is a performance optimization.*
-   * All of the event handlers are wrapped in useCallback to avoid unnecessary re-renders.
-   * The useCallback hook is used to memoize the event handlers so that they are not recreated on every render.
-   * This is important because the event handlers are passed to the child components and if they are recreated on every render,
-   * the child components will also be recreated on every render.
-   *
-   * 1. handleClick (Meeting click)
-   * 2. handleDoubleClick (Meeting double click)
-   */
-
-  // 1. Meeting click handler
-  const handleClick = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      onClick?.(meeting, event);
-    },
-    [meeting, onClick],
-  );
-
-  // 2. Meeting double click handler
-  const handleDoubleClick = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      onDoubleClick?.(meeting, event);
-    },
-    [meeting, onDoubleClick],
-  );
-
-  // 3. Format meeting details
-  const timeRange = showTime
-    ? formatMeetingTimeRange(meeting.startTime, meeting.endTime, 'short')
-    : '';
-  const attendeeList =
-    showAttendees && meeting.attendees ? formatAttendeeList(meeting.attendees, 2) : '';
+  // 1. Meeting status e.g. upcoming, ongoing, completed, cancelled
   const meetingStatus = getMeetingStatus(meeting);
 
-  // 4. Truncate title if needed
-  const displayTitle =
-    meeting.title.length > maxTitleLength
-      ? `${meeting.title.substring(0, maxTitleLength)}...`
-      : meeting.title;
-
-  // 5. CSS classes
+  // 2. CSS classes
   const eventClasses = buildClassNames(
     'o-calendar-event',
     `o-calendar-event--${meetingStatus}`,
@@ -92,16 +48,57 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
     className,
   );
 
+  // 3. Format meeting details
+  // Time range format e.g. 10:00 - 11:00
+  const timeRange = showTime
+    ? formatMeetingTimeRange(meeting.startTime, meeting.endTime, 'short')
+    : '';
+
+  // Attendee list format e.g. Jane Doe, John Doe (2 attendees)
+  const attendeeList =
+    showAttendees && meeting.attendees ? formatAttendeeList(meeting.attendees, 2) : '';
+
+  //  Truncate title if needed
+  const displayTitle =
+    meeting.title.length > maxTitleLength
+      ? `${meeting.title.substring(0, maxTitleLength)}...`
+      : meeting.title;
+
+  /**
+   * All Event Handlers
+   *
+   * 1. handleClick (Meeting click)
+   * 2. handleDoubleClick (Meeting double click)
+   *
+   * *This is a performance optimization.*
+   * All of the event handlers are wrapped in useCallback to avoid unnecessary re-renders.
+   * The useCallback hook is used to memoize the event handlers so that they are not recreated on every render.
+   * This is important because the event handlers are passed to the child components and if they are recreated on every render,
+   * the child components will also be recreated on every render.
+   *
+   */
+
+  // 4. Meeting click handler
+  const handleClick = useCallback(
+    (event: React.MouseEvent) => {
+      // Stop event propagation to prevent event from being triggered on the parent element
+      event.stopPropagation();
+      // Call the onClick handler with the meeting and event
+      onClick?.(meeting, event);
+    },
+    [meeting, onClick],
+  );
+
   return (
     <div
       className={eventClasses}
       onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={
         onClick
           ? (e) => {
+              console.log('e.key', e.key);
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 onClick(meeting, e as unknown as React.MouseEvent);
@@ -117,7 +114,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
         {/* Time indicator */}
         {showTime && timeRange && !compactMode && (
           <div className="o-calendar-event__time">
-            <Text as="small" weight="normal" color="dark" className="m-0">
+            <Text as="span" weight="normal" color="dark" className="m-0 small">
               {timeRange}
             </Text>
           </div>
@@ -151,7 +148,7 @@ const CalendarEvent: React.FC<CalendarEventProps> = ({
       {/* Hover overlay */}
       {onClick && (
         <div className="o-calendar-event__hover-overlay">
-          <i className="bi bi-eye" aria-hidden="true" />
+          <i className="bi bi-eye text-secondary" aria-hidden="true" />
         </div>
       )}
     </div>

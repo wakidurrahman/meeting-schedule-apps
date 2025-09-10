@@ -1,0 +1,203 @@
+/**
+ * Mini Calendar Styles
+ *
+ * Compact calendar component for sidebar display
+ */
+
+.o-mini-calendar {
+  --mini-calendar-border-color: var(--bs-gray-300);
+  --mini-calendar-bg: var(--bs-white);
+  --mini-calendar-text-color: var(--bs-gray-800);
+  --mini-calendar-text-muted: var(--bs-gray-500);
+  --mini-calendar-day-size: 32px;
+  --mini-calendar-day-hover: var(--bs-gray-100);
+  --mini-calendar-day-selected: var(--bs-primary);
+  --mini-calendar-day-today: var(--bs-info);
+  --mini-calendar-day-other-month: var(--bs-gray-400);
+  --mini-calendar-meeting-dot: var(--bs-success);
+
+  background: var(--mini-calendar-bg);
+  border: 1px solid var(--mini-calendar-border-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 280px;
+
+  // Compact variant
+  &--compact {
+    --mini-calendar-day-size: 28px;
+    padding: 0.75rem;
+  }
+}
+
+.o-mini-calendar__header {
+  margin-bottom: 0.75rem;
+}
+
+.o-mini-calendar__nav-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+
+  .bi {
+    font-size: 0.7rem;
+  }
+}
+
+.o-mini-calendar__title {
+  font-size: 0.9rem;
+  color: var(--mini-calendar-text-color);
+  text-align: center;
+}
+
+.o-mini-calendar__grid {
+  width: 100%;
+}
+
+.o-mini-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 0.5rem;
+}
+
+.o-mini-calendar__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+}
+
+.o-mini-calendar__weekday-text {
+  font-size: 0.7rem;
+  color: var(--mini-calendar-text-muted);
+  font-weight: 500;
+  // text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.o-mini-calendar__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.o-mini-calendar__day {
+  position: relative;
+  // width: var(--mini-calendar-day-size);
+  height: var(--mini-calendar-day-size);
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--mini-calendar-text-color);
+  cursor: default;
+  transition: all 0.15s ease;
+
+  // Clickable days
+  &--clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--mini-calendar-day-hover);
+    }
+
+    &:focus {
+      outline: 2px solid var(--mini-calendar-day-selected);
+      outline-offset: 1px;
+    }
+  }
+
+  // Today highlight
+  &--today {
+    background: var(--mini-calendar-day-today);
+    color: white;
+    font-weight: 600;
+
+    &:hover {
+      background: var(--mini-calendar-day-today);
+      opacity: 0.9;
+    }
+  }
+
+  // Selected date
+  &--selected {
+    background: var(--mini-calendar-day-selected);
+    color: white;
+    font-weight: 600;
+
+    &:hover {
+      background: var(--mini-calendar-day-selected);
+      opacity: 0.9;
+    }
+  }
+
+  // Other month days (dimmed)
+  &--other-month {
+    color: var(--mini-calendar-day-other-month);
+    opacity: 0.5;
+  }
+
+  // Days with meetings
+  &--has-meetings {
+    font-weight: 600;
+  }
+}
+
+.o-mini-calendar__day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.o-mini-calendar__meeting-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+  background: var(--mini-calendar-meeting-dot);
+  border-radius: 50%;
+}
+
+// Compact mode adjustments
+.o-mini-calendar--compact {
+  .o-mini-calendar__title {
+    font-size: 0.8rem;
+  }
+
+  .o-mini-calendar__weekday-text {
+    font-size: 0.6rem;
+  }
+
+  .o-mini-calendar__day {
+    font-size: 0.7rem;
+  }
+
+  .o-mini-calendar__meeting-dot {
+    width: 3px;
+    height: 3px;
+    bottom: 1px;
+    right: 1px;
+  }
+}
+
+// Dark mode support (if needed)
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .o-mini-calendar {
+    max-width: 100%;
+  }
+}
