@@ -110,6 +110,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // 2. Navigation handlers previous date
   const handleNavigatePrevious = useCallback(() => {
+    // TODO: set more accurate variable name instead of newDate.
     let navigatedPreviousDate: Date;
 
     switch (currentView) {
@@ -140,6 +141,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // 3. Navigation handlers next date
   const handleNavigateNext = useCallback(() => {
+    // TODO: set more accurate variable name instead of navigatedNextDate.
     let navigatedNextDate: Date;
 
     switch (currentView) {

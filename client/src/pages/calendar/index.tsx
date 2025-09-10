@@ -49,8 +49,8 @@ const CalendarPage: React.FC = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
 
   // Modal state
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingEvent | null>(null);
 
   //  ✅ OPTIMIZED: Calculate date range based on current view
@@ -130,13 +130,15 @@ const CalendarPage: React.FC = () => {
   // Total Meetings
   const totalMeetings = useMemo(() => meetings.length, [meetings]);
 
-  // Helper function to filter total meetings
+  // Get the today's meetings.
   const getTodaysMeetings = useCallback((meetings: MeetingEvent[]) => {
+    // Get the today's date.
     const today = CURRENT_DATE;
+    // Filter the meetings for the today's date.
     return meetings.filter((meeting) => meeting.startTime.toDateString() === today.toDateString());
   }, []);
 
-  // This Week's Meetings
+  // This Week's Meetings. By using filter function to get the meetings for the current week.
   const thisWeekMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
       const weekStart = CURRENT_DATE;
@@ -149,7 +151,7 @@ const CalendarPage: React.FC = () => {
     });
   }, [meetings]);
 
-  // Upcoming Meetings
+  // Upcoming Meetings. By using filter function to get the meetings for the upcoming days.
   const upcomingMeetings = useMemo(() => {
     return meetings.filter((meeting) => meeting.startTime > CURRENT_DATE);
   }, [meetings]);
@@ -198,6 +200,7 @@ const CalendarPage: React.FC = () => {
 
   // Handle Close Create Modal event and update the selected date to null.
   const handleCloseCreateModal = useCallback(() => {
+    // Hide the create modal.
     setShowCreateModal(false);
     // set the selected date to null.
     setSelectedDate(null);
@@ -205,7 +208,9 @@ const CalendarPage: React.FC = () => {
 
   // Handle Close Details Modal event and update the selected meeting to null.
   const handleCloseDetailsModal = useCallback(() => {
+    // Hide the details modal.
     setShowDetailsModal(false);
+    // Set the selected meeting to null.
     setSelectedMeeting(null);
   }, []);
 
@@ -236,8 +241,10 @@ const CalendarPage: React.FC = () => {
   const handleMeetingUpdated = useCallback(() => {
     // set the show details modal to false.
     setShowDetailsModal(false);
+    // Set the selected meeting to null.
     setSelectedMeeting(null);
-    refetchMeetings();
+    // Refetch the meetings.
+    refetchMeetings(); // Refetch the meetings.
     addSuccess({
       title: 'Meeting Updated',
       subtitle: 'just now',
@@ -265,6 +272,7 @@ const CalendarPage: React.FC = () => {
 
   // Handle Toggle Sidebar event and update the show sidebar state.
   const handleToggleSidebar = useCallback(() => {
+    // Set the show sidebar state.
     setShowSidebar(!showSidebar);
   }, [showSidebar]);
 

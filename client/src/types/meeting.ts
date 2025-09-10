@@ -55,6 +55,7 @@ export type Meetings = {
  */
 
 export type MeetingStatusType = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+export type CalendarNavigationType = 'previous' | 'next';
 
 export interface MeetingEvent {
   id: string;

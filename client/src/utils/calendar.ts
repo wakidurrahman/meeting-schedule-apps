@@ -15,7 +15,6 @@ import {
   CalendarDay,
   CalendarGridType,
   CalendarTitleData,
-  CalendarViewDirection,
   CalendarViewType,
   CalendarWeek,
   DayGridType,
@@ -26,7 +25,7 @@ import {
   YearGridMonth,
   YearGridType,
 } from '@/types/calendar';
-import { MeetingEvent } from '@/types/meeting';
+import { CalendarNavigationType, MeetingEvent } from '@/types/meeting';
 
 /**
  * Get meetings for a specific date
@@ -107,11 +106,13 @@ export function getCurrentWeekDates(date: Date = now()): Date[] {
  * @param direction - 'next' or 'previous'
  * @returns New date for navigation
  */
-export function navigateMonth(currentDate: Date, direction: CalendarViewDirection): Date {
+export function navigateMonth(currentDate: Date, direction: CalendarNavigationType): Date {
   const navigatedDate = cloneDate(currentDate);
   if (direction === 'next') {
+    // Set the month to the next month
     navigatedDate.setMonth(navigatedDate.getMonth() + 1);
   } else {
+    // Set the month to the previous month
     navigatedDate.setMonth(navigatedDate.getMonth() - 1);
   }
   return navigatedDate;
@@ -123,11 +124,13 @@ export function navigateMonth(currentDate: Date, direction: CalendarViewDirectio
  * @param direction - 'next' or 'previous'
  * @returns New date for navigation
  */
-export function navigateWeek(currentDate: Date, direction: CalendarViewDirection): Date {
+export function navigateWeek(currentDate: Date, direction: CalendarNavigationType): Date {
   const navigatedDate = cloneDate(currentDate);
   if (direction === 'next') {
+    // Set the date to the next week
     navigatedDate.setDate(navigatedDate.getDate() + 7);
   } else {
+    // Set the date to the previous week
     navigatedDate.setDate(navigatedDate.getDate() - 7);
   }
   return navigatedDate;
@@ -139,11 +142,13 @@ export function navigateWeek(currentDate: Date, direction: CalendarViewDirection
  * @param direction - 'next' or 'previous'
  * @returns New date for navigation
  */
-export function navigateDay(currentDate: Date, direction: CalendarViewDirection): Date {
+export function navigateDay(currentDate: Date, direction: CalendarNavigationType): Date {
   const navigatedDate = cloneDate(currentDate);
   if (direction === 'next') {
+    // Set the date to the next day
     navigatedDate.setDate(navigatedDate.getDate() + 1);
   } else {
+    // Set the date to the previous day
     navigatedDate.setDate(navigatedDate.getDate() - 1);
   }
   return navigatedDate;

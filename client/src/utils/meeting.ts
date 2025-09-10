@@ -362,7 +362,6 @@ export function getDefaultMeetingTimes(
   referenceDate: Date = now(),
   durationMinutes: number = 60,
 ): { startTime: string; endTime: string } {
-  console.log('referenceDate', referenceDate);
   const now = cloneDate(referenceDate);
 
   // Round up to next 30-minute interval
