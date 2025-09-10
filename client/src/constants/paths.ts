@@ -36,12 +36,7 @@ export const NAV_PATHS: NavPath[] = [
 
   { to: paths.login, label: 'Login', userRole: 'GUEST', isAuth: false },
   { to: paths.register, label: 'Register', userRole: 'GUEST', isAuth: false },
-  {
-    to: paths.createMeeting,
-    label: 'Meeting',
-    userRole: 'USER',
-    isAuth: true,
-  },
+
   { to: paths.events, label: 'Events', userRole: 'USER', isAuth: true },
   { to: paths.bookings, label: 'Bookings', userRole: 'USER', isAuth: true },
 ];

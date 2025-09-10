@@ -14,6 +14,13 @@ import { setContext } from '@apollo/client/link/context';
 
 import { TOKEN_KEY } from '@/context/AuthContext';
 
+// Global type declaration for debugging
+declare global {
+  interface Window {
+    apolloClient: ApolloClient<unknown>;
+  }
+}
+
 /**
  * HTTP Link Configuration
  *
@@ -105,10 +112,5 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Apollo Client initialized:', apolloClient);
 
   // Make apolloClient available globally for debugging
-  declare global {
-    interface Window {
-      apolloClient: ApolloClient<unknown>;
-    }
-  }
   window.apolloClient = apolloClient;
 }

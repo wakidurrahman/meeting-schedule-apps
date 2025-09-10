@@ -1,8 +1,6 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import DesignSystemDemo from './pages/dummy';
-
 import { paths, pathsWithAuth } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
 import Login from '@/pages/auth/login';
@@ -10,13 +8,10 @@ import Register from '@/pages/auth/register';
 import BookingsPage from '@/pages/bookings';
 import CalendarPage from '@/pages/calendar';
 import EditMeetingPage from '@/pages/calendar/edit/[id]';
-import CalendarNoModalsPage from '@/pages/calendar-no-modals';
-import SimpleCalendarPage from '@/pages/calendar-simple';
 import Dashboard from '@/pages/dashboard';
 import EventsPage from '@/pages/events';
 import CreateEventPage from '@/pages/events/create';
 import EditEventPage from '@/pages/events/edit';
-import CreateMeeting from '@/pages/meeting/create';
 import Profile from '@/pages/profile';
 import UsersPage from '@/pages/users';
 import UserDetailPage from '@/pages/users/[id]';
@@ -51,14 +46,7 @@ export default function App(): JSX.Element {
           </PrivateRoute>
         }
       />
-      <Route
-        path={pathsLink.createMeeting}
-        element={
-          <PrivateRoute>
-            <CreateMeeting />
-          </PrivateRoute>
-        }
-      />
+
       <Route path={pathsLink.login} element={<Login />} />
       <Route path={pathsLink.register} element={<Register />} />
       <Route
@@ -149,14 +137,6 @@ export default function App(): JSX.Element {
           </PrivateRoute>
         }
       />
-      {/* Dummy components check */}
-      <Route path="/components-story" element={<DesignSystemDemo />} />
-      {/* Test calendar without auth */}
-      <Route path="/calendar-test" element={<CalendarPage />} />
-      {/* Simple calendar test */}
-      <Route path="/calendar-simple" element={<SimpleCalendarPage />} />
-      {/* Calendar without modals test */}
-      <Route path="/calendar-no-modals" element={<CalendarNoModalsPage />} />
     </Routes>
   );
 }
