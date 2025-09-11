@@ -42,7 +42,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App';
 
-import { apolloClient } from '@/apollo/client';
+import { apolloClient } from './apollo/apolloClient';
 import '@/assets/scss/main.scss';
 import ErrorBoundary from '@/components/molecules/error-boundary';
 import GlobalToasts from '@/components/molecules/toast/GlobalToasts';
