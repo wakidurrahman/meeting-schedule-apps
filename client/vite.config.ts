@@ -47,10 +47,7 @@ export default defineConfig({
           icons: ['react-select', 'react-loading-skeleton'],
 
           // Authentication and routing logic
-          routing: ['@/routes', '@/context/AuthContext', '@/context/ToastContext'],
-
-          // Common components (atoms/molecules used across app)
-          components: ['@/components/atoms', '@/components/molecules', '@/components/templates'],
+          routing: ['@/context/AuthContext', '@/context/ToastContext'],
         },
       },
     },
