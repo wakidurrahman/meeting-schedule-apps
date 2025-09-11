@@ -48,8 +48,6 @@ import ErrorBoundary from '@/components/molecules/error-boundary';
 import GlobalToasts from '@/components/molecules/toast/GlobalToasts';
 import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
-
-import AppRoutes from './routes';
 // Import Bootstrap JavaScript - this ensures Bootstrap is loaded and available globally
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -66,7 +64,7 @@ ReactDOM.render(
             {/* 5) Client‑side routing */}
             <BrowserRouter>
               {/* 6) Application routes */}
-<AppRoutes />
+              <App />
               {/* 7) Toast renderer (lives outside routes) */}
               <GlobalToasts />
             </BrowserRouter>
