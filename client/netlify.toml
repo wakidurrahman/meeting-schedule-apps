@@ -1,0 +1,102 @@
+# Netlify Configuration for Meeting Scheduler Client
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command to run
+  command = "npm run build"
+  
+  # Directory to publish (output of build)
+  publish = "dist"
+  
+  # Base directory for build (since this is in /client)
+  base = "client"
+
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "22.14.0"
+  
+  # NPM version  
+  NPM_VERSION = "10.0.0"
+
+# ============================================================================
+# SPA ROUTING REDIRECTS
+# ============================================================================
+# Handle client-side routing for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  
+# ============================================================================
+# SECURITY HEADERS
+# ============================================================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking
+    X-Frame-Options = "DENY"
+    
+    # Prevent MIME type sniffing
+    X-Content-Type-Options = "nosniff"
+    
+    # XSS Protection
+    X-XSS-Protection = "1; mode=block"
+    
+    # Referrer Policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Permissions Policy
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Cache static assets for 1 year
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache fonts for 1 year
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ============================================================================
+# PERFORMANCE OPTIMIZATIONS
+# ============================================================================
+# Enable asset optimization
+[build.processing]
+  skip_processing = false
+
+# CSS and JS minification
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+# Image optimization
+[build.processing.images]
+  compress = true
+
+# ============================================================================
+# BRANCH DEPLOY SETTINGS
+# ============================================================================
+[context.production.environment]
+  VITE_ENVIRONMENT = "production"
+
+[context.deploy-preview.environment]
+  VITE_ENVIRONMENT = "preview"
+
+[context.branch-deploy.environment]
+  VITE_ENVIRONMENT = "development"
+
+# ============================================================================
+# CUSTOM ERROR PAGES (Optional)
+# ============================================================================
+# Uncomment if you have custom error pages
+# [[redirects]]
+#   from = "/404"
+#   to = "/404.html"
+#   status = 404
