@@ -146,7 +146,10 @@ cacheUtils.evictEntity('User', userId); // string type enforced
 
 ```typescript
 // Mutation variables are type-checked
-const [createUser] = useMutation<{ createUser: UserProfile }, UserRegisterInput>(CREATE_USER);
+const [createUser] = useMutation<
+  { createUser: UserProfile },
+  UserRegisterInput
+>(CREATE_USER);
 ```
 
 ## 🎯 **Performance Benefits**
