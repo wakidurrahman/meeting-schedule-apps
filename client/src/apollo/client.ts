@@ -1,18 +1,67 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
- * Apollo Client Configuration
+ * Apollo Client Configuration - Optimized for Meeting Scheduler Application
  *
- * This module sets up the Apollo Client instance for the Meeting Scheduler application.
- * It configures:
- * - HTTP connection to the GraphQL endpoint
- * - Authentication middleware for JWT token injection
- * - In-memory caching
+ * This module sets up the Apollo Client instance with advanced caching, authentication,
+ * and performance optimizations for the Meeting Scheduler Application.
+ *
+ * Features:
+ * - HTTP connection to the GraphQL endpoint with authentication
+ * - Advanced caching with type policies for all entities
+ * - Pagination support for lists (users, events, meetings, bookings)
+ * - Performance optimizations (batching, persisted queries)
  * - Development tools integration
  */
 
-import { ApolloClient, HttpLink, InMemoryCache, from } from '@apollo/client';
+import {
+  ApolloClient,
+  DefaultOptions,
+  HttpLink,
+  InMemoryCache,
+  TypePolicies,
+  from,
+} from '@apollo/client';
+import { BatchHttpLink } from '@apollo/client/link/batch-http';
 import { setContext } from '@apollo/client/link/context';
+import { createPersistedQueryLink } from '@apollo/client/link/persisted-queries';
+import { sha256 } from 'crypto-hash';
 
+// Import entity types for better type safety
 import { TOKEN_KEY } from '@/context/AuthContext';
+import type { Booking } from '@/types/booking';
+import type { Event } from '@/types/event';
+import type { Meetings } from '@/types/meeting';
+import type { UserProfile } from '@/types/user';
+
+// Type definitions for GraphQL responses
+interface PaginatedUsersResponse {
+  usersList: UserProfile[];
+  total: number;
+  hasMore: boolean;
+  pagination?: { offset?: number };
+}
+
+interface PaginatedMeetingsResponse {
+  meetingsList: Meetings[];
+  totalCount: number;
+  hasMore: boolean;
+}
+
+interface ConflictCheckResponse {
+  hasConflicts: boolean;
+  conflicts: {
+    meeting: {
+      id: string;
+      title: string;
+      startTime: string;
+      endTime: string;
+    };
+    conflictType: string;
+    severity: string;
+    message: string;
+  }[];
+  warnings: string[];
+}
 
 // Global type declaration for debugging
 declare global {
@@ -22,13 +71,196 @@ declare global {
 }
 
 /**
- * HTTP Link Configuration
+ * Advanced Cache Configuration with Type Policies
  *
- * Creates the HTTP connection to the GraphQL server endpoint.
- * Uses environment variable for production deployment or falls back to relative path for development.
+ * Implements comprehensive caching strategy for all entities:
+ * - User, Event, Meeting, Booking entities with proper key fields
+ * - Pagination support with offset-based merging
+ * - Optimized cache-first policies for read-heavy operations
  */
-const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+const typePolicies: TypePolicies = {
+  Query: {
+    fields: {
+      // Users list with pagination support
+      users: {
+        keyArgs: ['where', 'orderBy'], // Cache by filter and sort
+        merge(
+          existing = { usersList: [], total: 0, hasMore: false },
+          incoming: PaginatedUsersResponse,
+        ) {
+          const existingItems = existing.usersList || [];
+          const incomingItems = incoming.usersList || [];
+          const offset = incoming.pagination?.offset || 0;
+
+          // Handle pagination merging
+          if (offset === 0) {
+            // Fresh load - replace existing
+            return incoming;
+          }
+
+          // Append new items for pagination
+          const merged = [...existingItems];
+          incomingItems.forEach((item: UserProfile, index: number) => {
+            merged[offset + index] = item;
+          });
+
+          return {
+            ...incoming,
+            usersList: merged,
+            total: incoming.total,
+            hasMore: incoming.hasMore,
+          };
+        },
+      },
+
+      // Events list with filtering and pagination
+      events: {
+        keyArgs: ['filter'], // Cache by filter (createdById, dateFrom, dateTo)
+        merge(existing: Event[] = [], incoming: Event[]) {
+          // For events, we typically replace the entire list when filters change
+          // since they're often date-based or user-specific
+          return incoming || [];
+        },
+      },
+
+      // Meetings with advanced caching
+      meetings: {
+        keyArgs: false, // Cache all meetings together
+        merge(
+          existing = { meetingsList: [], totalCount: 0, hasMore: false },
+          incoming: PaginatedMeetingsResponse,
+        ) {
+          // Always replace for meetings as they're time-sensitive
+          return incoming;
+        },
+      },
+
+      // Date range meetings (calendar view)
+      meetingsByDateRange: {
+        // Custom cache key based on date range
+        keyArgs: ['dateRange', ['startDate', 'endDate']],
+        merge(existing: Meetings[] = [], incoming: Meetings[]) {
+          // Merge strategy for overlapping date ranges
+          return incoming;
+        },
+      },
+
+      // My meetings (user-specific)
+      myMeetings: {
+        keyArgs: ['userId'], // Cache per user
+        merge(existing: Meetings[] = [], incoming: Meetings[]) {
+          return incoming || [];
+        },
+      },
+
+      // Upcoming meetings
+      upcomingMeetings: {
+        keyArgs: ['limit'], // Cache by limit
+        merge(existing: Meetings[] = [], incoming: Meetings[]) {
+          return incoming || [];
+        },
+      },
+
+      // Bookings list
+      bookings: {
+        keyArgs: false, // Global bookings list
+        merge(existing: Booking[] = [], incoming: Booking[]) {
+          return incoming || [];
+        },
+      },
+
+      // Single user query
+      user: {
+        keyArgs: ['id'],
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
+          return incoming;
+        },
+      },
+
+      // Single event query
+      event: {
+        keyArgs: ['id'],
+        merge(existing: Event | null, incoming: Event | null) {
+          return incoming;
+        },
+      },
+
+      // My profile (current user)
+      myProfile: {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
+          return incoming;
+        },
+      },
+
+      // Meeting conflicts check
+      checkMeetingConflicts: {
+        keyArgs: ['input'], // Cache by conflict check parameters
+        merge(existing: ConflictCheckResponse | null, incoming: ConflictCheckResponse | null) {
+          return incoming;
+        },
+      },
+    },
+  },
+
+  // Entity type policies with proper key fields
+  User: {
+    keyFields: ['id'],
+    fields: {
+      // User-specific field policies can be added here
+    },
+  },
+
+  Event: {
+    keyFields: ['id'],
+    fields: {
+      createdBy: {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
+          return incoming;
+        },
+      },
+    },
+  },
+
+  Meeting: {
+    keyFields: ['id'],
+    fields: {
+      attendees: {
+        merge(existing: UserProfile[] = [], incoming: UserProfile[]) {
+          return incoming || [];
+        },
+      },
+      createdBy: {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
+          return incoming;
+        },
+      },
+    },
+  },
+
+  Booking: {
+    keyFields: ['id'],
+    fields: {
+      event: {
+        merge(existing: Event | null, incoming: Event | null) {
+          return incoming;
+        },
+      },
+      user: {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
+          return incoming;
+        },
+      },
+    },
+  },
+};
+
+/**
+ * Apollo Cache Instance with Advanced Configuration
+ */
+const cache = new InMemoryCache({
+  typePolicies,
+  addTypename: true, // Add __typename to all objects for better caching
+  resultCaching: true, // Enable result caching for performance
 });
 
 /**
@@ -45,76 +277,155 @@ const httpLink = new HttpLink({
  * @returns Modified headers object with Authorization header
  */
 const authLink = setContext((_, { headers }) => {
-  // Retrieve the authentication token from local storage
+  // Retrieve the authentication token from local storage.
   const token = localStorage.getItem(TOKEN_KEY);
 
-  // Return the headers to the context so httpLink can read them
+  // Return the modified headers object with the Authorization header so httpLink can read them.
+  // The Authorization header is required for the GraphQL server to authenticate the request.
   return {
     headers: {
       ...headers,
-      // Add the authorization header only if token exists
       Authorization: token ? `Bearer ${token}` : '',
     },
   };
 });
 
 /**
- * Apollo Client Instance
+ * HTTP Link Configuration
  *
- * The main Apollo Client instance used throughout the application.
- *
- * Configuration:
- * - Link chain: authLink -> httpLink (authentication before HTTP request)
- * - Cache: InMemoryCache for normalized caching of GraphQL responses
- * - DevTools: Enabled for Apollo Client DevTools browser extension
- *
- * @example
- * // Usage in React components
- * import { apolloClient } from './apollo/client';
- * import { ApolloProvider } from '@apollo/client';
- *
- * <ApolloProvider client={apolloClient}>
- *   <App />
- * </ApolloProvider>
+ * Creates the HTTP connection to the GraphQL server endpoint.
+ * Uses environment variable for production deployment or falls back to relative path for `development`.
  */
-export const apolloClient = new ApolloClient({
-  // Chain the auth link with the http link
-  link: from([authLink, httpLink]),
-
-  // Initialize a new in-memory cache
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          meetingsByDateRange: {
-            // Custom cache key based on date range
-            keyArgs: ['dateRange', ['startDate', 'endDate']],
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            merge(existing = [], incoming) {
-              // Merge strategy for overlapping date ranges
-              return incoming;
-            },
-          },
-        },
-      },
-      Meeting: {
-        keyFields: ['id'],
-      },
-    },
-  }),
-  // Enable Apollo DevTools in development
-  connectToDevTools: true,
+const httpLink = new HttpLink({
+  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+  useGETForQueries: true, // Use GET for queries (CDN-friendly)
 });
 
-// Debug: Log Apollo Client to console in development
+/**
+ * Batch HTTP Link for Performance
+ *
+ * Batches multiple GraphQL operations into a single HTTP request
+ * to reduce network overhead and improve performance.
+ */
+const batchLink = new BatchHttpLink({
+  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+  batchInterval: 20, // Batch requests within 20ms window
+  batchMax: 10, // Maximum 10 operations per batch
+});
+
+/**
+ * Persisted Queries Link for Performance
+ *
+ * Enables automatic persisted queries (APQ) to reduce bandwidth
+ * by sending query hashes instead of full query strings.
+ */
+const persistedQueriesLink = createPersistedQueryLink({
+  sha256,
+  useGETForHashedQueries: true, // Use GET for hashed queries (CDN-friendly)
+});
+
+/**
+ * Default Query Options
+ *
+ * Optimized fetch policies for different use cases:
+ * - cache-first: For read-mostly data (user profiles, events)
+ * - cache-and-network: For real-time data (meetings, bookings)
+ */
+const defaultOptions: DefaultOptions = {
+  watchQuery: {
+    fetchPolicy: 'cache-first', // Prioritize cache for better performance
+    errorPolicy: 'all', // Return partial data even with errors
+  },
+  query: {
+    fetchPolicy: 'cache-first', // Default to cache-first for queries
+    errorPolicy: 'all',
+  },
+  mutate: {
+    errorPolicy: 'all', // Allow partial success for mutations
+    fetchPolicy: 'no-cache', // Always execute mutations
+  },
+};
+
+/**
+ * Apollo Client Instance
+ *
+ * The main Apollo Client instance with complete configuration:
+ * - Authentication middleware
+ * - Performance optimizations (batching, persisted queries)
+ * - Advanced caching with type policies
+ * - Development tools integration
+ */
+export const apolloClient = new ApolloClient({
+  // Link chain: auth -> persisted queries -> batch/http
+  link: from([
+    authLink,
+    persistedQueriesLink,
+    // Use batching in production, regular HTTP in development for easier debugging
+    import.meta.env.PROD ? batchLink : httpLink,
+  ]),
+
+  cache,
+  defaultOptions,
+
+  // Enable Apollo DevTools in development
+  connectToDevTools: import.meta.env.DEV,
+
+  // Additional options
+  assumeImmutableResults: true, // Optimize for immutable data
+  queryDeduplication: true, // Deduplicate identical queries
+});
+
+/**
+ * Development Debugging and Global Access
+ */
 if (import.meta.env.DEV) {
   console.log('🚀 Apollo Client Config:', {
     graphqlUri: import.meta.env.VITE_GRAPHQL_URI,
     environment: import.meta.env.VITE_ENVIRONMENT,
     isDev: import.meta.env.DEV,
+    cacheConfig: {
+      typePolicies: Object.keys(typePolicies),
+      entities: ['User', 'Event', 'Meeting', 'Booking'],
+    },
+    features: {
+      authentication: '✅ JWT Bearer tokens',
+      caching: '✅ Advanced type policies',
+      pagination: '✅ Offset-based merging',
+      batching: import.meta.env.PROD ? '✅ Enabled' : '❌ Disabled (dev)',
+      persistedQueries: '✅ Enabled',
+      devtools: '✅ Enabled',
+    },
   });
-  console.log('Apollo Client initialized:', apolloClient);
 
   // Make apolloClient available globally for debugging
   window.apolloClient = apolloClient;
 }
+
+/**
+ * Cache Utilities for Manual Cache Operations
+ */
+export const cacheUtils = {
+  /**
+   * Clear specific entity from cache
+   */
+  evictEntity: (typename: string, id: string) => {
+    apolloClient.cache.evict({ id: apolloClient.cache.identify({ __typename: typename, id }) });
+    apolloClient.cache.gc(); // Garbage collect unreferenced objects
+  },
+
+  /**
+   * Clear all cache data
+   */
+  clearAll: () => {
+    apolloClient.cache.reset();
+  },
+
+  /**
+   * Refetch all active queries
+   */
+  refetchAll: () => {
+    return apolloClient.reFetchObservableQueries();
+  },
+};
+
+export default apolloClient;
