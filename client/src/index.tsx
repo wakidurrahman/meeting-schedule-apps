@@ -51,7 +51,7 @@ import { ToastProvider } from '@/context/ToastContext';
 // Import Bootstrap JavaScript - this ensures Bootstrap is loaded and available globally
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-// Provider Stack Architecture: StrictMode → ErrorBoundary → ApolloProvider → AuthProvider → ToastProvider → BrowserRouter → App
+// Provider Stack Architecture: `StrictMode` → `ErrorBoundary` → `ApolloProvider` → `AuthProvider` → `ToastProvider` → `BrowserRouter` → `App`
 ReactDOM.render(
   <React.StrictMode>
     {/* 1) Global error safety net */}
