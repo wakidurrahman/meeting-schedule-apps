@@ -25,11 +25,10 @@ declare global {
  * HTTP Link Configuration
  *
  * Creates the HTTP connection to the GraphQL server endpoint.
- * The URI is relative to the current domain, expecting a proxy setup
- * in development or same-origin deployment in production.
+ * Uses environment variable for production deployment or falls back to relative path for development.
  */
 const httpLink = new HttpLink({
-  uri: '/graphql',
+  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
 });
 
 /**
@@ -108,7 +107,12 @@ export const apolloClient = new ApolloClient({
 });
 
 // Debug: Log Apollo Client to console in development
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
+  console.log('🚀 Apollo Client Config:', {
+    graphqlUri: import.meta.env.VITE_GRAPHQL_URI,
+    environment: import.meta.env.VITE_ENVIRONMENT,
+    isDev: import.meta.env.DEV,
+  });
   console.log('Apollo Client initialized:', apolloClient);
 
   // Make apolloClient available globally for debugging

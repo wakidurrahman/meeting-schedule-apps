@@ -11,11 +11,15 @@
     "dev": "vite",
     "dev:hot": "vite --host",
     "build": "tsc -b && vite build",
+    "build:analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "build:stats": "tsc -b && vite build --mode=stats",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "bundle:size": "npm run build && npx bundlesize",
+    "performance:lighthouse": "npx lighthouse http://localhost:5173 --output=html --output-path=./lighthouse-report.html"
   },
   "dependencies": {
     "@apollo/client": "3.3.11",
