@@ -40,9 +40,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
+import { apolloClient } from './apollo/client';
 import App from './App';
 
-import { apolloClient } from './apollo/apolloClient';
 import '@/assets/scss/main.scss';
 import ErrorBoundary from '@/components/molecules/error-boundary';
 import GlobalToasts from '@/components/molecules/toast/GlobalToasts';
