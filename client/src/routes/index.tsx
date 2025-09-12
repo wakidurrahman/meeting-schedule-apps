@@ -11,16 +11,6 @@
  * - Enables progressive loading of features
  */
 
-import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
-
-// Global type declaration for Google Analytics
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
-
 import {
   AuthPageSpinner,
   BookingsPageSpinner,
@@ -32,7 +22,16 @@ import {
 } from '@/components/atoms/page-spinner';
 import { paths, pathsWithAuth } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
+import React, { Suspense, lazy } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
+// Global type declaration for Google Analytics
+declare global {
+  interface Window {
+    // TODO: Add type for gtag
+    gtag?: (...args: any[]) => void;
+  }
+}
 // ============================================================================
 // LAZY-LOADED PAGE IMPORTS
 // ============================================================================
@@ -75,12 +74,13 @@ interface PrivateRouteProps {
 
 /**
  * Private Route Component with Authentication Check
- * Protects routes that require user authentication
+ * **_ Protects routes that require user authentication _**
  *
  * @param children - The protected component to render
  * @param fallback - Optional custom loading component
  */
 function PrivateRoute({ children, fallback }: PrivateRouteProps): React.ReactElement {
+  // User React context for authentication check. This is Global State Management by using React Context API.
   const { isAuthenticated } = useAuthContext();
 
   if (!isAuthenticated) {
