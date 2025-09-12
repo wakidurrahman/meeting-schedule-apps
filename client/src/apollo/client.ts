@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
- * Apollo Client Configuration - Optimized for Meeting Scheduler
+ * Apollo Client Configuration - Optimized for Meeting Scheduler Application
  *
  * This module sets up the Apollo Client instance with advanced caching, authentication,
- * and performance optimizations for the Meeting Scheduler application.
+ * and performance optimizations for the Meeting Scheduler Application.
  *
  * Features:
  * - HTTP connection to the GraphQL endpoint with authentication
@@ -25,7 +26,42 @@ import { setContext } from '@apollo/client/link/context';
 import { createPersistedQueryLink } from '@apollo/client/link/persisted-queries';
 import { sha256 } from 'crypto-hash';
 
+// Import entity types for better type safety
 import { TOKEN_KEY } from '@/context/AuthContext';
+import type { Booking } from '@/types/booking';
+import type { Event } from '@/types/event';
+import type { Meetings } from '@/types/meeting';
+import type { UserProfile } from '@/types/user';
+
+// Type definitions for GraphQL responses
+interface PaginatedUsersResponse {
+  usersList: UserProfile[];
+  total: number;
+  hasMore: boolean;
+  pagination?: { offset?: number };
+}
+
+interface PaginatedMeetingsResponse {
+  meetingsList: Meetings[];
+  totalCount: number;
+  hasMore: boolean;
+}
+
+interface ConflictCheckResponse {
+  hasConflicts: boolean;
+  conflicts: {
+    meeting: {
+      id: string;
+      title: string;
+      startTime: string;
+      endTime: string;
+    };
+    conflictType: string;
+    severity: string;
+    message: string;
+  }[];
+  warnings: string[];
+}
 
 // Global type declaration for debugging
 declare global {
@@ -50,12 +86,7 @@ const typePolicies: TypePolicies = {
         keyArgs: ['where', 'orderBy'], // Cache by filter and sort
         merge(
           existing = { usersList: [], total: 0, hasMore: false },
-          incoming: {
-            usersList: any[];
-            total: number;
-            hasMore: boolean;
-            pagination?: { offset?: number };
-          },
+          incoming: PaginatedUsersResponse,
         ) {
           const existingItems = existing.usersList || [];
           const incomingItems = incoming.usersList || [];
@@ -69,7 +100,7 @@ const typePolicies: TypePolicies = {
 
           // Append new items for pagination
           const merged = [...existingItems];
-          incomingItems.forEach((item: any, index: number) => {
+          incomingItems.forEach((item: UserProfile, index: number) => {
             merged[offset + index] = item;
           });
 
@@ -85,7 +116,7 @@ const typePolicies: TypePolicies = {
       // Events list with filtering and pagination
       events: {
         keyArgs: ['filter'], // Cache by filter (createdById, dateFrom, dateTo)
-        merge(_existing = [], incoming: any[]) {
+        merge(existing: Event[] = [], incoming: Event[]) {
           // For events, we typically replace the entire list when filters change
           // since they're often date-based or user-specific
           return incoming || [];
@@ -95,7 +126,10 @@ const typePolicies: TypePolicies = {
       // Meetings with advanced caching
       meetings: {
         keyArgs: false, // Cache all meetings together
-        merge(_existing = { meetingsList: [], totalCount: 0, hasMore: false }, incoming: any) {
+        merge(
+          existing = { meetingsList: [], totalCount: 0, hasMore: false },
+          incoming: PaginatedMeetingsResponse,
+        ) {
           // Always replace for meetings as they're time-sensitive
           return incoming;
         },
@@ -103,17 +137,18 @@ const typePolicies: TypePolicies = {
 
       // Date range meetings (calendar view)
       meetingsByDateRange: {
-        keyArgs: ['dateRange', ['startDate', 'endDate']], // Cache by date range
-        merge(_existing = [], incoming: any[]) {
-          // Replace existing for date range queries
-          return incoming || [];
+        // Custom cache key based on date range
+        keyArgs: ['dateRange', ['startDate', 'endDate']],
+        merge(existing: Meetings[] = [], incoming: Meetings[]) {
+          // Merge strategy for overlapping date ranges
+          return incoming;
         },
       },
 
       // My meetings (user-specific)
       myMeetings: {
         keyArgs: ['userId'], // Cache per user
-        merge(_existing = [], incoming: any[]) {
+        merge(existing: Meetings[] = [], incoming: Meetings[]) {
           return incoming || [];
         },
       },
@@ -121,7 +156,7 @@ const typePolicies: TypePolicies = {
       // Upcoming meetings
       upcomingMeetings: {
         keyArgs: ['limit'], // Cache by limit
-        merge(_existing = [], incoming: any[]) {
+        merge(existing: Meetings[] = [], incoming: Meetings[]) {
           return incoming || [];
         },
       },
@@ -129,7 +164,7 @@ const typePolicies: TypePolicies = {
       // Bookings list
       bookings: {
         keyArgs: false, // Global bookings list
-        merge(_existing = [], incoming: any[]) {
+        merge(existing: Booking[] = [], incoming: Booking[]) {
           return incoming || [];
         },
       },
@@ -137,7 +172,7 @@ const typePolicies: TypePolicies = {
       // Single user query
       user: {
         keyArgs: ['id'],
-        merge(_existing: any, incoming: any) {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
           return incoming;
         },
       },
@@ -145,14 +180,14 @@ const typePolicies: TypePolicies = {
       // Single event query
       event: {
         keyArgs: ['id'],
-        merge(_existing: any, incoming: any) {
+        merge(existing: Event | null, incoming: Event | null) {
           return incoming;
         },
       },
 
       // My profile (current user)
       myProfile: {
-        merge(_existing: any, incoming: any) {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
           return incoming;
         },
       },
@@ -160,7 +195,7 @@ const typePolicies: TypePolicies = {
       // Meeting conflicts check
       checkMeetingConflicts: {
         keyArgs: ['input'], // Cache by conflict check parameters
-        merge(_existing: any, incoming: any) {
+        merge(existing: ConflictCheckResponse | null, incoming: ConflictCheckResponse | null) {
           return incoming;
         },
       },
@@ -179,7 +214,7 @@ const typePolicies: TypePolicies = {
     keyFields: ['id'],
     fields: {
       createdBy: {
-        merge(_existing: any, incoming: any) {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
           return incoming;
         },
       },
@@ -190,12 +225,12 @@ const typePolicies: TypePolicies = {
     keyFields: ['id'],
     fields: {
       attendees: {
-        merge(_existing = [], incoming: any[]) {
+        merge(existing: UserProfile[] = [], incoming: UserProfile[]) {
           return incoming || [];
         },
       },
       createdBy: {
-        merge(_existing: any, incoming: any) {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
           return incoming;
         },
       },
@@ -206,12 +241,12 @@ const typePolicies: TypePolicies = {
     keyFields: ['id'],
     fields: {
       event: {
-        merge(_existing: any, incoming: any) {
+        merge(existing: Event | null, incoming: Event | null) {
           return incoming;
         },
       },
       user: {
-        merge(_existing: any, incoming: any) {
+        merge(existing: UserProfile | null, incoming: UserProfile | null) {
           return incoming;
         },
       },
@@ -233,10 +268,20 @@ const cache = new InMemoryCache({
  *
  * Intercepts all GraphQL requests and adds the JWT authentication token
  * from localStorage to the Authorization header if available.
+ *
+ * Token format: Bearer <token>
+ * Storage key: Imported from AuthContext (TOKEN_KEY constant)
+ *
+ * @param _ - Apollo operation context (unused)
+ * @param headers - Existing HTTP headers
+ * @returns Modified headers object with Authorization header
  */
 const authLink = setContext((_, { headers }) => {
+  // Retrieve the authentication token from local storage.
   const token = localStorage.getItem(TOKEN_KEY);
 
+  // Return the modified headers object with the Authorization header so httpLink can read them.
+  // The Authorization header is required for the GraphQL server to authenticate the request.
   return {
     headers: {
       ...headers,
@@ -249,7 +294,7 @@ const authLink = setContext((_, { headers }) => {
  * HTTP Link Configuration
  *
  * Creates the HTTP connection to the GraphQL server endpoint.
- * Uses environment variable for production deployment or falls back to relative path for development.
+ * Uses environment variable for production deployment or falls back to relative path for `development`.
  */
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
