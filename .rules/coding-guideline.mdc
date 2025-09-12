@@ -1,20 +1,10 @@
-# Meeting Scheduler App - Monorepo Guidelines
-
 ---
-
-description: Meeting Scheduler App - Monorepo coding guidelines for React frontend and Express GraphQL backend
-globs:
-alwaysApply: true
-
----
-
----
-
 description: Client and Server code guidelines
 globs: _.tsx,_.scss,_.ts,_.js
 alwaysApply: true
-
 ---
+
+# Meeting Scheduler App - Monorepo Guidelines
 
 > This document serves as the main guideline index for Cursor AI to understand the coding conventions of the Meeting Scheduler App monorepo and provide appropriate code generation and suggestions.
 
