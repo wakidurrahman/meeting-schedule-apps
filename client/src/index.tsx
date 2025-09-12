@@ -40,9 +40,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
+import { apolloClient } from './apollo/client';
 import App from './App';
 
-import { apolloClient } from '@/apollo/client';
 import '@/assets/scss/main.scss';
 import ErrorBoundary from '@/components/molecules/error-boundary';
 import GlobalToasts from '@/components/molecules/toast/GlobalToasts';
@@ -51,7 +51,7 @@ import { ToastProvider } from '@/context/ToastContext';
 // Import Bootstrap JavaScript - this ensures Bootstrap is loaded and available globally
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-// Provider Stack Architecture: StrictMode → ErrorBoundary → ApolloProvider → AuthProvider → ToastProvider → BrowserRouter → App
+// Provider Stack Architecture: `StrictMode` → `ErrorBoundary` → `ApolloProvider` → `AuthProvider` → `ToastProvider` → `BrowserRouter` → `App`
 ReactDOM.render(
   <React.StrictMode>
     {/* 1) Global error safety net */}

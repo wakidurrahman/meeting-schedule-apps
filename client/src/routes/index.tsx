@@ -14,13 +14,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-// Global type declaration for Google Analytics
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
-
 import {
   AuthPageSpinner,
   BookingsPageSpinner,
@@ -33,6 +26,13 @@ import {
 import { paths, pathsWithAuth } from '@/constants/paths';
 import { useAuthContext } from '@/context/AuthContext';
 
+// Global type declaration for Google Analytics
+declare global {
+  interface Window {
+    // TODO: Add type for gtag
+    gtag?: (...args: any[]) => void;
+  }
+}
 // ============================================================================
 // LAZY-LOADED PAGE IMPORTS
 // ============================================================================
@@ -64,6 +64,9 @@ const BookingsPage = lazy(() => import('@/pages/bookings'));
 // Meeting Management Pages
 const EditMeetingPage = lazy(() => import('@/pages/calendar/edit/[id]'));
 
+// Error Management Pages
+const ErrorPage = lazy(() => import('@/pages/error'));
+
 // ============================================================================
 // PRIVATE ROUTE WRAPPER
 // ============================================================================
@@ -74,19 +77,20 @@ interface PrivateRouteProps {
 }
 
 /**
- * Private Route Component with Authentication Check
- * Protects routes that require user authentication
+ * Private Route Component with Authentication Check. HOC - Higher Order Component.
+ * **_ Protects routes that require user authentication _**
  *
  * @param children - The protected component to render
  * @param fallback - Optional custom loading component
  */
 function PrivateRoute({ children, fallback }: PrivateRouteProps): React.ReactElement {
+  // User React context for authentication check. This is Global State Management by using React Context API.
   const { isAuthenticated } = useAuthContext();
-
+  // If the user is not authenticated, redirect to the login page
   if (!isAuthenticated) {
     return <Navigate to={paths.login} replace />;
   }
-
+  // If there is a fallback, use it, otherwise use the children
   return fallback ? <Suspense fallback={fallback}>{children}</Suspense> : children;
 }
 
@@ -99,6 +103,7 @@ function PrivateRoute({ children, fallback }: PrivateRouteProps): React.ReactEle
  * Wraps lazy components with Suspense and appropriate loading states
  */
 interface LazyRouteProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.LazyExoticComponent<React.ComponentType<any>>;
   fallback: React.ComponentType;
   requiresAuth?: boolean;
@@ -109,12 +114,14 @@ const LazyRoute: React.FC<LazyRouteProps> = ({
   fallback: Fallback,
   requiresAuth = true,
 }) => {
+  // Create an element with the component and fallback
   const element = (
     <Suspense fallback={<Fallback />}>
       <Component />
     </Suspense>
   );
 
+  // If the route requires authentication, wrap the element in the private route, otherwise return the element
   return requiresAuth ? <PrivateRoute>{element}</PrivateRoute> : element;
 };
 
@@ -243,7 +250,15 @@ export default function AppRoutes(): React.ReactElement {
       {/* ================================================================== */}
 
       {/* Catch-all redirect to dashboard for authenticated users */}
-      <Route path="*" element={<Navigate to={paths.home} replace />} />
+      {/* <Route path="*" element={<Navigate to={paths.home} replace />} /> */}
+
+      {/** 404 Error Route */}
+      <Route
+        path="*"
+        element={
+          <LazyRoute component={ErrorPage} fallback={AuthPageSpinner} requiresAuth={false} />
+        }
+      />
     </Routes>
   );
 }
