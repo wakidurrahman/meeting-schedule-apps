@@ -25,6 +25,7 @@
     "@apollo/client": "3.3.11",
     "@types/lodash": "^4.17.20",
     "bootstrap": "5.3.3",
+    "crypto-hash": "^4.0.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.1",
     "filepond": "^4.32.9",
