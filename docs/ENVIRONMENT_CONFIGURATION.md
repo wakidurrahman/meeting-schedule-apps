@@ -21,7 +21,7 @@
 ```env
 NODE_ENV=production
 PORT=4000
-MONGO_URI=mongodb+srv://wakidur:YOUR_NEW_PASSWORD@reactjs-with-qraphql.ax8jc2o.mongodb.net/?retryWrites=true&w=majority&appName=reactjs-with-qraphql
+MONGO_URI=mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/?retryWrites=true&w=majority&appName=<app-name>
 JWT_SECRET=your-super-secure-jwt-secret-for-production
 CLIENT_ORIGIN=https://your-app-name.netlify.app
 ```
