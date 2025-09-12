@@ -86,7 +86,7 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```env
 NODE_ENV=production
 PORT=4000
-MONGO_URI=mongodb+srv://wakidur:NEW_PASSWORD@cluster.mongodb.net/dbname
+MONGO_URI=mongodb+srv://<username>:NEW_PASSWORD@cluster.mongodb.net/dbname
 JWT_SECRET=new_generated_secret_64_chars_long
 CLIENT_ORIGIN=https://your-netlify-domain.netlify.app
 ```
