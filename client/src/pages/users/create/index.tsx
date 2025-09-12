@@ -1,12 +1,13 @@
 import { useMutation } from '@apollo/client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
 import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
+import FilePondUploader, { FilePondAvatar } from '@/components/atoms/filepond-uploader';
 import Heading from '@/components/atoms/heading';
 import SelectField from '@/components/atoms/select-field';
 import Text from '@/components/atoms/text';
@@ -17,11 +18,15 @@ import { paths } from '@/constants/paths';
 import { CREATE_USER, type CreateUserData, type CreateUserInput } from '@/graphql/user/mutations';
 import { GET_USERS } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
+import type { ImageUploadResult, UserImageSizes } from '@/types/user';
 import { CreateUserSchema } from '@/utils/validation';
 
 export default function CreateUserPage(): JSX.Element {
   const navigate = useNavigate();
   const { addSuccess, addError } = useToast();
+
+  // State for uploaded image
+  const [uploadedImage, setUploadedImage] = useState<UserImageSizes | null>(null);
 
   // Form setup
   const {
@@ -62,12 +67,33 @@ export default function CreateUserPage(): JSX.Element {
     },
   );
 
+  // Handle image upload success
+  const handleImageUploadSuccess = (result: ImageUploadResult) => {
+    if (result.success && result.imageUrl) {
+      setUploadedImage(result.imageUrl);
+      addSuccess({
+        title: 'Image Uploaded!',
+        subtitle: 'just now',
+        children: 'Profile image uploaded successfully!',
+      });
+    }
+  };
+
+  // Handle image upload error
+  const handleImageUploadError = (error: string) => {
+    addError({
+      title: 'Upload Failed!',
+      subtitle: 'just now',
+      children: `Failed to upload image: ${error}`,
+    });
+  };
+
   // Form submission
   const onSubmit = async (data: CreateUserInput) => {
     try {
       const input = {
         ...data,
-        imageUrl: data.imageUrl || undefined, // Convert empty string to undefined
+        imageUrl: uploadedImage || data.imageUrl || undefined, // Include uploaded image
       };
       await createUser({ variables: { input } });
     } catch (err) {
@@ -160,20 +186,52 @@ export default function CreateUserPage(): JSX.Element {
                       />
                     </div>
 
-                    {/* Image URL Field */}
+                    {/* Profile Image Upload */}
                     <div className="col-12">
+                      <div className="mb-3">
+                        <label className="form-label">Profile Image</label>
+                        <div className="row align-items-start">
+                          <div className="col-md-8">
+                            <FilePondUploader
+                              userId="new-user"
+                              currentImage={uploadedImage}
+                              onUploadSuccess={handleImageUploadSuccess}
+                              onUploadError={handleImageUploadError}
+                              disabled={loading || isSubmitting}
+                            />
+                            <small className="text-muted">
+                              Upload a new profile image (JPG, PNG, WebP up to 5MB)
+                            </small>
+                          </div>
+                          <div className="col-md-4">
+                            <div className="text-center">
+                              <FilePondAvatar
+                                imageUrl={uploadedImage}
+                                name="New User"
+                                size="xl"
+                                className="mb-2 border"
+                              />
+                              <div className="small text-muted">Preview</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Hidden field to maintain form compatibility */}
                       <Controller
                         name="imageUrl"
                         control={control}
                         render={({ field }) => (
-                          <TextField
+                          <input
+                            type="hidden"
                             {...field}
-                            type="url"
-                            label="Profile Image URL"
-                            placeholder="https://example.com/avatar.jpg (optional)"
-                            error={errors.imageUrl?.message}
-                            disabled={loading || isSubmitting}
-                            helpText="Optional: Provide a URL for the user's profile image"
+                            value={(() => {
+                              const imageValue = uploadedImage || field.value;
+                              if (typeof imageValue === 'string') {
+                                return imageValue || '';
+                              }
+                              return JSON.stringify(imageValue) || '';
+                            })()}
                           />
                         )}
                       />
