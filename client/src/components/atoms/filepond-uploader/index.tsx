@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * FilePond Image Uploader Component
  *
@@ -5,6 +6,10 @@
  * validation, and server integration for user profile images.
  */
 
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import FilePondPluginImageResize from 'filepond-plugin-image-resize';
 import React, { useEffect, useState } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
 
@@ -13,10 +18,6 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import 'filepond/dist/filepond.min.css';
 
 // Import and register FilePond plugins
-import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import FilePondPluginImageResize from 'filepond-plugin-image-resize';
 
 import type { ImageUploadResult, UserImageSizes } from '@/types/user';
 import { getImageUrl } from '@/utils/image-utils';

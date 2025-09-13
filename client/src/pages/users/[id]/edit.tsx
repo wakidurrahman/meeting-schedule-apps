@@ -253,7 +253,9 @@ export default function EditUserPage(): JSX.Element {
                       {/* Profile Image Upload */}
                       <div className="col-12">
                         <div className="mb-3">
-                          <label className="form-label">Profile Image</label>
+                          <label htmlFor="profile-image" className="form-label">
+                            Profile Image
+                          </label>
                           <div className="row align-items-start">
                             <div className="col-md-8">
                               <FilePondUploader
