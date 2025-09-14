@@ -71,3 +71,20 @@ export const ErrorMessages = {
   requiresUser: 'useAuthUser requires an authenticated user',
   requiresToken: 'useAuthToken requires an authenticated token',
 } as const;
+
+// Success Messages for different contexts
+export const ToastMessages = {
+  registrationSuccessfulTitle: 'Registration Successful!',
+  registrationSuccessfulSubtitle: 'Just now',
+  registrationSuccessfulChildren: 'Account created successfully. Attempting auto-login...',
+  registrationFailedTitle: 'Registration Failed!',
+  registrationFailedSubtitle: 'Just now',
+  loginSuccessfulTitle: 'Login Successful!',
+  loginSuccessfulSubtitle: 'Just now',
+  loginSuccessfulChildren: 'Login successful. Redirecting to dashboard...',
+  loginFailedTitle: 'Login Failed!',
+  loginFailedSubtitle: 'just now',
+  loginFailedChildren: 'Login failed. Please try again.',
+  logoutSuccessfulTitle: 'Logout Successful!',
+  logoutSuccessful: 'Logout successful',
+} as const;

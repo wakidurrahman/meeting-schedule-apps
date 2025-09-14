@@ -10,12 +10,13 @@ import React from 'react';
 import './index.scss';
 
 import Spinner from '@/components/atoms/spinner';
+import { FormSkeleton } from '@/components/molecules/skeleton';
 import { buildClassNames } from '@/utils/component';
 
 interface PageSpinnerProps {
   message?: string;
   className?: string;
-  variant?: 'full-page' | 'content-area' | 'minimal';
+  variant?: 'full-page' | 'content-area' | 'minimal' | 'register';
   showSkeleton?: boolean;
 }
 
@@ -33,6 +34,7 @@ export const PageSpinner: React.FC<PageSpinnerProps> = ({
     variant === 'full-page' && 'page-spinner--full-page',
     variant === 'content-area' && 'page-spinner--content-area',
     variant === 'minimal' && 'page-spinner--minimal',
+    variant === 'register' && 'page-spinner--register',
     className,
   );
 
@@ -60,6 +62,18 @@ export const PageSpinner: React.FC<PageSpinnerProps> = ({
         <div className="d-flex align-items-center justify-content-center py-4">
           <Spinner size="sm" color="primary" />
           <span className="ms-2 text-muted">{message}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === 'register') {
+    return (
+      <div className={spinnerClasses}>
+        <div className="d-flex w-100 flex-column align-items-center justify-content-center py-4">
+          <Spinner size="sm" color="primary" />
+          <span className="ms-2 text-muted">{message}</span>
+          <FormSkeleton fields={4} />
         </div>
       </div>
     );
@@ -119,7 +133,7 @@ export const ProfilePageSpinner: React.FC = () => (
 );
 
 export const AuthPageSpinner: React.FC = () => (
-  <PageSpinner message="Loading..." variant="minimal" />
+  <PageSpinner message="Loading..." variant="register" />
 );
 
 export default PageSpinner;

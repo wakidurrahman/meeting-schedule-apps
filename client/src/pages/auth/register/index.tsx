@@ -6,7 +6,7 @@
  *
  * Visual structure
  * - Card layout with three inputs: "name", "email", "password".
- * - Submit button centered; inline error alert shows server errors when present.
+ * - Submit button; inline error alert shows server errors when present.
  * - Real-time password validation feedback with detailed requirements list.
  *
  * Form state management (React Hook Form + Zod)
@@ -44,6 +44,7 @@
  * - Password requirements clearly displayed with real-time feedback
  * - Dev tools: RHF DevTool is rendered only in non‑production builds
  */
+
 import { useMutation } from '@apollo/client';
 import { DevTool } from '@hookform/devtools';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,12 +53,14 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import LogoImage from '@/assets/images/logos/android-chrome-192x192.png';
 import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
-import Heading from '@/components/atoms/heading';
+import Image from '@/components/atoms/image';
 import TextField from '@/components/atoms/text-field';
 import Card from '@/components/molecules/card';
 import BaseTemplate from '@/components/templates/base-templates';
+import { ToastMessages as TM } from '@/constants/messages';
 import { REGISTER, type RegisterMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
 import type { UserRegisterInput } from '@/types/user';
@@ -67,7 +70,7 @@ import {
   type PasswordValidationResult,
 } from '@/utils/validation';
 
-export default function Register(): JSX.Element {
+const Register: React.FC = () => {
   // Navigate user to login page after successful registration
   const navigate = useNavigate();
   // Toast
@@ -76,13 +79,13 @@ export default function Register(): JSX.Element {
   type FormValues = z.infer<typeof RegisterSchema>;
 
   // Password validation state
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState<string>('');
+  const [passwordTouched, setPasswordTouched] = useState<boolean>(false);
   const [passwordValidationResults, setPasswordValidationResults] = useState<
     PasswordValidationResult[]
   >([]);
-  const [passwordTouched, setPasswordTouched] = useState(false);
 
-  // RHF instance
+  // React Hook Form instance
   const {
     register, // RHF register function
     handleSubmit, // RHF handle submit function
@@ -90,10 +93,15 @@ export default function Register(): JSX.Element {
     watch, // RHF watch function
     formState: { errors, isSubmitting, isDirty, isValid }, // RHF form state
   } = useForm<FormValues>({
-    resolver: zodResolver(RegisterSchema),
+    resolver: zodResolver(RegisterSchema), // Zod resolver
     mode: 'onChange', // validate on change
     criteriaMode: 'all', // validate all fields
     shouldFocusError: true, // focus on the first error
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
   });
 
   // Watch for password changes
@@ -102,32 +110,35 @@ export default function Register(): JSX.Element {
   // Update local state when password changes
   useEffect(() => {
     setPassword(watchPassword || '');
-  }, [watchPassword]);
+  }, [watchPassword]); // Watch password changes
 
   // Validate password as user types
   useEffect(() => {
     if (!password) {
+      // If password is empty
       setPasswordValidationResults([]);
       return;
     }
 
     if (!passwordTouched) {
+      // If password is not touched
       setPasswordTouched(true);
     }
 
     const results = validatePassword(password);
     setPasswordValidationResults(results);
   }, [password, passwordTouched]);
+
   // Register mutation hook with Apollo Client
   const [registerMutation, { loading, error }] = useMutation<
-    RegisterMutationData,
-    { input: UserRegisterInput }
+    RegisterMutationData, // Register mutation data type
+    { input: UserRegisterInput } // Register mutation input type
   >(REGISTER, {
     onCompleted: () => {
       addSuccess({
-        title: 'Registration Successful!',
-        subtitle: 'just now',
-        children: 'Account created successfully. Attempting auto-login...',
+        title: TM.registrationSuccessfulTitle,
+        subtitle: TM.registrationSuccessfulSubtitle,
+        children: TM.registrationSuccessfulChildren,
         autohide: true,
         delay: 3000,
       });
@@ -135,31 +146,43 @@ export default function Register(): JSX.Element {
     },
     onError: (error) => {
       addError({
-        title: 'Registration Failed!',
-        subtitle: 'just now',
+        title: TM.registrationFailedTitle,
+        subtitle: TM.registrationFailedSubtitle,
         children: error.message,
       });
     },
   });
 
   const onSubmit = (values: FormValues) => {
-    console.log('register values', values);
     registerMutation({ variables: { input: values } });
   };
-
-  console.log('passwordValidationResults', passwordValidationResults);
 
   return (
     <BaseTemplate>
       <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
+        <div
+          className="row justify-content-center align-items-center"
+          style={{ minHeight: 'calc(100vh - 172px)' }}
+        >
+          <div className="col-12 col-sm-8 col-md-7 col-lg-5 col-xl-4">
             {/* Register card */}
             <Card className="border-0">
               <Card.Body className="border-0">
-                <Heading level={5} className="mb-3">
-                  Start your free user account.
-                </Heading>
+                <Image
+                  src={LogoImage}
+                  loading="lazy"
+                  width={80}
+                  height={80}
+                  alt="X-Scheduler Apps"
+                  objectFit="contain"
+                />
+                <Card.Title level={4} className="mt-3">
+                  Get Started
+                </Card.Title>
+                <Card.Text className="text-muted fs-6">
+                  Welcome to X-Scheduler - Let&apos;s create your account.
+                </Card.Text>
+                <hr className="my-3" />
                 {/* Register form */}
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
                   <TextField
@@ -167,7 +190,6 @@ export default function Register(): JSX.Element {
                     placeholder="Enter your name"
                     disabled={loading}
                     error={errors.name?.message}
-                    helpText="Please enter your name"
                     {...register('name')}
                   />
                   <TextField
@@ -176,7 +198,6 @@ export default function Register(): JSX.Element {
                     placeholder="Enter your email"
                     disabled={loading}
                     error={errors.email?.message}
-                    helpText="Please enter your email. Example email: zain@example.com"
                     isDirty={isDirty}
                     isValid={isValid}
                     {...register('email')}
@@ -204,16 +225,16 @@ export default function Register(): JSX.Element {
                           {passwordValidationResults.map((result, index) => (
                             <li
                               key={`password-validation-${index}`}
-                              className="list-group-item small border-0"
+                              className="list-group-item small border-0 px-0"
                             >
                               <i
                                 className={`me-2 ${
                                   result.status
-                                    ? 'bi bi-check-circle-fill text-success'
-                                    : 'bi bi-x-circle-fill text-danger'
+                                    ? 'bi bi-check-circle-fill text-secondary'
+                                    : 'bi bi-check-circle-fill text-muted'
                                 }`}
                               ></i>
-                              <span className={result.status ? 'text-success' : 'text-danger'}>
+                              <span className={result.status ? 'text-secondary' : 'text-muted'}>
                                 {result.errorMessage}
                               </span>
                             </li>
@@ -225,7 +246,7 @@ export default function Register(): JSX.Element {
                   {/* Error message from server state */}
                   {error && <Alert variant="danger">{error.message}</Alert>}
                   {/* Submit button */}
-                  <div className="d-flex justify-content-center mt-5">
+                  <div className="d-flex justify-content-center mt-4">
                     <Button
                       type="submit"
                       className="w-100 shadow-sm"
@@ -269,4 +290,6 @@ export default function Register(): JSX.Element {
       </div>
     </BaseTemplate>
   );
-}
+};
+
+export default Register;
