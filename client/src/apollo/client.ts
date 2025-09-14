@@ -394,14 +394,14 @@ export const apolloClient = new ApolloClient({
   link: from([authLink, httpLink]),
 
   cache,
-  defaultOptions,
+  // defaultOptions,
 
   // Enable Apollo DevTools in development
-  connectToDevTools: import.meta.env.DEV,
+  connectToDevTools: true,
 
   // Additional options
-  assumeImmutableResults: true, // Optimize for immutable data
-  queryDeduplication: true, // Deduplicate identical queries
+  //assumeImmutableResults: true, // Optimize for immutable data
+  //queryDeduplication: true, // Deduplicate identical queries
 });
 
 /**
