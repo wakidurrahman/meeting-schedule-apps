@@ -834,25 +834,25 @@
 
   .o-calendar-grid__year-month {
     background: var(--bs-white);
-    border: 1px solid var(--calendar-border-color);
+    // border: 1px solid var(--calendar-border-color);
     border-radius: var(--bs-border-radius);
     overflow: hidden;
     transition: all 0.2s ease;
-    box-shadow: var(--bs-box-shadow-sm);
+    // box-shadow: var(--bs-box-shadow-sm);
 
     &:hover {
-      box-shadow: var(--bs-box-shadow);
+      // box-shadow: var(--bs-box-shadow);
       transform: translateY(-2px);
     }
   }
 
   .o-calendar-grid__year-month-header {
     display: flex;
-    justify-content: space-between;
+    gap: 0.5rem;
     align-items: center;
     padding: 0.75rem 1rem;
-    background: var(--calendar-header-bg);
-    border-bottom: 1px solid var(--calendar-border-color);
+    // background: var(--calendar-header-bg);
+    // border-bottom: 1px solid var(--calendar-border-color);
   }
 
   .o-calendar-grid__year-month-title {
@@ -866,12 +866,12 @@
   }
 
   .o-calendar-grid__year-month-badge {
-    background: var(--bs-primary);
+    background: var(--bs-secondary);
     color: var(--bs-white);
     font-size: 0.75rem;
     font-weight: 500;
     padding: 0.25rem 0.5rem;
-    border-radius: var(--bs-border-radius-pill);
+    border-radius: 0.5rem;
     min-width: 1.25rem;
     text-align: center;
   }

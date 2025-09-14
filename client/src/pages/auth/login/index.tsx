@@ -35,6 +35,7 @@ import Image from '@/components/atoms/image';
 import TextField from '@/components/atoms/text-field';
 import Card from '@/components/molecules/card';
 import BaseTemplate from '@/components/templates/base-templates';
+import { ToastMessages as TM } from '@/constants/messages';
 import { useAuthContext } from '@/context/AuthContext';
 import { LOGIN, type LoginMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
@@ -69,9 +70,9 @@ export default function Login(): JSX.Element {
       const { token, user } = data.login;
       setAuth(token, user);
       addSuccess({
-        title: 'Login Successful!',
-        subtitle: 'just now',
-        children: 'Welcome back!',
+        title: TM.loginSuccessfulTitle,
+        subtitle: TM.loginSuccessfulSubtitle,
+        children: TM.loginSuccessfulChildren,
         autohide: true,
         delay: 3000,
       });
@@ -79,12 +80,13 @@ export default function Login(): JSX.Element {
     },
     onError: (error) => {
       addError({
-        title: 'Login Failed!',
-        subtitle: 'just now',
+        title: TM.loginFailedTitle,
+        subtitle: TM.loginFailedSubtitle,
         children: error.message,
       });
     },
   });
+
   const onSubmit = (values: FormValues) => {
     loginMutation({ variables: { input: values } });
   };
