@@ -324,9 +324,13 @@ const graphqlUri = getGraphQLUri();
  * Creates the HTTP connection to the GraphQL server endpoint.
  * Uses environment variable for production deployment or falls back to relative path for `development`.
  */
+// const httpLink = new HttpLink({
+//   uri: graphqlUri,
+//   useGETForQueries: false, // Use POST for queries (cleaner URLs)
+// });
+
 const httpLink = new HttpLink({
-  uri: graphqlUri,
-  useGETForQueries: false, // Use POST for queries (cleaner URLs)
+  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
 });
 
 /**
@@ -387,14 +391,7 @@ export const apolloClient = new ApolloClient({
   // Link chain: auth -> persisted queries -> http
   // Note: Temporarily disable batching to avoid "Must provide query string" errors
   // Re-enable batching after testing in production
-  link: from([
-    authLink,
-    // persistedQueriesLink,
-    // Always use httpLink for now to avoid batching issues in production
-    // TODO: Re-enable batching once production environment is stable
-    httpLink,
-    // import.meta.env.PROD ? batchLink : httpLink,
-  ]),
+  link: from([authLink, httpLink]),
 
   cache,
   defaultOptions,
