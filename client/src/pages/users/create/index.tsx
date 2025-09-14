@@ -17,7 +17,6 @@ import { paths } from '@/constants/paths';
 import { CREATE_USER, type CreateUserData, type CreateUserInput } from '@/graphql/user/mutations';
 import { GET_USERS } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
-
 import { CreateUserSchema } from '@/utils/validation';
 
 export default function CreateUserPage(): JSX.Element {

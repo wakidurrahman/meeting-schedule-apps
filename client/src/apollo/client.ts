@@ -298,7 +298,7 @@ const authLink = setContext((_, { headers }) => {
  */
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
-  useGETForQueries: true, // Use GET for queries (CDN-friendly)
+  useGETForQueries: false, // Use POST for queries (cleaner URLs)
 });
 
 /**
@@ -321,7 +321,7 @@ const batchLink = new BatchHttpLink({
  */
 const persistedQueriesLink = createPersistedQueryLink({
   sha256,
-  useGETForHashedQueries: true, // Use GET for hashed queries (CDN-friendly)
+  useGETForHashedQueries: false, // Use POST for cleaner URLs and better debugging
 });
 
 /**

@@ -18,7 +18,6 @@ import { paths } from '@/constants/paths';
 import { UPDATE_USER, type UpdateUserData, type UpdateUserInput } from '@/graphql/user/mutations';
 import { GET_USER, GET_USERS, type UserQueryData } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
-
 import { UpdateUserSchema } from '@/utils/validation';
 
 export default function EditUserPage(): JSX.Element {
