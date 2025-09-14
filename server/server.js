@@ -49,6 +49,10 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 const allowedOrigins = [
   'http://localhost:5173', // Development server
   'http://localhost:4173', // Production preview server (vite preview)
+  'http://localhost:4174', // Production preview server (alternative port)
+  'http://localhost:4175', // Production preview server (alternative port)
+  'https://meeting-scheduler-apps.netlify.app', // Production Netlify domain
+  'https://deploy-preview-*--meeting-scheduler-apps.netlify.app', // Netlify deploy previews
   CLIENT_ORIGIN, // From environment variable
 ].filter(Boolean); // Remove any undefined values
 
@@ -111,15 +115,24 @@ async function start() {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
+        // Check for exact matches
         if (allowedOrigins.indexOf(origin) !== -1) {
-          callback(null, true);
-        } else {
-          console.warn(
-            `⚠️ CORS blocked request from origin: ${origin}. Allowed origins:`,
-            allowedOrigins,
-          );
-          callback(new Error('Not allowed by CORS'));
+          return callback(null, true);
         }
+
+        // Check for Netlify deploy preview pattern
+        if (
+          origin &&
+          origin.match(/^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/)
+        ) {
+          return callback(null, true);
+        }
+
+        console.warn(
+          `⚠️ CORS blocked request from origin: ${origin}. Allowed origins:`,
+          allowedOrigins,
+        );
+        callback(new Error('Not allowed by CORS'));
       },
       credentials: true,
     }),
