@@ -45,6 +45,13 @@ const { errorHandler, normalizeError } = require('./middleware/error');
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
+// Allow multiple client origins for development and production builds
+const allowedOrigins = [
+  'http://localhost:5173', // Development server
+  'http://localhost:4173', // Production preview server (vite preview)
+  CLIENT_ORIGIN, // From environment variable
+].filter(Boolean); // Remove any undefined values
+
 async function start() {
   /**
    * Initialize database connection before accepting traffic.
@@ -96,8 +103,27 @@ async function start() {
 
   /**
    * Cross-origin resource sharing. Allows the front-end app to call this API with credentials.
+   * Supports multiple origins for development and production builds.
    */
-  app.use(cors({ origin: CLIENT_ORIGIN, credentials: true })); // Allow requests from the client app
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          console.warn(
+            `⚠️ CORS blocked request from origin: ${origin}. Allowed origins:`,
+            allowedOrigins,
+          );
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+    }),
+  );
 
   /**
    * Static file serving for uploaded images
