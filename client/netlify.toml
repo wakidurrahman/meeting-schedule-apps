@@ -85,11 +85,9 @@
 # ============================================================================
 [context.production.environment]
   VITE_ENVIRONMENT = "production"
-  VITE_GRAPHQL_URI = "https://meeting-scheduler-apps-production.up.railway.app/graphql"
 
 [context.deploy-preview.environment]
   VITE_ENVIRONMENT = "preview"
-  VITE_GRAPHQL_URI = "https://meeting-scheduler-apps-production.up.railway.app/graphql"
 
 [context.branch-deploy.environment]
   VITE_ENVIRONMENT = "development"
