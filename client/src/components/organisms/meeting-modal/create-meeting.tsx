@@ -73,11 +73,7 @@ import {
   type CreateMeetingMutation,
   type CreateMeetingMutationInput,
 } from '@/graphql/meeting/mutations';
-import {
-  CHECK_MEETING_CONFLICTS,
-  GET_MEETINGS,
-  type ConflictCheckQueryData,
-} from '@/graphql/meeting/queries';
+import { CHECK_MEETING_CONFLICTS, type ConflictCheckQueryData } from '@/graphql/meeting/queries';
 import { GET_USERS } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
 import { MeetingEvent } from '@/types/meeting';
@@ -166,8 +162,9 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     CreateMeetingMutation,
     CreateMeetingMutationInput
   >(CREATE_MEETING_EVENT, {
-    // Refetch queries to update UI immediately
-    refetchQueries: [{ query: GET_MEETINGS }],
+    // Let Apollo cache handle updates automatically - refetch all active queries
+    refetchQueries: [],
+    awaitRefetchQueries: false,
 
     // Success handler - transform data and close modal
     onCompleted: (data) => {

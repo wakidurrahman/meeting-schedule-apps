@@ -291,14 +291,46 @@ const authLink = setContext((_, { headers }) => {
 });
 
 /**
+ * GraphQL Server URI Configuration
+ *
+ * Priority order:
+ * 1. VITE_GRAPHQL_URI environment variable
+ * 2. Development proxy fallback (only works with vite dev server)
+ * 3. Production fallback (assumes server on same origin)
+ */
+const getGraphQLUri = (): string => {
+  // Always prefer the environment variable
+  if (import.meta.env.VITE_GRAPHQL_URI) {
+    return import.meta.env.VITE_GRAPHQL_URI;
+  }
+
+  // Development fallback - proxy handles this
+  if (import.meta.env.DEV) {
+    return '/graphql';
+  }
+
+  // Production fallback - you should set VITE_GRAPHQL_URI instead
+  console.warn(
+    '⚠️ VITE_GRAPHQL_URI not set. Using fallback. Set environment variable for production.',
+  );
+  return 'http://localhost:4000/graphql';
+};
+
+const graphqlUri = getGraphQLUri();
+
+/**
  * HTTP Link Configuration
  *
  * Creates the HTTP connection to the GraphQL server endpoint.
  * Uses environment variable for production deployment or falls back to relative path for `development`.
  */
+// const httpLink = new HttpLink({
+//   uri: graphqlUri,
+//   useGETForQueries: false, // Use POST for queries (cleaner URLs)
+// });
+
 const httpLink = new HttpLink({
   uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
-  useGETForQueries: true, // Use GET for queries (CDN-friendly)
 });
 
 /**
@@ -308,7 +340,7 @@ const httpLink = new HttpLink({
  * to reduce network overhead and improve performance.
  */
 const batchLink = new BatchHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+  uri: graphqlUri,
   batchInterval: 20, // Batch requests within 20ms window
   batchMax: 10, // Maximum 10 operations per batch
 });
@@ -321,7 +353,7 @@ const batchLink = new BatchHttpLink({
  */
 const persistedQueriesLink = createPersistedQueryLink({
   sha256,
-  useGETForHashedQueries: true, // Use GET for hashed queries (CDN-friendly)
+  useGETForHashedQueries: false, // Use POST for cleaner URLs and better debugging
 });
 
 /**
@@ -356,13 +388,10 @@ const defaultOptions: DefaultOptions = {
  * - Development tools integration
  */
 export const apolloClient = new ApolloClient({
-  // Link chain: auth -> persisted queries -> batch/http
-  link: from([
-    authLink,
-    persistedQueriesLink,
-    // Use batching in production, regular HTTP in development for easier debugging
-    import.meta.env.PROD ? batchLink : httpLink,
-  ]),
+  // Link chain: auth -> persisted queries -> http
+  // Note: Temporarily disable batching to avoid "Must provide query string" errors
+  // Re-enable batching after testing in production
+  link: from([authLink, httpLink]),
 
   cache,
   defaultOptions,
@@ -380,7 +409,8 @@ export const apolloClient = new ApolloClient({
  */
 if (import.meta.env.DEV) {
   console.log('🚀 Apollo Client Config:', {
-    graphqlUri: import.meta.env.VITE_GRAPHQL_URI,
+    graphqlUri: graphqlUri,
+    envGraphqlUri: import.meta.env.VITE_GRAPHQL_URI,
     environment: import.meta.env.VITE_ENVIRONMENT,
     isDev: import.meta.env.DEV,
     cacheConfig: {
@@ -391,14 +421,23 @@ if (import.meta.env.DEV) {
       authentication: '✅ JWT Bearer tokens',
       caching: '✅ Advanced type policies',
       pagination: '✅ Offset-based merging',
-      batching: import.meta.env.PROD ? '✅ Enabled' : '❌ Disabled (dev)',
-      persistedQueries: '✅ Enabled',
+      batching: '❌ Disabled (temporarily)',
+      persistedQueries: '❌ Disabled (temporarily)',
       devtools: '✅ Enabled',
     },
   });
 
   // Make apolloClient available globally for debugging
   window.apolloClient = apolloClient;
+}
+
+// Production logging for debugging
+if (import.meta.env.PROD) {
+  console.log('🚀 Production Apollo Client:', {
+    graphqlUri: graphqlUri,
+    hasEnvUri: !!import.meta.env.VITE_GRAPHQL_URI,
+    environment: import.meta.env.VITE_ENVIRONMENT || 'not-set',
+  });
 }
 
 /**

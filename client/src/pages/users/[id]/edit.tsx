@@ -55,10 +55,18 @@ export default function EditUserPage(): JSX.Element {
   // Update form when user data loads
   useEffect(() => {
     if (data?.user) {
+      const imageUrl = data.user.imageUrl;
+      const imageUrlString =
+        typeof imageUrl === 'string'
+          ? imageUrl
+          : imageUrl && typeof imageUrl === 'object'
+            ? imageUrl.medium || ''
+            : '';
+
       reset({
         name: data.user.name,
         email: data.user.email,
-        imageUrl: data.user.imageUrl || '',
+        imageUrl: imageUrlString,
         role: data.user.role as 'ADMIN' | 'USER',
       });
     }
@@ -224,22 +232,33 @@ export default function EditUserPage(): JSX.Element {
                         />
                       </div>
 
-                      {/* Image URL Field */}
+                      {/* Profile Image Upload */}
                       <div className="col-12">
                         <Controller
                           name="imageUrl"
                           control={control}
-                          render={({ field }) => (
-                            <TextField
-                              {...field}
-                              type="url"
-                              label="Profile Image URL"
-                              placeholder="https://example.com/avatar.jpg (optional)"
-                              error={errors.imageUrl?.message}
-                              disabled={updating || isSubmitting}
-                              helpText="Optional: Provide a URL for the user's profile image"
-                            />
-                          )}
+                          render={({ field }) => {
+                            const fieldValue = field.value;
+                            const stringValue =
+                              typeof fieldValue === 'string'
+                                ? fieldValue
+                                : fieldValue && typeof fieldValue === 'object'
+                                  ? fieldValue.medium || ''
+                                  : '';
+
+                            return (
+                              <TextField
+                                {...field}
+                                value={stringValue}
+                                type="url"
+                                label="Profile Image URL"
+                                placeholder="https://example.com/avatar.jpg (optional)"
+                                error={errors.imageUrl?.message}
+                                disabled={updating || isSubmitting}
+                                helpText="Optional: Provide a URL for the user's profile image"
+                              />
+                            );
+                          }}
                         />
                       </div>
                     </div>
@@ -269,10 +288,18 @@ export default function EditUserPage(): JSX.Element {
                         variant="secondary"
                         onClick={() => {
                           if (user) {
+                            const imageUrl = user.imageUrl;
+                            const imageUrlString =
+                              typeof imageUrl === 'string'
+                                ? imageUrl
+                                : imageUrl && typeof imageUrl === 'object'
+                                  ? imageUrl.medium || ''
+                                  : '';
+
                             reset({
                               name: user.name,
                               email: user.email,
-                              imageUrl: user.imageUrl || '',
+                              imageUrl: imageUrlString,
                               role: user.role as 'ADMIN' | 'USER',
                             });
                           }

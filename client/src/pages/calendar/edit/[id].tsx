@@ -42,11 +42,7 @@ import {
   type UpdateMeetingMutationData,
   type UpdateMeetingMutationVariables,
 } from '@/graphql/meeting/mutations';
-import {
-  GET_MEETING_BY_ID,
-  GET_MEETINGS,
-  type MeetingByIdQueryData,
-} from '@/graphql/meeting/queries';
+import { GET_MEETING_BY_ID, type MeetingByIdQueryData } from '@/graphql/meeting/queries';
 import { GET_USERS } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
 import { formatJSTDate } from '@/utils/date';
@@ -82,7 +78,8 @@ const EditMeetingPage: React.FC = () => {
     UpdateMeetingMutationData,
     UpdateMeetingMutationVariables
   >(UPDATE_MEETING, {
-    refetchQueries: [{ query: GET_MEETINGS }],
+    refetchQueries: [],
+    awaitRefetchQueries: false,
     onCompleted: (data) => {
       const meeting = data.updateMeeting;
       addSuccess({
@@ -105,7 +102,8 @@ const EditMeetingPage: React.FC = () => {
     DeleteMeetingMutationEvent,
     DeleteMeetingMutationEventInput
   >(DELETE_MEETING, {
-    refetchQueries: [{ query: GET_MEETINGS }],
+    refetchQueries: [],
+    awaitRefetchQueries: false,
     onCompleted: () => {
       addSuccess({
         title: 'Success',

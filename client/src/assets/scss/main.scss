@@ -201,3 +201,24 @@ body {
     background-color: var(--bs-gray-50);
   }
 }
+
+// Object-fit utilities for Image component
+.object-fit-fill {
+  object-fit: fill !important;
+}
+
+.object-fit-contain {
+  object-fit: contain !important;
+}
+
+.object-fit-cover {
+  object-fit: cover !important;
+}
+
+.object-fit-none {
+  object-fit: none !important;
+}
+
+.object-fit-scale-down {
+  object-fit: scale-down !important;
+}

@@ -70,7 +70,7 @@ export { ComponentName };
 ### React Hook Form + Zod Integration
 
 ```typescript
-// Schema definition
+// Schema definition and store into src/utils/validation.ts
 const userSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),

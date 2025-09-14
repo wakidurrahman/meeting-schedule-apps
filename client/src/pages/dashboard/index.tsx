@@ -10,7 +10,7 @@
  */
 
 import { useQuery } from '@apollo/client';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import Alert from '@/components/atoms/alert';
@@ -20,11 +20,11 @@ import Heading from '@/components/atoms/heading';
 import Spinner from '@/components/atoms/spinner';
 import Card from '@/components/molecules/card';
 import Table from '@/components/molecules/table';
-import Modal from '@/components/organisms/modal';
 import MeetingDashboardTemplate from '@/components/templates/dashboard/meeting-dashboard';
 import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import type { MeetingEvent } from '@/types/meeting';
 import { formatCalendarDate } from '@/utils/calendar';
+import { cloneDate, now } from '@/utils/date';
 import { formatAttendeeList, formatMeetingTimeRange, getMeetingStatus } from '@/utils/meeting';
 
 interface MeetingsQueryData {
@@ -44,14 +44,6 @@ interface MeetingsQueryData {
 }
 
 const DashboardPage: React.FC = () => {
-  // Authentication and notifications (commented out until context is available)
-  // const { user } = useAuth();
-  // const { addToast } = useToast();
-
-  // Modal state
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  // const [selectedMeeting, setSelectedMeeting] = useState<MeetingEvent | null>(null);
-
   // Fetch meetings
   const {
     data: meetingsData,
@@ -59,7 +51,7 @@ const DashboardPage: React.FC = () => {
     error: meetingsError,
     refetch: refetchMeetings,
   } = useQuery<MeetingsQueryData>(GET_MEETINGS, {
-    // errorPolicy: 'partial',
+    errorPolicy: 'all',
   });
 
   // Transform and organize meetings
@@ -73,21 +65,21 @@ const DashboardPage: React.FC = () => {
         id: meeting.id,
         title: meeting.title,
         description: meeting.description,
-        startTime: new Date(meeting.startTime),
-        endTime: new Date(meeting.endTime),
+        startTime: cloneDate(meeting.startTime),
+        endTime: cloneDate(meeting.endTime),
         attendees: meeting.attendees?.map((a) => ({ id: a.id, name: a.name })) || [],
       }),
     );
 
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    const weekEnd = new Date(weekStart);
+    const currentDate = now();
+    const weekStart = cloneDate(currentDate);
+    weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+    const weekEnd = cloneDate(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
 
     const stats = {
       total: transformedMeetings.length,
-      upcoming: transformedMeetings.filter((m) => m.startTime > now).length,
+      upcoming: transformedMeetings.filter((m) => m.startTime > currentDate).length,
       ongoing: transformedMeetings.filter((m) => getMeetingStatus(m) === 'ongoing').length,
       thisWeek: transformedMeetings.filter(
         (m) => m.startTime >= weekStart && m.startTime <= weekEnd,
@@ -99,9 +91,9 @@ const DashboardPage: React.FC = () => {
 
   // Upcoming meetings (next 5)
   const upcomingMeetings = useMemo(() => {
-    const now = new Date();
+    const currentDate = now();
     return meetings
-      .filter((meeting) => meeting.startTime > now)
+      .filter((meeting) => meeting.startTime > currentDate)
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
       .slice(0, 5);
   }, [meetings]);
@@ -110,27 +102,6 @@ const DashboardPage: React.FC = () => {
   const recentMeetings = useMemo(() => {
     return meetings.sort((a, b) => b.startTime.getTime() - a.startTime.getTime()).slice(0, 10);
   }, [meetings]);
-
-  // Event handlers
-  const handleMeetingClick = useCallback((meeting: MeetingEvent) => {
-    // setSelectedMeeting(meeting);
-    // Navigate to meeting details or show modal
-    console.log('View meeting:', meeting);
-  }, []);
-
-  const handleCreateMeeting = useCallback(() => {
-    setShowCreateModal(true);
-  }, []);
-
-  const handleEditMeeting = useCallback((meeting: MeetingEvent) => {
-    // Navigate to edit page
-    console.log('Edit meeting:', meeting);
-  }, []);
-
-  // const handleDeleteMeeting = useCallback((meeting: MeetingEvent) => {
-  //   // Show confirmation and delete
-  //   console.log('Delete meeting:', meeting);
-  // }, []);
 
   // Dashboard header with stats
   const dashboardHeader = useMemo(
@@ -142,16 +113,6 @@ const DashboardPage: React.FC = () => {
               Meeting Dashboard
             </Heading>
             <p className="text-muted mb-0">Manage your meetings and view upcoming events</p>
-          </div>
-          <div className="d-flex gap-2">
-            <Link to="/calendar" className="btn btn-outline-primary">
-              <i className="bi bi-calendar me-1" />
-              View Calendar
-            </Link>
-            <Button variant="primary" onClick={handleCreateMeeting}>
-              <i className="bi bi-plus-lg me-1" />
-              New Meeting
-            </Button>
           </div>
         </div>
 
@@ -192,7 +153,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
     ),
-    [stats, handleCreateMeeting],
+    [stats],
   );
 
   // Main dashboard content
@@ -279,63 +240,20 @@ const DashboardPage: React.FC = () => {
       },
     ];
 
-    // Table actions
-    const actions = [
-      {
-        label: 'View',
-        variant: 'outline-primary' as const,
-        onClick: (row: (typeof tableData)[0]) => handleMeetingClick(row._original),
-      },
-      {
-        label: 'Edit',
-        variant: 'outline-secondary' as const,
-        onClick: (row: (typeof tableData)[0]) => handleEditMeeting(row._original),
-      },
-    ];
-
     return (
-      <Card>
-        <Card.Header>
-          <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">Recent Meetings</h5>
-            <Button variant="outline-primary" size="sm" onClick={() => refetchMeetings()}>
-              <i className="bi bi-arrow-clockwise me-1" />
-              Refresh
-            </Button>
+      <>
+        {tableData.length > 0 ? (
+          <Table data={tableData} columns={columns} loading={false} />
+        ) : (
+          <div className="text-center py-4">
+            <i className="bi bi-calendar-x fs-1 text-muted mb-3 d-block" />
+            <h6>No Meetings Found</h6>
+            <p className="text-muted mb-3">Get started by creating your first meeting.</p>
           </div>
-        </Card.Header>
-        <Card.Body className="p-0">
-          {tableData.length > 0 ? (
-            <Table
-              data={tableData}
-              columns={columns}
-              rowActions={() => actions}
-              loading={false}
-              // className="mb-0"
-            />
-          ) : (
-            <div className="text-center py-4">
-              <i className="bi bi-calendar-x fs-1 text-muted mb-3 d-block" />
-              <h6>No Meetings Found</h6>
-              <p className="text-muted mb-3">Get started by creating your first meeting.</p>
-              <Button variant="primary" onClick={handleCreateMeeting}>
-                <i className="bi bi-plus-lg me-1" />
-                Create Meeting
-              </Button>
-            </div>
-          )}
-        </Card.Body>
-      </Card>
+        )}
+      </>
     );
-  }, [
-    meetingsLoading,
-    meetingsError,
-    recentMeetings,
-    handleMeetingClick,
-    handleEditMeeting,
-    handleCreateMeeting,
-    refetchMeetings,
-  ]);
+  }, [meetingsLoading, meetingsError, recentMeetings, refetchMeetings]);
 
   // Quick actions sidebar
   const quickActions = useMemo(
@@ -348,10 +266,6 @@ const DashboardPage: React.FC = () => {
           </Card.Header>
           <Card.Body>
             <div className="d-grid gap-2">
-              <Button variant="primary" onClick={handleCreateMeeting}>
-                <i className="bi bi-plus-lg me-1" />
-                New Meeting
-              </Button>
               <Link to="/calendar" className="btn btn-outline-primary">
                 <i className="bi bi-calendar me-1" />
                 View Calendar
@@ -376,13 +290,12 @@ const DashboardPage: React.FC = () => {
                   <div
                     key={meeting.id}
                     className="p-2 bg-light rounded cursor-pointer"
-                    onClick={() => handleMeetingClick(meeting)}
+                    onClick={() => {}}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        handleMeetingClick(meeting);
                       }
                     }}
                   >
@@ -403,29 +316,7 @@ const DashboardPage: React.FC = () => {
         </Card>
       </div>
     ),
-    [upcomingMeetings, handleCreateMeeting, handleMeetingClick, refetchMeetings],
-  );
-
-  // Modal placeholder
-  const modals = useMemo(
-    () => (
-      <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Create New Meeting</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="text-center py-4">
-            <i className="bi bi-calendar-plus fs-1 text-primary mb-3 d-block" />
-            <h5>Meeting Creation Modal</h5>
-            <p className="text-muted mb-4">This will be the meeting creation form component.</p>
-            <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
-              Close
-            </Button>
-          </div>
-        </Modal.Body>
-      </Modal>
-    ),
-    [showCreateModal],
+    [upcomingMeetings, refetchMeetings],
   );
 
   // Render using MeetingDashboardTemplate
@@ -434,7 +325,6 @@ const DashboardPage: React.FC = () => {
       dashboardHeader={dashboardHeader}
       mainContent={mainContent}
       quickActions={quickActions}
-      modals={modals}
       showQuickActions={true}
     />
   );
