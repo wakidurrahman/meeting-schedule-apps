@@ -17,6 +17,7 @@ import { DELETE_USER, type DeleteUserData } from '@/graphql/user/mutations';
 import { GET_USER, GET_USERS, type UserQueryData } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
 import { formatJST } from '@/utils/date';
+import { getImageUrl } from '@/utils/image-utils';
 
 export default function UserDetailPage(): JSX.Element {
   const navigate = useNavigate();
@@ -124,7 +125,7 @@ export default function UserDetailPage(): JSX.Element {
                 {/* Profile Image */}
                 {user.imageUrl ? (
                   <Card.Image
-                    src={user.imageUrl}
+                    src={getImageUrl(user.imageUrl, 'medium') || ''}
                     alt={user.name}
                     position="top"
                     onError={(e) => {

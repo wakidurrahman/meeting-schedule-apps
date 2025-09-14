@@ -168,6 +168,7 @@ export default function CreateUserPage(): JSX.Element {
                         render={({ field }) => (
                           <TextField
                             {...field}
+                            value={typeof field.value === 'string' ? field.value : ''}
                             type="url"
                             label="Profile Image URL"
                             placeholder="https://example.com/avatar.jpg (optional)"

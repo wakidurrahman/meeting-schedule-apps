@@ -28,6 +28,11 @@ const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const multer = require('multer');
+
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
@@ -39,6 +44,13 @@ const { errorHandler, normalizeError } = require('./middleware/error');
 
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+
+// Allow multiple client origins for development and production builds
+const allowedOrigins = [
+  'http://localhost:5173', // Development server
+  'http://localhost:4173', // Production preview server (vite preview)
+  CLIENT_ORIGIN, // From environment variable
+].filter(Boolean); // Remove any undefined values
 
 async function start() {
   /**
@@ -91,8 +103,33 @@ async function start() {
 
   /**
    * Cross-origin resource sharing. Allows the front-end app to call this API with credentials.
+   * Supports multiple origins for development and production builds.
    */
-  app.use(cors({ origin: CLIENT_ORIGIN, credentials: true })); // Allow requests from the client app
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+          callback(null, true);
+        } else {
+          console.warn(
+            `⚠️ CORS blocked request from origin: ${origin}. Allowed origins:`,
+            allowedOrigins,
+          );
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+    }),
+  );
+
+  /**
+   * Static file serving for uploaded images
+   */
+  const uploadsPath = path.join(__dirname, '..', 'client', 'public', 'uploads');
+  app.use('/uploads', express.static(uploadsPath));
 
   /**
    * JSON body parsing for GraphQL POST requests.
@@ -104,6 +141,104 @@ async function start() {
    * Should populate `req.user` when a valid token is presented; resolvers can read from context.
    */
   app.use(authMiddleware);
+
+  /**
+   * Image Upload Configuration
+   */
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(__dirname, '..', 'client', 'public', 'uploads', 'users');
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      // Only allow image files
+      const allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only JPEG, PNG, and WebP are allowed.'));
+      }
+    },
+  });
+
+  /**
+   * Image Upload Endpoint
+   * POST /api/upload/image
+   * Processes uploaded image, creates multiple sizes, and returns URLs
+   */
+  app.post('/api/upload/image', upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No file uploaded',
+        });
+      }
+
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          error: 'User ID is required',
+        });
+      }
+
+      // Ensure uploads directory exists
+      try {
+        await fs.mkdir(uploadsDir, { recursive: true });
+      } catch (err) {
+        // Directory might already exist, ignore error
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const filename = `${userId}-${timestamp}`;
+      const fileExtension = '.jpg'; // Always convert to JPEG for consistency
+
+      // Define sizes
+      const sizes = {
+        thumb: 64,
+        small: 150,
+        medium: 300,
+      };
+
+      const imageUrls = {};
+
+      // Process and save each size
+      for (const [sizeName, dimension] of Object.entries(sizes)) {
+        const outputFilename = `${filename}-${sizeName}${fileExtension}`;
+        const outputPath = path.join(uploadsDir, outputFilename);
+
+        await sharp(req.file.buffer)
+          .resize(dimension, dimension, {
+            fit: 'cover',
+            position: 'center',
+          })
+          .jpeg({
+            quality: 80,
+            progressive: true,
+          })
+          .toFile(outputPath);
+
+        imageUrls[sizeName] = `/uploads/users/${outputFilename}`;
+      }
+
+      res.json({
+        success: true,
+        imageUrl: imageUrls,
+      });
+    } catch (error) {
+      console.error('Image upload error:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Failed to process image',
+      });
+    }
+  });
 
   /**
    * Build a GraphQL schema from SDL. `typeDefs` should be a valid GraphQL SDL string.

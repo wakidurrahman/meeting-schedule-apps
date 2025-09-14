@@ -28,12 +28,14 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
+import LogoImage from '@/assets/images/logos/android-chrome-192x192.png';
 import Alert from '@/components/atoms/alert';
 import Button from '@/components/atoms/button';
-import Heading from '@/components/atoms/heading';
+import Image from '@/components/atoms/image';
 import TextField from '@/components/atoms/text-field';
 import Card from '@/components/molecules/card';
 import BaseTemplate from '@/components/templates/base-templates';
+import { ToastMessages as TM } from '@/constants/messages';
 import { useAuthContext } from '@/context/AuthContext';
 import { LOGIN, type LoginMutationData } from '@/graphql/auth/mutations';
 import { useToast } from '@/hooks/use-toast';
@@ -68,9 +70,9 @@ export default function Login(): JSX.Element {
       const { token, user } = data.login;
       setAuth(token, user);
       addSuccess({
-        title: 'Login Successful!',
-        subtitle: 'just now',
-        children: 'Welcome back!',
+        title: TM.loginSuccessfulTitle,
+        subtitle: TM.loginSuccessfulSubtitle,
+        children: TM.loginSuccessfulChildren,
         autohide: true,
         delay: 3000,
       });
@@ -78,12 +80,13 @@ export default function Login(): JSX.Element {
     },
     onError: (error) => {
       addError({
-        title: 'Login Failed!',
-        subtitle: 'just now',
+        title: TM.loginFailedTitle,
+        subtitle: TM.loginFailedSubtitle,
         children: error.message,
       });
     },
   });
+
   const onSubmit = (values: FormValues) => {
     loginMutation({ variables: { input: values } });
   };
@@ -91,19 +94,33 @@ export default function Login(): JSX.Element {
   return (
     <BaseTemplate>
       <div className="container">
-        <div className="row justify-content-center">
+        <div
+          className="row justify-content-center align-items-center"
+          style={{ minHeight: 'calc(100vh - 172px)' }}
+        >
           <div className="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
             <Card className="border-0">
               <Card.Body>
-                <Heading level={5} className="mb-3">
+                <Image
+                  src={LogoImage}
+                  loading="lazy"
+                  width={80}
+                  height={80}
+                  alt="X-Scheduler Apps"
+                  objectFit="contain"
+                />
+                <Card.Title level={4} className="mt-3">
                   Login
-                </Heading>
+                </Card.Title>
+                <Card.Text className="text-muted fs-6">
+                  Welcome back! Please enter your email and password to sign in.
+                </Card.Text>
+                <hr className="my-3" />
                 <form onSubmit={handleSubmit(onSubmit)} noValidate>
                   <TextField
                     type="email"
                     label="Email"
                     placeholder="Enter your email"
-                    required
                     error={errors.email?.message}
                     {...register('email')}
                   />
@@ -111,19 +128,18 @@ export default function Login(): JSX.Element {
                     type="password"
                     label="Password"
                     placeholder="Enter your password"
-                    required
                     error={errors.password?.message}
                     {...register('password')}
                   />
                   {error && <Alert variant="danger">{error.message}</Alert>}
-                  <div className="d-flex justify-content-center mt-5">
+                  <div className="d-flex justify-content-center mt-4">
                     <Button
                       type="submit"
                       className="w-100 shadow-sm"
                       variant="primary"
                       disabled={loading || isSubmitting}
                     >
-                      {loading ? 'Loading...' : 'Log In'}
+                      {loading ? 'Loading...' : 'Sign In'}
                     </Button>
                   </div>
                 </form>

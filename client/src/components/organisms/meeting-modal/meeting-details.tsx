@@ -103,7 +103,6 @@ import {
   type DeleteMeetingMutationEvent,
   type DeleteMeetingMutationEventInput,
 } from '@/graphql/meeting/mutations';
-import { GET_MEETINGS } from '@/graphql/meeting/queries';
 import { useToast } from '@/hooks/use-toast';
 import type { MeetingEvent } from '@/types/meeting';
 import { formatJST } from '@/utils/date';
@@ -162,8 +161,9 @@ const MeetingDetailsModal: React.FC<MeetingDetailsModalProps> = ({
     DeleteMeetingMutationEvent,
     DeleteMeetingMutationEventInput
   >(DELETE_MEETING, {
-    // Automatically refresh meeting list after deletion
-    refetchQueries: [{ query: GET_MEETINGS }],
+    // Let Apollo cache handle updates automatically
+    refetchQueries: [],
+    awaitRefetchQueries: false,
 
     // Success handler - cleanup and user feedback
     onCompleted: () => {
