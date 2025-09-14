@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import Button from '@/components/atoms/button';
-import FilePondUploader, { FilePondAvatar } from '@/components/atoms/filepond-uploader';
 import TextField from '@/components/atoms/text-field';
 import BaseTemplate from '@/components/templates/base-templates';
 import { useAuthContext, useAuthUser } from '@/context/AuthContext';
-import type { ImageUploadResult } from '@/types/user';
 
 export default function Profile(): JSX.Element {
   const authUser = useAuthUser();
@@ -14,41 +12,27 @@ export default function Profile(): JSX.Element {
   const [email] = useState(authUser.email);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [uploadedImage, setUploadedImage] = useState(authUser.imageUrl);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const currentImage = uploadedImage || authUser.imageUrl;
+  const avatarUrl = useMemo(() => {
+    // Placeholder avatar using first letter
+    const letter = (authUser.name || 'U').charAt(0).toUpperCase();
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(letter)}&background=random`;
+  }, [authUser.name]);
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-
-    try {
-      // TODO: Wire to backend mutation when available
-      // Include uploadedImage in the update payload
-      const profileData = {
-        name,
-        imageUrl: uploadedImage,
-      };
-
-      console.log('Profile update payload:', profileData);
-      await new Promise((r) => setTimeout(r, 600));
-      setMessage('Profile updated successfully! (Development mode: saved locally)');
-    } catch (error) {
-      setMessage('Failed to update profile. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
+    // TODO: Wire to backend mutation when available
+    await new Promise((r) => setTimeout(r, 600));
+    setIsSaving(false);
+    setMessage('Profile updated (local only for now)');
   };
 
-  const handleImageUploadSuccess = (result: ImageUploadResult) => {
-    if (result.success && result.imageUrl) {
-      setUploadedImage(result.imageUrl);
-      setMessage('Profile image uploaded successfully!');
-    }
-  };
-
-  const handleImageUploadError = (error: string) => {
-    setMessage(`Image upload failed: ${error}`);
+  const onUpload = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+    setMessage(`Selected file: ${file.name} (upload wiring pending)`);
   };
 
   const onDelete = async () => {
@@ -61,22 +45,18 @@ export default function Profile(): JSX.Element {
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-8 col-lg-6">
-            <h2 className="mb-4">Your Profile</h2>
-
-            {/* Profile Header with Avatar */}
-            <div className="d-flex align-items-center gap-4 mb-4 p-3 bg-light rounded">
-              <FilePondAvatar
-                imageUrl={currentImage}
-                name={authUser.name}
-                size="xl"
-                className="border border-2 border-white shadow-sm"
+            <h2 className="mb-3">Your Profile</h2>
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <img
+                src={avatarUrl}
+                alt="Avatar"
+                width={64}
+                height={64}
+                className="rounded-circle border"
               />
-              <div className="flex-grow-1">
+              <div>
                 <div className="small text-muted">Logged in as</div>
-                <div className="fw-medium">{authUser.email}</div>
-                <div className="small text-muted mt-1">
-                  {currentImage ? 'Custom profile image' : 'Using default avatar'}
-                </div>
+                <div>{authUser.email}</div>
               </div>
             </div>
 
@@ -89,47 +69,18 @@ export default function Profile(): JSX.Element {
               />
               <TextField label="Email" value={email} readOnly disabled />
 
-              {/* Image Upload Section */}
-              <div className="mb-4">
-                <div className="form-label mb-3">
-                  Profile Picture
-                  <small className="text-muted ms-2">
-                    (Development mode: images saved locally)
-                  </small>
-                </div>
-                <div className="row">
-                  <div className="col-md-6">
-                    <FilePondUploader
-                      userId={authUser.id}
-                      currentImage={currentImage}
-                      onUploadSuccess={handleImageUploadSuccess}
-                      onUploadError={handleImageUploadError}
-                      className="mb-3"
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <div className="bg-light p-3 rounded h-100">
-                      <h6 className="mb-2">Image Sizes</h6>
-                      <div className="small text-muted mb-3">
-                        Your image is automatically resized for different uses:
-                      </div>
-                      <div className="d-flex flex-column gap-2">
-                        <div className="d-flex align-items-center gap-2">
-                          <FilePondAvatar imageUrl={currentImage} size="xs" />
-                          <span className="small">Navigation (50×50)</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <FilePondAvatar imageUrl={currentImage} size="sm" />
-                          <span className="small">Cards (150×150)</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <FilePondAvatar imageUrl={currentImage} size="lg" />
-                          <span className="small">Profile (300×300)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="mb-3">
+                <label className="form-label" htmlFor="profile-picture">
+                  Profile picture
+                </label>
+                <input
+                  id="profile-picture"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={onUpload}
+                />
               </div>
 
               {message && <div className="alert alert-info py-2 small">{message}</div>}

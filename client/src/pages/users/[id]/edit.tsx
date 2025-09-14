@@ -7,7 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Alert from '@/components/atoms/alert';
 import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
-import FilePondUploader, { FilePondAvatar } from '@/components/atoms/filepond-uploader';
 import Heading from '@/components/atoms/heading';
 import SelectField from '@/components/atoms/select-field';
 import Text from '@/components/atoms/text';
@@ -19,7 +18,7 @@ import { paths } from '@/constants/paths';
 import { UPDATE_USER, type UpdateUserData, type UpdateUserInput } from '@/graphql/user/mutations';
 import { GET_USER, GET_USERS, type UserQueryData } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
-import type { ImageUploadResult, UserImageSizes } from '@/types/user';
+
 import { UpdateUserSchema } from '@/utils/validation';
 
 export default function EditUserPage(): JSX.Element {
@@ -27,9 +26,6 @@ export default function EditUserPage(): JSX.Element {
   const params = useParams();
   const { addSuccess, addError } = useToast();
   const userId = params.id!;
-
-  // State for uploaded image
-  const [uploadedImage, setUploadedImage] = React.useState<UserImageSizes | null>(null);
 
   // Form setup
   const {
@@ -63,7 +59,7 @@ export default function EditUserPage(): JSX.Element {
       reset({
         name: data.user.name,
         email: data.user.email,
-        imageUrl: typeof data.user.imageUrl === 'string' ? data.user.imageUrl : '',
+        imageUrl: data.user.imageUrl || '',
         role: data.user.role as 'ADMIN' | 'USER',
       });
     }
@@ -92,33 +88,12 @@ export default function EditUserPage(): JSX.Element {
     },
   });
 
-  // Handle image upload success
-  const handleImageUploadSuccess = (result: ImageUploadResult) => {
-    if (result.success && result.imageUrl) {
-      setUploadedImage(result.imageUrl);
-      addSuccess({
-        title: 'Image Uploaded!',
-        subtitle: 'just now',
-        children: 'Profile image uploaded successfully!',
-      });
-    }
-  };
-
-  // Handle image upload error
-  const handleImageUploadError = (error: string) => {
-    addError({
-      title: 'Upload Failed!',
-      subtitle: 'just now',
-      children: `Failed to upload image: ${error}`,
-    });
-  };
-
   // Form submission
   const onSubmit = async (input: UpdateUserInput) => {
     try {
       const updateData = {
         ...input,
-        imageUrl: uploadedImage || input.imageUrl || undefined, // Include uploaded image
+        imageUrl: input.imageUrl || undefined, // Convert empty string to undefined
       };
       await updateUser({ variables: { id: userId, input: updateData } });
     } catch (err) {
@@ -252,52 +227,18 @@ export default function EditUserPage(): JSX.Element {
 
                       {/* Profile Image Upload */}
                       <div className="col-12">
-                        <div className="mb-3">
-                          <label htmlFor="profile-image" className="form-label">
-                            Profile Image
-                          </label>
-                          <div className="row align-items-start">
-                            <div className="col-md-8">
-                              <FilePondUploader
-                                userId={userId}
-                                currentImage={uploadedImage || user.imageUrl}
-                                onUploadSuccess={handleImageUploadSuccess}
-                                onUploadError={handleImageUploadError}
-                                disabled={updating || isSubmitting}
-                              />
-                              <small className="text-muted">
-                                Upload a new profile image (JPG, PNG, WebP up to 5MB)
-                              </small>
-                            </div>
-                            <div className="col-md-4">
-                              <div className="text-center">
-                                <FilePondAvatar
-                                  imageUrl={uploadedImage || user.imageUrl}
-                                  name={user.name}
-                                  size="xl"
-                                  className="mb-2 border"
-                                />
-                                <div className="small text-muted">Current Avatar</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Hidden field to maintain form compatibility */}
                         <Controller
                           name="imageUrl"
                           control={control}
                           render={({ field }) => (
-                            <input
-                              type="hidden"
+                            <TextField
                               {...field}
-                              value={(() => {
-                                const imageValue = uploadedImage || user.imageUrl;
-                                if (typeof imageValue === 'string') {
-                                  return imageValue || '';
-                                }
-                                return JSON.stringify(imageValue) || '';
-                              })()}
+                              type="url"
+                              label="Profile Image URL"
+                              placeholder="https://example.com/avatar.jpg (optional)"
+                              error={errors.imageUrl?.message}
+                              disabled={updating || isSubmitting}
+                              helpText="Optional: Provide a URL for the user's profile image"
                             />
                           )}
                         />

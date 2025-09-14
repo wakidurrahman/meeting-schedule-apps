@@ -6,7 +6,6 @@ import Alert from '@/components/atoms/alert';
 import Badge from '@/components/atoms/badge';
 import Breadcrumb from '@/components/atoms/breadcrumb';
 import Button from '@/components/atoms/button';
-import { FilePondAvatar } from '@/components/atoms/filepond-uploader';
 import Heading from '@/components/atoms/heading';
 import Text from '@/components/atoms/text';
 import Card from '@/components/molecules/card';
@@ -18,6 +17,7 @@ import { DELETE_USER, type DeleteUserData } from '@/graphql/user/mutations';
 import { GET_USER, GET_USERS, type UserQueryData } from '@/graphql/user/queries';
 import { useToast } from '@/hooks/use-toast';
 import { formatJST } from '@/utils/date';
+import { getImageUrl } from '@/utils/image-utils';
 
 export default function UserDetailPage(): JSX.Element {
   const navigate = useNavigate();
@@ -123,14 +123,22 @@ export default function UserDetailPage(): JSX.Element {
             {!loadingUser && !userError && user && (
               <Card shadow="sm" className="mb-4">
                 {/* Profile Image */}
-                <div className="d-flex justify-content-center p-4">
-                  <FilePondAvatar
-                    imageUrl={user.imageUrl}
-                    name={user.name}
-                    size="xl"
-                    className="border border-2 border-white shadow-sm"
+                {user.imageUrl ? (
+                  <Card.Image
+                    src={getImageUrl(user.imageUrl, 'medium') || ''}
+                    alt={user.name}
+                    position="top"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
-                </div>
+                ) : (
+                  <Card.Image
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name ?? 'U')}&background=random`}
+                    alt={user.name}
+                    position="top"
+                  />
+                )}
 
                 <Card.Body>
                   <Card.Title level={5}>{user.name}</Card.Title>
