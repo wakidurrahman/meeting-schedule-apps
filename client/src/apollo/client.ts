@@ -414,7 +414,7 @@ export const apolloClient = new ApolloClient({
   link: from([errorLink, authLink, import.meta.env.PROD ? batchLink : httpLink]),
 
   cache,
-  defaultOptions,
+  // defaultOptions,
 
   // Enable Apollo DevTools in development only
   connectToDevTools: import.meta.env.DEV,
