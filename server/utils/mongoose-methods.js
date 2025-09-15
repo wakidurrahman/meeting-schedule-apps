@@ -6,12 +6,13 @@
  */
 
 const bcrypt = require('bcryptjs');
+
+const { DEFAULT_PAGINATION, DEFAULT_SORT, USER_SORT_BY, USER_ROLE } = require('../constants/const');
 const { MESSAGES } = require('../constants/messages');
 const Booking = require('../models/booking-schema');
 const Event = require('../models/event-schema');
 const Meeting = require('../models/meeting-schema');
 const User = require('../models/user-schema');
-const { DEFAULT_PAGINATION, DEFAULT_SORT, USER_SORT_BY, USER_ROLE } = require('../constants/const');
 
 // -------------------------
 // User helpers
@@ -246,11 +247,21 @@ const updateMeetingDoc = async (meetingId, updateData, userId) => {
 
   // Update only provided fields
   const updateFields = {};
-  if (updateData.title !== undefined) updateFields.title = updateData.title;
-  if (updateData.description !== undefined) updateFields.description = updateData.description;
-  if (updateData.startTime !== undefined) updateFields.startTime = new Date(updateData.startTime);
-  if (updateData.endTime !== undefined) updateFields.endTime = new Date(updateData.endTime);
-  if (updateData.attendeeIds !== undefined) updateFields.attendees = updateData.attendeeIds;
+  if (updateData.title !== undefined) {
+    updateFields.title = updateData.title;
+  }
+  if (updateData.description !== undefined) {
+    updateFields.description = updateData.description;
+  }
+  if (updateData.startTime !== undefined) {
+    updateFields.startTime = new Date(updateData.startTime);
+  }
+  if (updateData.endTime !== undefined) {
+    updateFields.endTime = new Date(updateData.endTime);
+  }
+  if (updateData.attendeeIds !== undefined) {
+    updateFields.attendees = updateData.attendeeIds;
+  }
 
   const updatedMeeting = await Meeting.findByIdAndUpdate(meetingId, updateFields, { new: true })
     .populate('attendees')

@@ -3,11 +3,11 @@
  * Combines all domain-specific resolvers into a single resolver object
  */
 
+const authResolvers = require('./auth');
 const bookingResolvers = require('./booking');
 const eventResolvers = require('./event');
 const meetingResolvers = require('./meeting');
 const userResolvers = require('./user');
-const authResolvers = require('./auth');
 
 /**
  * Combined resolvers object that merges all domain-specific resolvers
