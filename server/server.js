@@ -52,12 +52,11 @@ const allowedOrigins = [
   'http://localhost:4173', // Production preview server (vite preview)
   'http://localhost:4174', // Production preview server (alternative port)
   'http://localhost:4175', // Production preview server (alternative port)
-  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (CORRECTED!)
-  'https://meeting-scheduler-apps.netlify.app', // Alternative Production Netlify domain
-  'https://deploy-preview-*--meeting-schedule-apps.netlify.app', // Netlify deploy previews (CORRECTED!)
-  'https://deploy-preview-*--meeting-scheduler-apps.netlify.app', // Alternative deploy previews
-  CLIENT_ORIGIN, // From environment variable
-].filter(Boolean); // Remove any undefined values
+  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (correct one)
+  'https://meeting-scheduler-apps.netlify.app', // Alternative domain (backup)
+  // Note: Deploy previews are handled by regex patterns below (not static wildcards)
+  CLIENT_ORIGIN, // From environment variable (only if different)
+].filter((origin, index, arr) => origin && arr.indexOf(origin) === index); // Remove duplicates and undefined
 
 async function start() {
   /**
