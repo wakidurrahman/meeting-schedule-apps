@@ -52,11 +52,12 @@ const allowedOrigins = [
   'http://localhost:4173', // Production preview server (vite preview)
   'http://localhost:4174', // Production preview server (alternative port)
   'http://localhost:4175', // Production preview server (alternative port)
-  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (correct one)
-  'https://meeting-scheduler-apps.netlify.app', // Alternative domain (backup)
-  // Note: Deploy previews are handled by regex patterns below (not static wildcards)
-  CLIENT_ORIGIN, // From environment variable (only if different)
-].filter((origin, index, arr) => origin && arr.indexOf(origin) === index); // Remove duplicates and undefined
+  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (CORRECTED!)
+  'https://meeting-scheduler-apps.netlify.app', // Alternative Production Netlify domain
+  'https://deploy-preview-*--meeting-schedule-apps.netlify.app', // Netlify deploy previews (CORRECTED!)
+  'https://deploy-preview-*--meeting-scheduler-apps.netlify.app', // Alternative deploy previews
+  CLIENT_ORIGIN, // From environment variable
+].filter(Boolean); // Remove any undefined values
 
 async function start() {
   /**
@@ -134,15 +135,12 @@ async function start() {
         }
 
         // Check for Netlify deploy preview patterns (both domain variations)
-        if (origin) {
-          const deployPreviewPatterns = [
-            /^https:\/\/deploy-preview-\d+--meeting-schedule-apps\.netlify\.app$/,
-            /^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/,
-          ];
-
-          if (deployPreviewPatterns.some((pattern) => pattern.test(origin))) {
-            return callback(null, true);
-          }
+        if (
+          origin &&
+          (origin.match(/^https:\/\/deploy-preview-\d+--meeting-schedule-apps\.netlify\.app$/) ||
+            origin.match(/^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/))
+        ) {
+          return callback(null, true);
         }
 
         console.warn(
