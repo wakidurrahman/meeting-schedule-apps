@@ -22,6 +22,9 @@
  * - MONGO_URI: MongoDB connection string (required by `connectDB`)
  * - NODE_ENV: Environment name; when not `production`, GraphiQL and relaxed CSP are enabled
  */
+const fs = require('fs').promises;
+const path = require('path');
+
 const cors = require('cors');
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
@@ -29,10 +32,8 @@ const { buildSchema } = require('graphql');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const multer = require('multer');
-
 const sharp = require('sharp');
-const path = require('path');
-const fs = require('fs').promises;
+
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
@@ -51,12 +52,11 @@ const allowedOrigins = [
   'http://localhost:4173', // Production preview server (vite preview)
   'http://localhost:4174', // Production preview server (alternative port)
   'http://localhost:4175', // Production preview server (alternative port)
-  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (CORRECTED!)
-  'https://meeting-scheduler-apps.netlify.app', // Alternative Production Netlify domain
-  'https://deploy-preview-*--meeting-schedule-apps.netlify.app', // Netlify deploy previews (CORRECTED!)
-  'https://deploy-preview-*--meeting-scheduler-apps.netlify.app', // Alternative deploy previews
-  CLIENT_ORIGIN, // From environment variable
-].filter(Boolean); // Remove any undefined values
+  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (correct one)
+  'https://meeting-scheduler-apps.netlify.app', // Alternative domain (backup)
+  // Note: Deploy previews are handled by regex patterns below (not static wildcards)
+  CLIENT_ORIGIN, // From environment variable (only if different)
+].filter((origin, index, arr) => origin && arr.indexOf(origin) === index); // Remove duplicates and undefined
 
 async function start() {
   /**
@@ -124,7 +124,9 @@ async function start() {
     cors({
       origin(origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
+        if (!origin) {
+          return callback(null, true);
+        }
 
         // Check for exact matches
         if (allowedOrigins.indexOf(origin) !== -1) {
@@ -132,12 +134,15 @@ async function start() {
         }
 
         // Check for Netlify deploy preview patterns (both domain variations)
-        if (
-          origin &&
-          (origin.match(/^https:\/\/deploy-preview-\d+--meeting-schedule-apps\.netlify\.app$/) ||
-            origin.match(/^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/))
-        ) {
-          return callback(null, true);
+        if (origin) {
+          const deployPreviewPatterns = [
+            /^https:\/\/deploy-preview-\d+--meeting-schedule-apps\.netlify\.app$/,
+            /^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/,
+          ];
+
+          if (deployPreviewPatterns.some((pattern) => pattern.test(origin))) {
+            return callback(null, true);
+          }
         }
 
         console.warn(
