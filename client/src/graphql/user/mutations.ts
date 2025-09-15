@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 import { TypedDocumentNode as TD } from '@graphql-typed-document-node/core';
 
-import { UserImageSizes, UserProfile } from '@/types/user';
+import { UserProfile } from '@/types/user';
 
 /**
  * User management mutations
@@ -15,7 +15,7 @@ export interface CreateUserData {
 export interface CreateUserInput {
   name: string;
   email: string;
-  imageUrl?: UserImageSizes | string;
+  imageUrl?: string; // Always a JSON string (matches GraphQL schema)
   role: 'ADMIN' | 'USER';
 }
 
@@ -41,7 +41,7 @@ export interface UpdateUserData {
 export interface UpdateUserInput {
   name?: string;
   email?: string;
-  imageUrl?: UserImageSizes | string;
+  imageUrl?: string; // Always a JSON string (matches GraphQL schema)
   role?: 'ADMIN' | 'USER';
 }
 

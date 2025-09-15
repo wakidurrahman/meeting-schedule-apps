@@ -68,25 +68,15 @@ export default function FilePondUploader({
     }
   }, [currentImage]);
 
-  const handleProcessFile = (error: any, file: any) => {
+  const handleProcessFile = (error: any) => {
     if (error) {
       const errorMessage = error.body || error.message || 'Upload failed';
       onUploadError?.(errorMessage);
       return;
     }
 
-    try {
-      // Parse the server response
-      const response = JSON.parse(file.serverId);
-
-      if (response.success && response.imageUrl) {
-        onUploadSuccess?.(response);
-      } else {
-        onUploadError?.(response.error || 'Upload failed');
-      }
-    } catch (err) {
-      onUploadError?.(file.serverId || 'Upload failed');
-    }
+    // Upload success callback was already called during the XHR upload process
+    // FilePond just confirms the file was processed successfully
   };
 
   return (
@@ -122,7 +112,17 @@ export default function FilePondUploader({
               if (xhr.status >= 200 && xhr.status < 300) {
                 try {
                   const response = JSON.parse(xhr.responseText);
-                  load(JSON.stringify(response));
+                  // Return a unique server identifier instead of the full response
+                  // FilePond needs a simple string identifier, not the full object
+                  const serverId = `uploaded-${Date.now()}`;
+                  load(serverId);
+
+                  // Immediately call success callback with the actual response
+                  if (response.success && response.imageUrl) {
+                    onUploadSuccess?.(response);
+                  } else {
+                    onUploadError?.(response.error || 'Upload failed');
+                  }
                 } catch (err) {
                   // Fallback for development - create mock response
                   const timestamp = Date.now();
@@ -135,7 +135,11 @@ export default function FilePondUploader({
                       medium: `/uploads/users/${filename}-medium.jpg`,
                     },
                   };
-                  load(JSON.stringify(mockResponse));
+                  const serverId = `mock-${Date.now()}`;
+                  load(serverId);
+
+                  // Call success callback with mock response
+                  onUploadSuccess?.(mockResponse);
                 }
               } else {
                 error('Upload failed');
@@ -177,7 +181,11 @@ export default function FilePondUploader({
                   };
 
                   setTimeout(() => {
-                    load(JSON.stringify(mockResponse));
+                    const serverId = `mock-dev-${Date.now()}`;
+                    load(serverId);
+
+                    // Call success callback with mock response
+                    onUploadSuccess?.(mockResponse);
                   }, 500);
                 }
               }, 200);

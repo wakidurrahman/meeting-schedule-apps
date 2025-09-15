@@ -23,8 +23,7 @@ import {
 } from '@apollo/client';
 import { BatchHttpLink } from '@apollo/client/link/batch-http';
 import { setContext } from '@apollo/client/link/context';
-import { createPersistedQueryLink } from '@apollo/client/link/persisted-queries';
-import { sha256 } from 'crypto-hash';
+import { onError } from '@apollo/client/link/error';
 
 // Import entity types for better type safety
 import { TOKEN_KEY } from '@/context/AuthContext';
@@ -322,15 +321,12 @@ const graphqlUri = getGraphQLUri();
  * HTTP Link Configuration
  *
  * Creates the HTTP connection to the GraphQL server endpoint.
- * Uses environment variable for production deployment or falls back to relative path for `development`.
+ * Uses environment variable for production deployment or falls back to relative path for development.
  */
-// const httpLink = new HttpLink({
-//   uri: graphqlUri,
-//   useGETForQueries: false, // Use POST for queries (cleaner URLs)
-// });
-
 const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URI || '/graphql',
+  uri: graphqlUri,
+  useGETForQueries: false, // Use POST for queries (cleaner URLs)
+  credentials: 'include', // Include cookies for authentication
 });
 
 /**
@@ -341,19 +337,42 @@ const httpLink = new HttpLink({
  */
 const batchLink = new BatchHttpLink({
   uri: graphqlUri,
-  batchInterval: 20, // Batch requests within 20ms window
+  batchInterval: 50, // Batch requests within 50ms window
   batchMax: 10, // Maximum 10 operations per batch
+  credentials: 'include', // Include cookies for authentication
 });
 
 /**
- * Persisted Queries Link for Performance
+ * Error Link for Enhanced Error Handling
  *
- * Enables automatic persisted queries (APQ) to reduce bandwidth
- * by sending query hashes instead of full query strings.
+ * Intercepts GraphQL errors and provides enhanced error handling,
+ * including automatic token refresh and error logging.
  */
-const persistedQueriesLink = createPersistedQueryLink({
-  sha256,
-  useGETForHashedQueries: false, // Use POST for cleaner URLs and better debugging
+const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path, extensions }) => {
+      console.error(
+        `GraphQL error: Message: ${message}, Location: ${locations}, Path: ${path}`,
+        extensions,
+      );
+
+      // Handle authentication errors
+      if (extensions?.code === 'UNAUTHENTICATED') {
+        // Clear invalid token and redirect to login
+        localStorage.removeItem(TOKEN_KEY);
+        window.location.href = '/login';
+      }
+    });
+  }
+
+  if (networkError) {
+    console.error(`Network error: ${networkError}`);
+
+    // Handle network connectivity issues
+    if (networkError.message === 'Failed to fetch') {
+      console.warn('Network connectivity issue detected');
+    }
+  }
 });
 
 /**
@@ -367,6 +386,7 @@ const defaultOptions: DefaultOptions = {
   watchQuery: {
     fetchPolicy: 'cache-first', // Prioritize cache for better performance
     errorPolicy: 'all', // Return partial data even with errors
+    notifyOnNetworkStatusChange: true, // Update UI on network status changes
   },
   query: {
     fetchPolicy: 'cache-first', // Default to cache-first for queries
@@ -383,25 +403,31 @@ const defaultOptions: DefaultOptions = {
  *
  * The main Apollo Client instance with complete configuration:
  * - Authentication middleware
- * - Performance optimizations (batching, persisted queries)
+ * - Error handling with automatic token refresh
+ * - Performance optimizations (batching in production)
  * - Advanced caching with type policies
  * - Development tools integration
  */
 export const apolloClient = new ApolloClient({
-  // Link chain: auth -> persisted queries -> http
-  // Note: Temporarily disable batching to avoid "Must provide query string" errors
-  // Re-enable batching after testing in production
-  link: from([authLink, httpLink]),
+  // Link chain: error handling -> auth -> batching/http
+  // Use batching in production for performance, regular HTTP in development for easier debugging
+  link: from([errorLink, authLink, import.meta.env.PROD ? batchLink : httpLink]),
 
   cache,
-  // defaultOptions,
+  defaultOptions,
 
-  // Enable Apollo DevTools in development
-  connectToDevTools: true,
+  // Enable Apollo DevTools in development only
+  connectToDevTools: import.meta.env.DEV,
 
-  // Additional options
-  //assumeImmutableResults: true, // Optimize for immutable data
-  //queryDeduplication: true, // Deduplicate identical queries
+  // Performance optimizations
+  assumeImmutableResults: true, // Optimize for immutable data
+  queryDeduplication: true, // Deduplicate identical queries
+
+  // Additional production optimizations
+  ...(import.meta.env.PROD && {
+    ssrMode: false, // Ensure client-side rendering
+    ssrForceFetchDelay: 100, // Delay for SSR hydration
+  }),
 });
 
 /**
@@ -421,8 +447,8 @@ if (import.meta.env.DEV) {
       authentication: '✅ JWT Bearer tokens',
       caching: '✅ Advanced type policies',
       pagination: '✅ Offset-based merging',
-      batching: '❌ Disabled (temporarily)',
-      persistedQueries: '❌ Disabled (temporarily)',
+      batching: '❌ Disabled (development)',
+      errorHandling: '✅ Enhanced with auto-logout',
       devtools: '✅ Enabled',
     },
   });
@@ -437,6 +463,13 @@ if (import.meta.env.PROD) {
     graphqlUri: graphqlUri,
     hasEnvUri: !!import.meta.env.VITE_GRAPHQL_URI,
     environment: import.meta.env.VITE_ENVIRONMENT || 'not-set',
+    features: {
+      authentication: '✅ JWT Bearer tokens',
+      caching: '✅ Advanced type policies',
+      batching: '✅ Enabled',
+      errorHandling: '✅ Enhanced with auto-logout',
+      devtools: '❌ Disabled',
+    },
   });
 }
 

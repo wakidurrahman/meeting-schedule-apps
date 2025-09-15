@@ -137,9 +137,14 @@ const userResolvers = {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT },
         });
       }
-      // step 04: create the user
-      const user = await createUserWithRole(input);
-      // step 05: return the formatted user
+      // step 04: process imageUrl - serialize UserImageSizes object to JSON string
+      const processedInput = { ...input };
+      if (processedInput.imageUrl && typeof processedInput.imageUrl === 'object') {
+        processedInput.imageUrl = JSON.stringify(processedInput.imageUrl);
+      }
+      // step 05: create the user
+      const user = await createUserWithRole(processedInput);
+      // step 06: return the formatted user
       return formatUser(user);
     } catch (err) {
       if (err.name === 'ZodError') {
@@ -179,14 +184,19 @@ const userResolvers = {
           });
         }
       }
-      // step 04: update the user
-      const user = await updateUserWithRole(id, input);
+      // step 04: process imageUrl - serialize UserImageSizes object to JSON string
+      const processedInput = { ...input };
+      if (processedInput.imageUrl && typeof processedInput.imageUrl === 'object') {
+        processedInput.imageUrl = JSON.stringify(processedInput.imageUrl);
+      }
+      // step 05: update the user
+      const user = await updateUserWithRole(id, processedInput);
       if (!user) {
         throw new GraphQLError(MESSAGES.USER_NOT_FOUND, {
           extensions: { code: ERROR_CODES.NOT_FOUND },
         });
       }
-      // step 05: return the formatted user
+      // step 06: return the formatted user
       return formatUser(user);
     } catch (err) {
       if (err.name === 'ZodError') {

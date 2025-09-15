@@ -42,6 +42,8 @@ function formatAuthUser(user) {
     return null;
   }
 
+  // Keep imageUrl as string for GraphQL schema compatibility
+  // The client will handle parsing the JSON string when needed
   return {
     id: String(user._id) || user.id,
     name: user.name,
@@ -60,6 +62,8 @@ function formatUser(user) {
     return null;
   }
 
+  // Keep imageUrl as string for GraphQL schema compatibility
+  // The client will handle parsing the JSON string when needed
   return {
     id: String(user._id),
     name: user.name,
