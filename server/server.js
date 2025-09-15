@@ -66,6 +66,9 @@ async function start() {
   // Express app
   const app = express();
 
+  // Trust Railway proxy for rate limiting and CORS
+  app.set('trust proxy', true);
+
   /**
    * Security headers.
    * Note: GraphiQL uses inline scripts; Helmet's CSP(content security policy) blocks these by default.
