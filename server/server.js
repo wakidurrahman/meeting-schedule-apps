@@ -51,8 +51,10 @@ const allowedOrigins = [
   'http://localhost:4173', // Production preview server (vite preview)
   'http://localhost:4174', // Production preview server (alternative port)
   'http://localhost:4175', // Production preview server (alternative port)
-  'https://meeting-scheduler-apps.netlify.app', // Production Netlify domain
-  'https://deploy-preview-*--meeting-scheduler-apps.netlify.app', // Netlify deploy previews
+  'https://meeting-schedule-apps.netlify.app', // Production Netlify domain (CORRECTED!)
+  'https://meeting-scheduler-apps.netlify.app', // Alternative Production Netlify domain
+  'https://deploy-preview-*--meeting-schedule-apps.netlify.app', // Netlify deploy previews (CORRECTED!)
+  'https://deploy-preview-*--meeting-scheduler-apps.netlify.app', // Alternative deploy previews
   CLIENT_ORIGIN, // From environment variable
 ].filter(Boolean); // Remove any undefined values
 
@@ -66,8 +68,12 @@ async function start() {
   // Express app
   const app = express();
 
-  // Trust Railway proxy for rate limiting and CORS
-  app.set('trust proxy', true);
+  // Trust Railway proxy (secure configuration for production)
+  if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1); // Trust first proxy (Railway)
+  } else {
+    app.set('trust proxy', true); // Development - trust all
+  }
 
   /**
    * Security headers.
@@ -90,6 +96,8 @@ async function start() {
       standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
       message: { error: 'Too many requests, please try again later.' },
+      // Skip rate limiting validation for Railway proxy setup
+      skip: (req) => process.env.NODE_ENV !== 'production',
     }),
   );
 
@@ -123,10 +131,11 @@ async function start() {
           return callback(null, true);
         }
 
-        // Check for Netlify deploy preview pattern
+        // Check for Netlify deploy preview patterns (both domain variations)
         if (
           origin &&
-          origin.match(/^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/)
+          (origin.match(/^https:\/\/deploy-preview-\d+--meeting-schedule-apps\.netlify\.app$/) ||
+            origin.match(/^https:\/\/deploy-preview-\d+--meeting-scheduler-apps\.netlify\.app$/))
         ) {
           return callback(null, true);
         }
