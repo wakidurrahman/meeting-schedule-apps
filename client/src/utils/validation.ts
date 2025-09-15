@@ -138,7 +138,17 @@ export const CreateUserSchema = z.object({
     .regex(NAME_REGEX, VM.namePattern)
     .transform((str) => str.trim()),
   email: z.string().regex(EMAIL_REGEX, VM.emailInvalid),
-  imageUrl: z.string().url(VM.invalidUrl).optional().or(z.literal('')),
+  imageUrl: z
+    .union([
+      z.string().url(VM.invalidUrl), // String URL
+      z.object({
+        thumb: z.string(),
+        small: z.string(),
+        medium: z.string(),
+      }), // UserImageSizes object
+      z.literal(''), // Empty string
+    ])
+    .optional(),
   role: z.enum(USER_ROLE_ENUM, {
     required_error: VM.roleRequired,
     invalid_type_error: VM.roleInvalid,

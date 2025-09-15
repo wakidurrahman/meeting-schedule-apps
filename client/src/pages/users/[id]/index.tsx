@@ -125,7 +125,14 @@ export default function UserDetailPage(): JSX.Element {
                 {/* Profile Image */}
                 {user.imageUrl ? (
                   <Card.Image
-                    src={getImageUrl(user.imageUrl, 'medium') || ''}
+                    src={
+                      getImageUrl(
+                        typeof user.imageUrl === 'string' && user.imageUrl.startsWith('{')
+                          ? JSON.parse(user.imageUrl)
+                          : user.imageUrl,
+                        'medium',
+                      ) || ''
+                    }
                     alt={user.name}
                     position="top"
                     onError={(e) => {

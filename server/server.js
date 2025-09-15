@@ -325,15 +325,15 @@ async function start() {
     res.json({ status: 'ok', service: 'meeting-scheduler-server' });
   });
 
+  // Central error handler (must be before server.listen)
+  app.use(errorHandler);
+
   /**
    * Start HTTP server and log the listening URL.
    */
   app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);
   });
-
-  // Central error handler (must be last)
-  app.use(errorHandler);
 }
 
 start().catch((err) => {

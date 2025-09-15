@@ -142,3 +142,5 @@ vite.config.ts.timestamp-*
 .vscode/chrome-debug-userdatadir
 
 client/lighthouse-report.html
+
+client/public/uploads/

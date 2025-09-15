@@ -56,12 +56,21 @@ export default function EditUserPage(): JSX.Element {
   useEffect(() => {
     if (data?.user) {
       const imageUrl = data.user.imageUrl;
-      const imageUrlString =
-        typeof imageUrl === 'string'
-          ? imageUrl
-          : imageUrl && typeof imageUrl === 'object'
-            ? imageUrl.medium || ''
-            : '';
+      let imageUrlString = '';
+
+      if (typeof imageUrl === 'string') {
+        // Handle JSON string (from server)
+        if (imageUrl.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(imageUrl);
+            imageUrlString = parsed.medium || '';
+          } catch {
+            imageUrlString = imageUrl;
+          }
+        } else {
+          imageUrlString = imageUrl;
+        }
+      }
 
       reset({
         name: data.user.name,
@@ -239,12 +248,21 @@ export default function EditUserPage(): JSX.Element {
                           control={control}
                           render={({ field }) => {
                             const fieldValue = field.value;
-                            const stringValue =
-                              typeof fieldValue === 'string'
-                                ? fieldValue
-                                : fieldValue && typeof fieldValue === 'object'
-                                  ? fieldValue.medium || ''
-                                  : '';
+                            let stringValue = '';
+
+                            if (typeof fieldValue === 'string') {
+                              // Handle JSON string (from server)
+                              if (fieldValue.startsWith('{')) {
+                                try {
+                                  const parsed = JSON.parse(fieldValue);
+                                  stringValue = parsed.medium || '';
+                                } catch {
+                                  stringValue = fieldValue;
+                                }
+                              } else {
+                                stringValue = fieldValue;
+                              }
+                            }
 
                             return (
                               <TextField
@@ -289,12 +307,21 @@ export default function EditUserPage(): JSX.Element {
                         onClick={() => {
                           if (user) {
                             const imageUrl = user.imageUrl;
-                            const imageUrlString =
-                              typeof imageUrl === 'string'
-                                ? imageUrl
-                                : imageUrl && typeof imageUrl === 'object'
-                                  ? imageUrl.medium || ''
-                                  : '';
+                            let imageUrlString = '';
+
+                            if (typeof imageUrl === 'string') {
+                              // Handle JSON string (from server)
+                              if (imageUrl.startsWith('{')) {
+                                try {
+                                  const parsed = JSON.parse(imageUrl);
+                                  imageUrlString = parsed.medium || '';
+                                } catch {
+                                  imageUrlString = imageUrl;
+                                }
+                              } else {
+                                imageUrlString = imageUrl;
+                              }
+                            }
 
                             reset({
                               name: user.name,
