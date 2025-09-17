@@ -1,6 +1,14 @@
-# Meeting Scheduler App
+# 🗓️ X-Scheduler Application.
 
-Monorepo containing a React (Vite + TS) client and an Express + GraphQL + Mongoose server.
+X-Scheduler is a internal calendar management and meeting scheduling application. It enables users to create, manage, and collaborate on events, bookings, and virtual meetings.
+
+**This monorepo contains**:
+
+- **Frontend**: A React application built with Vite and TypeScript, styled using custom Bootstrap v5.3.3 SCSS (no UI libraries).
+
+- **Backend**: An Express.js server with GraphQL and Mongoose, serving as the API layer and interfacing with MongoDB.
+
+> The app is designed to be modular, scalable, and built on Atomic Design principles, supporting GraphQL data fetching.
 
 ## Tech stack
 
@@ -23,31 +31,34 @@ Monorepo containing a React (Vite + TS) client and an Express + GraphQL + Mongoo
   - Morgan (logging)
   - UUID (request id)
 
-## Screen Flow
+## Screen Flow Diagram
 
 ```mermaid
 graph TD
-  Register["Register"] --> Login["Login"]
-  Login["Login"] --> Dashboard
+  Register["Register (auth)"] --> Login["Login"]
+  Login["Login (auth)"] --> Dashboard
 
   Dashboard --> UserProfile["User Profile"]
   Dashboard --> Calendar["Calendar UI"]
   Dashboard --> UserList["User List"]
+  Dashboard --> Event["Event List"]
+  Dashboard --> Booking["Booking List"]
 
-  Calendar --> UserList
-  UserProfile --> UserList
 
-  subgraph "User List CRUD"
-    Create["Create"]
-    Read["Read"]
-    Update["Update"]
-    Delete["Delete"]
-  end
+  Calendar --> Year["Year View"]
+  Calendar --> Month["Month View(default)"]
+  Calendar --> Week["Week View"]
+  Calendar --> Day["Day View"]
 
-  UserList --> Create
-  UserList --> Read
-  UserList --> Update
-  UserList --> Delete
+  UserList --> Create["Create User"]
+  UserList --> Read["User List"]
+  UserList --> Update["Update User"]
+  UserList --> Delete["Delete user"]
+
+  Event --> CreateEvent["Create Event"]
+  Event --> ReadEvent["Event List"]
+  Event --> UpdateEvent["Update Event"]
+  Event --> DeleteEvent["Delete Event"]
 ```
 
 ---
@@ -56,8 +67,8 @@ graph TD
 
 ```mermaid
 graph TD
-U["User"]
-L["Login"]
+U["User (After sing in)"]
+L["Login (auth)"]
 CE["Create Event"]
 UE["Update Event"]
 DE["Delete Event"]
@@ -65,17 +76,16 @@ VE["View Events"]
 F["Filter"]
 F1["createdBy"]
 F2["booked"]
-EV["Event"]
-ED["Event Detail"]
+ED["Event Detail(In-Progress)"]
 BK["Book"]
 CB["Cancel Booking"]
 B["Booking"]
 
-U --> L --> U
-U --> CE --> EV
+L --> U
+VE --> CE
+VE --> UE
+VE --> DE
 U --> VE --> ED
-ED --> UE --> EV
-ED --> DE --> EV
 ED --> BK --> B
 B --> CB --> ED
 F1 --> F
@@ -88,12 +98,13 @@ F --> VE
 ```mermaid
 graph TD
 U["User"]
+USER["Users"]
 REG["Register"]
 LOG["Login"]
 DASH["Dashboard"]
-MEET["Meetings"]
-MEET_C["Create Meeting"]
-MEET_D["Delete Meeting"]
+MEET["Calendar"]
+MEET_C["Week view"]
+MEET_D["Month view"]
 EVL["Events"]
 EV_C["Create Event"]
 EV_U["Update Event"]
@@ -109,6 +120,7 @@ DASH --> MEET
 MEET --> MEET_C --> MEET
 MEET --> MEET_D --> MEET
 DASH --> EVL
+DASH --> USER
 EVL --> EV_C --> EVL
 EVL --> EV_U --> EVL
 EVL --> EV_D --> EVL
@@ -125,7 +137,6 @@ DASH --> PROF
 ├── src/
 │   ├── assets/
 │   │   ├── images/
-│   │   ├── icons/
 │   │   └── scss/
 │   │       ├── _variables.scss
 │   │       └── main.scss
@@ -137,10 +148,11 @@ DASH --> PROF
 │   │   ├── mutations.ts
 │   │   └── queries.ts
 │   ├── pages/
-│   │   ├── create-meeting/
+│   │   ├── event/
 │   │   ├── dashboard/
-│   │   ├── login/
-│   │   └── register/
+│   │   ├── auth/
+│   │   ├── calendar/
+│   │   └── users/
 │   ├── hooks/
 │   ├── context/
 │   │   └── AuthContext.tsx
@@ -201,7 +213,7 @@ DASH --> PROF
 /README.md
 ```
 
-## Coding Guidelines
+## Coding Guidelines for AI Environment.
 
 ```text
 .rules/
@@ -210,6 +222,8 @@ DASH --> PROF
 ├── server-guidelines.mdc         # 🚀 Express/GraphQL/Mongoose
 └── shared-conventions.mdc        # 🔧 Common patterns & conventions
 ```
+
+---
 
 ## Server development
 
@@ -468,46 +482,6 @@ End-to-end workflow testing with real GraphQL operations:
 - **Resolver Tests**: Mongoose methods and helpers mocked for fast execution
 - **Model Tests**: Real database operations for validation testing
 
-#### Test Utilities and Helpers
-
-```javascript
-// Test data factories
-createTestUser({ name: 'John', email: 'john@example.com' });
-createTestMeeting({ title: 'Team Sync', attendees: [userId] });
-createTestEvent({ title: 'Conference', price: 99.99 });
-
-// Authentication helpers
-createMockAuthRequest(userId);
-generateToken(userId);
-hashPassword('password123');
-
-// GraphQL query templates
-TEST_QUERIES.REGISTER;
-TEST_QUERIES.LOGIN;
-TEST_QUERIES.CREATE_MEETING;
-```
-
-### CI/CD Integration
-
-Test configuration optimized for continuous integration:
-
-```javascript
-// jest.config.js highlights
-module.exports = {
-  testEnvironment: 'node',
-  collectCoverageFrom: [
-    'graphql/**/*.js',
-    'models/**/*.js',
-    'middleware/**/*.js',
-  ],
-  coverageThreshold: {
-    global: { branches: 80, functions: 80, lines: 80, statements: 80 },
-  },
-  testTimeout: 10000,
-  setupFilesAfterEnv: ['<rootDir>/tests/setup/testSetup.js'],
-};
-```
-
 ### Testing Best Practices
 
 1. **Test Isolation**: Each test runs independently with fresh state
@@ -560,33 +534,7 @@ This comprehensive testing framework ensures:
 - **Maintainability**: Clear test structure and comprehensive documentation
 - **CI/CD Ready**: Automated testing with coverage reporting
 
-## Run locally
-
-1. Create `server/.env` (example values)
-
-```bash
-PORT=4000
-MONGO_URI=mongodb://localhost:27017/meeting_scheduler
-JWT_SECRET=replace_me
-CLIENT_ORIGIN=http://localhost:5173
-NODE_ENV=development
-```
-
-1. Install dependencies
-
-```bash
-cd client && npm install
-cd server && npm install
-```
-
-1. Start apps
-
-```bash
-cd server && npm run dev
-cd client && npm run dev
-```
-
-The client proxies `/graphql` to `http://localhost:4000` during development.
+---
 
 ## Data flow (client → server → DB → client)
 
@@ -895,14 +843,14 @@ The Meeting Scheduler App is deployed using a modern, scalable architecture with
 
 #### 🌐 **Client (React + Vite) - Netlify**
 
-| **Service**     | **URL**                             |
-| --------------- | ----------------------------------- |
-| **Client App**  | `https://your-app-name.netlify.app` |
-| **Environment** | Production                          |
-| **Status**      | 🔄 **Ready for Deployment**         |
-| **Platform**    | [Netlify](https://netlify.com/)     |
-| **Build Tool**  | Vite                                |
-| **Framework**   | React 16.13.1 + TypeScript 5        |
+| **Service**     | **URL**                                      |
+| --------------- | -------------------------------------------- |
+| **Client App**  | `https://meeting-schedule-apps.netlify.app/` |
+| **Environment** | Production                                   |
+| **Status**      | 🔄 **Ready for Deployment**                  |
+| **Platform**    | [Netlify](https://netlify.com/)              |
+| **Build Tool**  | Vite                                         |
+| **Framework**   | React 16.13.1 + TypeScript 5                 |
 
 **Client Features:**
 
@@ -946,58 +894,6 @@ graph TB
   DB --> MEETINGS
   DB --> EVENTS
   DB --> BOOKINGS
-```
-
-### 📋 **Deployment Configuration**
-
-#### **Environment Variables**
-
-**Server (Railway):**
-
-```env
-NODE_ENV=production
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/meeting_scheduler
-JWT_SECRET=your-super-secure-jwt-secret-key-here
-CLIENT_ORIGIN=https://your-app-name.netlify.app
-PORT=4000
-```
-
-**Client (Netlify):**
-
-```env
-VITE_GRAPHQL_URI=https://meeting-scheduler-apps-production.up.railway.app/graphql
-VITE_APP_TITLE=Meeting Scheduler
-VITE_ENVIRONMENT=production
-```
-
-#### **Build Configuration**
-
-**Server (`railway.json`):**
-
-```json
-{
-  "build": { "builder": "NIXPACKS" },
-  "deploy": {
-    "startCommand": "npm start",
-    "healthcheckPath": "/",
-    "healthcheckTimeout": 100,
-    "restartPolicyType": "ON_FAILURE"
-  }
-}
-```
-
-**Client (`netlify.toml`):**
-
-```toml
-[build]
-  command = "npm run build"
-  publish = "dist"
-  base = "client"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
 ```
 
 ### 🛡️ **Security & Performance**
@@ -1070,7 +966,3 @@ graph LR
 - **Server Deployment**: [`docs/RAILWAY_SERVER_DEPLOYMENT.md`](docs/RAILWAY_SERVER_DEPLOYMENT.md)
 - **Client Deployment**: [`docs/NETLIFY_CLIENT_DEPLOYMENT.md`](docs/NETLIFY_CLIENT_DEPLOYMENT.md)
 - **Environment Config**: [`docs/ENVIRONMENT_CONFIGURATION.md`](docs/ENVIRONMENT_CONFIGURATION.md)
-
----
-
-**🎉 Production Ready!** The Meeting Scheduler App is built with modern DevOps practices, automated deployments, and enterprise-grade security.

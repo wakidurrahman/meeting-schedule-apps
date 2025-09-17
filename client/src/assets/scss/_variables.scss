@@ -22,6 +22,36 @@ $banner-bg2-color: #1e91e8;
 $banner-bg3-color: #ffcd27;
 $banner-bg4-color: #38c4b6;
 
+// Dashboard color palette (based on the design image)
+$dashboard-purple-primary: #5347ce;
+$dashboard-purple-secondary: #887cfd;
+$dashboard-blue-primary: #4896fe;
+$dashboard-blue-secondary: #16c8c7;
+$dashboard-accent-colors: (
+  'purple-primary': $dashboard-purple-primary,
+  'purple-secondary': $dashboard-purple-secondary,
+  'blue-primary': $dashboard-blue-primary,
+  'blue-secondary': $dashboard-blue-secondary,
+  'success': #8bc34a,
+  'warning': #ffc107,
+  'danger': #dc3545,
+  'info': #17a2b8,
+);
+
+// Chart specific colors
+$chart-colors: (
+  'primary': $dashboard-purple-primary,
+  'secondary': $dashboard-purple-secondary,
+  'accent-1': $dashboard-blue-primary,
+  'accent-2': $dashboard-blue-secondary,
+  'success': #8bc34a,
+  'warning': #ffc107,
+  'danger': #dc3545,
+  'info': #17a2b8,
+  'light': #f8f9fa,
+  'dark': #535353,
+);
+
 $body-bg: #f6f7fb;
 $body-font-family:
   'Mona Sans',

@@ -22,3 +22,6 @@ export * from './event/queries';
 // Booking operations
 export * from './booking/mutations';
 export * from './booking/queries';
+
+// Dashboard operations
+export * from './dashboard/queries';
