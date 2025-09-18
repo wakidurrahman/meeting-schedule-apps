@@ -327,6 +327,11 @@ const httpLink = new HttpLink({
   uri: graphqlUri,
   useGETForQueries: false, // Use POST for queries (cleaner URLs)
   credentials: 'include', // Include cookies for authentication
+  // Enhanced headers for better debugging
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
 });
 
 /**
@@ -367,10 +372,23 @@ const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) 
 
   if (networkError) {
     console.error(`Network error: ${networkError}`);
+    console.error('Network error details:', {
+      message: networkError.message,
+      name: networkError.name,
+      stack: networkError.stack,
+      operation: operation.operationName,
+      variables: operation.variables,
+      uri: graphqlUri,
+    });
 
     // Handle network connectivity issues
     if (networkError.message === 'Failed to fetch') {
       console.warn('Network connectivity issue detected');
+    }
+
+    // Handle specific GraphQL server errors
+    if (networkError.message.includes('Must provide query string')) {
+      console.error('GraphQL query string error - check request format');
     }
   }
 });
@@ -409,12 +427,13 @@ const defaultOptions: DefaultOptions = {
  * - Development tools integration
  */
 export const apolloClient = new ApolloClient({
-  // Link chain: error handling -> auth -> batching/http
-  // Use batching in production for performance, regular HTTP in development for easier debugging
-  link: from([errorLink, authLink, import.meta.env.PROD ? batchLink : httpLink]),
+  // Link chain: error handling -> auth -> http
+  // Temporarily disable batching to fix production GraphQL "Must provide query string" error
+  // TODO: Debug BatchHttpLink compatibility with express-graphql later
+  link: from([errorLink, authLink, httpLink]),
 
   cache,
-  // defaultOptions,
+  defaultOptions,
   // Enable Apollo DevTools in development only
   connectToDevTools: import.meta.env.DEV,
 
@@ -446,7 +465,7 @@ if (import.meta.env.DEV) {
       authentication: '✅ JWT Bearer tokens',
       caching: '✅ Advanced type policies',
       pagination: '✅ Offset-based merging',
-      batching: '❌ Disabled (development)',
+      batching: '❌ Disabled (debugging)',
       errorHandling: '✅ Enhanced with auto-logout',
       devtools: '✅ Enabled',
     },
@@ -465,7 +484,7 @@ if (import.meta.env.PROD) {
     features: {
       authentication: '✅ JWT Bearer tokens',
       caching: '✅ Advanced type policies',
-      batching: '✅ Enabled',
+      batching: '❌ Disabled (debugging)',
       errorHandling: '✅ Enhanced with auto-logout',
       devtools: '❌ Disabled',
     },
