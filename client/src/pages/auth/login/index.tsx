@@ -42,7 +42,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { UserLoginInput } from '@/types/user';
 import { LoginSchema } from '@/utils/validation';
 
-export default function Login(): JSX.Element {
+const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login: setAuth } = useAuthContext();
   // Toast
@@ -50,6 +50,7 @@ export default function Login(): JSX.Element {
   // form values
   type FormValues = z.infer<typeof LoginSchema>;
 
+  // React Hook Form instance
   const {
     register,
     handleSubmit,
@@ -61,6 +62,7 @@ export default function Login(): JSX.Element {
     criteriaMode: 'all', // validate all fields
     shouldFocusError: true, // focus on the first error
   });
+
   // Login mutation hook with Apollo Client
   const [loginMutation, { loading, error }] = useMutation<
     LoginMutationData,
@@ -169,4 +171,6 @@ export default function Login(): JSX.Element {
       </div>
     </BaseTemplate>
   );
-}
+};
+
+export default Login;

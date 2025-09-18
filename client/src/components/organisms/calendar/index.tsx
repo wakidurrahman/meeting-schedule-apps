@@ -15,7 +15,7 @@ import CalendarGrid from './grid';
 import CalendarHeader from './header';
 import './index.scss';
 
-import { CURRENT_DATE } from '@/constants/const';
+import { getCurrentDate } from '@/constants/const';
 import type {
   CalendarGridType,
   CalendarViewType,
@@ -81,7 +81,7 @@ const Calendar: React.FC<CalendarProps> = ({
   ...rest
 }) => {
   // 1. State management
-  const [currentDate, setCurrentDate] = useState<Date>(selectedDate || CURRENT_DATE);
+  const [currentDate, setCurrentDate] = useState<Date>(selectedDate || getCurrentDate());
   const [currentView, setCurrentView] = useState<CalendarViewType>(view);
   const [internalSelectedDate, setInternalSelectedDate] = useState<Date | null>(
     selectedDate || null,
@@ -171,7 +171,7 @@ const Calendar: React.FC<CalendarProps> = ({
 
   // 4. Navigation handlers today date
   const handleNavigateToday = useCallback(() => {
-    const today = CURRENT_DATE;
+    const today = getCurrentDate();
     setCurrentDate(today);
     setInternalSelectedDate(today);
     onDateChange?.(today);

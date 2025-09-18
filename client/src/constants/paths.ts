@@ -8,7 +8,8 @@ export type NavPath = {
 };
 
 export const paths = {
-  home: '/',
+  home: '/dashboard',
+  dashboard: '/dashboard',
   calendar: '/calendar',
   users: '/users',
   userCreate: '/users/create',

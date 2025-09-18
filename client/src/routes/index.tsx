@@ -169,6 +169,9 @@ export default function AppRoutes(): React.ReactElement {
         element={<LazyRoute component={Dashboard} fallback={DashboardPageSpinner} />}
       />
 
+      {/* Root redirect to dashboard */}
+      <Route path="/" element={<Navigate to={paths.dashboard} replace />} />
+
       {/* Profile Route */}
       <Route
         path={pathsWithAuth.profile}
