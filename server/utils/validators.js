@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const { z } = require('zod');
 
+const { USER_ROLE } = require('../constants/const');
 const { VALIDATION_MESSAGES: VM } = require('../constants/messages');
 
 const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
-const { USER_ROLE } = require('../constants/const');
 
 // Auth schemas
 
@@ -135,7 +135,19 @@ const CreateUserInputSchema = z.object({
     .regex(/^[a-zA-Z\s'-]+$/, VM.namePattern)
     .transform((str) => str.trim()),
   email: z.string().regex(EmailRegex, VM.emailInvalid),
-  imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrl: z
+    .union([
+      z.string().url(), // String URL
+      z.string().refine((val) => val === '' || val.startsWith('{'), {
+        message: 'Must be a valid URL or JSON string',
+      }), // JSON string (UserImageSizes serialized) or empty
+      z.object({
+        thumb: z.string(),
+        small: z.string(),
+        medium: z.string(),
+      }), // UserImageSizes object
+    ])
+    .optional(),
   role: z.enum([USER_ROLE.USER, USER_ROLE.ADMIN]).default(USER_ROLE.USER),
 });
 
@@ -149,7 +161,19 @@ const UpdateUserInputSchema = z.object({
     .transform((str) => str.trim())
     .optional(),
   email: z.string().regex(EmailRegex, VM.emailInvalid).optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
+  imageUrl: z
+    .union([
+      z.string().url(), // String URL
+      z.string().refine((val) => val === '' || val.startsWith('{'), {
+        message: 'Must be a valid URL or JSON string',
+      }), // JSON string (UserImageSizes serialized) or empty
+      z.object({
+        thumb: z.string(),
+        small: z.string(),
+        medium: z.string(),
+      }), // UserImageSizes object
+    ])
+    .optional(),
   role: z.enum([USER_ROLE.USER, USER_ROLE.ADMIN]).optional(),
 });
 
@@ -160,13 +184,10 @@ const UpdateUserInputSchema = z.object({
  */
 
 const EventInputSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().min(1, VM.titleRequired),
   description: z.string().optional().default(''),
-  startTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidStartTime),
-  endTime: z.string().refine((val) => !Number.isNaN(Date.parse(val)), VM.invalidEndTime),
-  attendeeIds: z
-    .array(z.string().refine((id) => mongoose.Types.ObjectId.isValid(id), VM.invalidAttendeeId))
-    .default([]),
+  date: z.string().refine((val) => !Number.isNaN(Date.parse(val)), 'Invalid date format'),
+  price: z.number().min(0, 'Price must be non-negative'),
 });
 
 module.exports = {

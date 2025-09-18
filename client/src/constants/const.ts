@@ -1,7 +1,9 @@
 import { CalendarViewType } from '@/types/calendar';
 import { now } from '@/utils/date';
 
-export const CURRENT_DATE = now();
+// Use a function to get current date instead of a constant
+// This ensures we always get the actual current date when called
+export const getCurrentDate = (): Date => now();
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const NAME_REGEX = /^[a-zA-Z\s'-]+$/;

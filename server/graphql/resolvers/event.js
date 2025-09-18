@@ -59,15 +59,14 @@ const eventResolvers = {
       // step 02: validate the input by Zod schema
       EventInputSchema.parse(eventInput);
       // step 03: extract the input destructuring
-      const { title, description, startTime, endTime, attendeeIds } = eventInput;
+      const { title, description, date, price } = eventInput;
 
       // step 04: create the event
       const event = await createEventDoc({
         title,
         description,
-        startTime,
-        endTime,
-        attendeeIds,
+        date,
+        price,
         createdBy: userId,
       });
 

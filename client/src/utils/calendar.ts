@@ -10,7 +10,7 @@
 
 import { cloneDate, formatJST, formatJSTDate, fromPartsJST, now } from './date';
 
-import { CURRENT_DATE } from '@/constants/const';
+import { getCurrentDate } from '@/constants/const';
 import {
   CalendarDay,
   CalendarGridType,
@@ -394,7 +394,7 @@ export function generateCalendarGrid(
   meetings: MeetingEvent[] = [],
 ): CalendarGridType {
   // 1. Today's date in JST instance
-  const today = CURRENT_DATE;
+  const today = getCurrentDate();
 
   // 2. Get the first day of the month and the first day of the grid
   const firstDayOfMonth = fromPartsJST({ year, month, day: 1 });

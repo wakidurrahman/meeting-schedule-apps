@@ -22,7 +22,7 @@ import Calendar from '@/components/organisms/calendar';
 import { CreateMeetingModal, MeetingDetailsModal } from '@/components/organisms/meeting-modal';
 import MiniCalendar from '@/components/organisms/mini-calendar';
 import CalendarTemplate from '@/components/templates/calendar';
-import { CURRENT_DATE } from '@/constants/const';
+import { getCurrentDate } from '@/constants/const';
 import {
   DateRangeQueryData,
   GET_MEETINGS_BY_DATE_RANGE,
@@ -43,7 +43,7 @@ const CalendarPage: React.FC = () => {
   const { addSuccess } = useToast();
 
   // Calendar state
-  const [currentDate, setCurrentDate] = useState<Date>(CURRENT_DATE);
+  const [currentDate, setCurrentDate] = useState<Date>(getCurrentDate());
   const [selectedDate, setSelectedDate] = useState<Date | undefined | null>(undefined);
   const [calendarView, setCalendarView] = useState<CalendarViewType>('month');
   const [showSidebar, setShowSidebar] = useState<boolean>(true);
@@ -75,6 +75,11 @@ const CalendarPage: React.FC = () => {
     fetchPolicy: 'cache-first',
     notifyOnNetworkStatusChange: true, // ✅ OPTIMIZATION: Notify on network status change
   });
+
+  console.log('current date', currentDate);
+  console.log('calendar view', calendarView);
+  console.log('date range', dateRange);
+  console.log('meetings data', meetingsData);
 
   // 🚀 PERFORMANCE OPTIMIZATION: Prefetch adjacent date ranges for smooth navigation
   useCalendarPrefetch(currentDate, calendarView);
@@ -133,7 +138,7 @@ const CalendarPage: React.FC = () => {
   // Get the today's meetings.
   const getTodaysMeetings = useCallback((meetings: MeetingEvent[]) => {
     // Get the today's date.
-    const today = CURRENT_DATE;
+    const today = getCurrentDate();
     // Filter the meetings for the today's date.
     return meetings.filter((meeting) => meeting.startTime.toDateString() === today.toDateString());
   }, []);
@@ -141,7 +146,7 @@ const CalendarPage: React.FC = () => {
   // This Week's Meetings. By using filter function to get the meetings for the current week.
   const thisWeekMeetings = useMemo(() => {
     return meetings.filter((meeting) => {
-      const weekStart = CURRENT_DATE;
+      const weekStart = getCurrentDate();
       const weekEnd = cloneDate(weekStart);
 
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
@@ -153,7 +158,7 @@ const CalendarPage: React.FC = () => {
 
   // Upcoming Meetings. By using filter function to get the meetings for the upcoming days.
   const upcomingMeetings = useMemo(() => {
-    return meetings.filter((meeting) => meeting.startTime > CURRENT_DATE);
+    return meetings.filter((meeting) => meeting.startTime > getCurrentDate());
   }, [meetings]);
 
   // Calendar event handlers

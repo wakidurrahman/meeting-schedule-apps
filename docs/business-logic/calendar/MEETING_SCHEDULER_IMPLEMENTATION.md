@@ -92,7 +92,6 @@ client/src/
 ├── pages/
 │   ├── calendar/                   # ✅ Full calendar interface (590 lines)
 │   ├── dashboard/                  # ✅ Meeting dashboard (450 lines)
-│   ├── meeting-scheduler-demo/     # ✅ Demo and navigation hub
 │   └── meeting/
 │       ├── create/                 # ✅ Meeting creation (existing)
 │       ├── edit/[id]/             # [READY] Can be built using MeetingDetailTemplate
