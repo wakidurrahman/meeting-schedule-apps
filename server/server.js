@@ -33,7 +33,6 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const multer = require('multer');
 const sharp = require('sharp');
-
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
@@ -97,7 +96,7 @@ async function start() {
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
       message: { error: 'Too many requests, please try again later.' },
       // Skip rate limiting validation for Railway proxy setup
-      skip: (req) => process.env.NODE_ENV !== 'production',
+      skip: (_req) => process.env.NODE_ENV !== 'production',
     }),
   );
 
@@ -115,6 +114,23 @@ async function start() {
    */
   morgan.token('id', (req) => req.id);
   app.use(morgan(':id :method :url :status :res[content-length] - :response-time ms'));
+
+  // Additional error logging for debugging production issues
+  app.use((req, res, next) => {
+    if (req.method === 'POST' && req.url === '/graphql') {
+      console.log('🚀 GraphQL Request Debug:', {
+        requestId: req.id,
+        method: req.method,
+        url: req.url,
+        origin: req.headers.origin,
+        contentType: req.headers['content-type'],
+        authorization: req.headers.authorization ? 'Bearer ***' : 'none',
+        bodyExists: !!req.body,
+        bodyKeys: req.body ? Object.keys(req.body) : 'no-body',
+      });
+    }
+    next();
+  });
 
   /**
    * Cross-origin resource sharing. Allows the front-end app to call this API with credentials.

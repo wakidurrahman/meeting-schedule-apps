@@ -55,53 +55,93 @@ const userResolvers = {
 
   login: async ({ input }, _context) => {
     try {
+      console.log('🔐 Login attempt started:', {
+        email: input?.email || 'missing',
+        passwordLength: input?.password?.length || 0,
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        nodeEnv: process.env.NODE_ENV,
+      });
+
       // step 01: validate the input by Zod schema
       LoginInputSchema.parse(input);
+      console.log('✅ Login input validation passed');
       // step 02: extract the input destructuring
       const { email, password } = input;
 
       // step 03: find the user by email
       const user = await findUserDocByEmail(email);
+      console.log('🔍 Database query result:', {
+        userFound: !!user,
+        userId: user?.id || 'none',
+        userEmail: user?.email || 'none',
+        hasPasswordField: !!user?.password,
+      });
       // step 04: if the user is not found, throw an error
       if (!user) {
+        console.log('❌ User not found for email:', email);
         throw new GraphQLError(MESSAGES.INVALID_CREDENTIALS, {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT },
         });
       }
 
       // step 05: compare the password with the hashed password
+      console.log('🔒 Password comparison starting...');
       const valid = await bcrypt.compare(password, user.password);
+      console.log('🔒 Password comparison result:', { valid });
       // step 06: if the password is not valid, throw an error
       if (!valid) {
+        console.log('❌ Invalid password for user:', email);
         throw new GraphQLError(MESSAGES.INVALID_CREDENTIALS, {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT },
         });
       }
 
       // step 07: check if the JWT_SECRET is set
+      console.log('🔑 JWT_SECRET check:', {
+        hasSecret: !!process.env.JWT_SECRET,
+        secretLength: process.env.JWT_SECRET?.length || 0,
+      });
       if (!process.env.JWT_SECRET) {
+        console.log('❌ JWT_SECRET missing!');
         throw new GraphQLError(MESSAGES.JWT_MISSING, {
           extensions: { code: ERROR_CODES.INTERNAL_SERVER_ERROR },
         });
       }
 
       // step 08: generate a JWT token
+      console.log('🎫 Generating JWT token...');
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
         expiresIn: '7d',
       });
+      console.log('✅ JWT token generated successfully');
 
       // step 09: return the token and user
+      console.log('🎉 Login successful for user:', email);
       return {
         token,
         user: formatAuthUser(user),
         tokenExpiration: null, // Add if needed
       };
     } catch (err) {
+      console.log('💥 Login error caught:', {
+        errorName: err.name,
+        errorMessage: err.message,
+        isZodError: err.name === 'ZodError',
+        isGraphQLError: err.name === 'GraphQLError',
+      });
       if (err.name === 'ZodError') {
+        console.log('❌ Zod validation error details:', err.issues);
         throw new GraphQLError(MESSAGES.VALIDATION_FAILED, {
           extensions: { code: ERROR_CODES.BAD_USER_INPUT, details: err.issues },
         });
       }
+
+      // Re-throw GraphQL errors as-is
+      if (err.name === 'GraphQLError') {
+        throw err;
+      }
+
+      console.log('💥 Unexpected login error:', err);
       handleUnexpectedError(err);
     }
   },
