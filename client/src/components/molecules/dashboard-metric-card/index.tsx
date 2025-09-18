@@ -36,7 +36,7 @@ const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
   format = 'number',
   className,
 }) => {
-  const classes = buildClassNames('dashboard-metric-card', className);
+  const classes = buildClassNames('m-dashboard-metric-card', className);
 
   // Format the value based on the format type
   const formatValue = (val: number | string): string => {
@@ -58,12 +58,12 @@ const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
   // Get color scheme classes
   const getColorScheme = (scheme: string) => {
     const schemes = {
-      purple: 'dashboard-metric-card--purple',
-      blue: 'dashboard-metric-card--blue',
-      success: 'dashboard-metric-card--success',
-      warning: 'dashboard-metric-card--warning',
-      danger: 'dashboard-metric-card--danger',
-      info: 'dashboard-metric-card--info',
+      purple: 'm-dashboard-metric-card--purple',
+      blue: 'm-dashboard-metric-card--blue',
+      success: 'm-dashboard-metric-card--success',
+      warning: 'm-dashboard-metric-card--warning',
+      danger: 'm-dashboard-metric-card--danger',
+      info: 'm-dashboard-metric-card--info',
     };
     return schemes[scheme as keyof typeof schemes] || schemes.purple;
   };
@@ -74,25 +74,25 @@ const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
         <div className="d-flex align-items-start justify-content-between">
           <div className="flex-grow-1">
             {/* Title */}
-            <div className="dashboard-metric-card__title mb-1">
+            <div className="m-dashboard-metric-card__title mb-1">
               <span className="text-muted small fw-medium">{title}</span>
             </div>
 
             {/* Value */}
-            <div className="dashboard-metric-card__value mb-2">
+            <div className="m-dashboard-metric-card__value mb-2">
               <span className="h2 fw-bold text-dark mb-0">{formatValue(value)}</span>
             </div>
 
             {/* Subtitle */}
             {subtitle && (
-              <div className="dashboard-metric-card__subtitle">
+              <div className="m-dashboard-metric-card__subtitle">
                 <span className="text-muted small">{subtitle}</span>
               </div>
             )}
 
             {/* Trend */}
             {trend && (
-              <div className="dashboard-metric-card__trend mt-2">
+              <div className="m-dashboard-metric-card__trend mt-2">
                 <span
                   className={buildClassNames(
                     'badge badge-sm',
@@ -115,8 +115,8 @@ const DashboardMetricCard: React.FC<DashboardMetricCardProps> = ({
 
           {/* Icon */}
           {icon && (
-            <div className="dashboard-metric-card__icon">
-              <div className="dashboard-metric-card__icon-wrapper">
+            <div className="m-dashboard-metric-card__icon">
+              <div className="m-dashboard-metric-card__icon-wrapper">
                 <i className={buildClassNames('bi', icon)} />
               </div>
             </div>

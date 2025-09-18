@@ -1,6 +1,6 @@
 @import '../../../assets/scss/variables';
 
-.dashboard-metric-card {
+.m-dashboard-metric-card {
   border: none;
   border-radius: 1rem;
   transition: all 0.3s ease;
@@ -21,16 +21,16 @@
     );
     color: white;
 
-    .dashboard-metric-card__title,
-    .dashboard-metric-card__subtitle {
+    .m-dashboard-metric-card__title,
+    .m-dashboard-metric-card__subtitle {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       color: white;
     }
 
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
@@ -40,16 +40,16 @@
     background: linear-gradient(135deg, $dashboard-blue-primary 0%, $dashboard-blue-secondary 100%);
     color: white;
 
-    .dashboard-metric-card__title,
-    .dashboard-metric-card__subtitle {
+    .m-dashboard-metric-card__title,
+    .m-dashboard-metric-card__subtitle {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       color: white;
     }
 
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
@@ -59,16 +59,16 @@
     background: linear-gradient(135deg, $success 0%, lighten($success, 10%) 100%);
     color: white;
 
-    .dashboard-metric-card__title,
-    .dashboard-metric-card__subtitle {
+    .m-dashboard-metric-card__title,
+    .m-dashboard-metric-card__subtitle {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       color: white;
     }
 
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
@@ -78,16 +78,16 @@
     background: linear-gradient(135deg, $warning 0%, lighten($warning, 10%) 100%);
     color: white;
 
-    .dashboard-metric-card__title,
-    .dashboard-metric-card__subtitle {
+    .m-dashboard-metric-card__title,
+    .m-dashboard-metric-card__subtitle {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       color: white;
     }
 
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
@@ -97,16 +97,16 @@
     background: linear-gradient(135deg, $danger 0%, lighten($danger, 10%) 100%);
     color: white;
 
-    .dashboard-metric-card__title,
-    .dashboard-metric-card__subtitle {
+    .m-dashboard-metric-card__title,
+    .m-dashboard-metric-card__subtitle {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       color: white;
     }
 
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
@@ -116,16 +116,16 @@
     background: linear-gradient(135deg, $info 0%, lighten($info, 10%) 100%);
     color: white;
 
-    .dashboard-metric-card__title,
-    .dashboard-metric-card__subtitle {
+    .m-dashboard-metric-card__title,
+    .m-dashboard-metric-card__subtitle {
       color: rgba(255, 255, 255, 0.8);
     }
 
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       color: white;
     }
 
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       background: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(10px);
     }
@@ -133,7 +133,7 @@
 
   // Icon styling
   &__icon {
-    .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon-wrapper {
       width: 48px;
       height: 48px;
       border-radius: 12px;
@@ -149,12 +149,12 @@
 
   // Responsive adjustments
   @media (max-width: 576px) {
-    .dashboard-metric-card__value {
+    .m-dashboard-metric-card__value {
       font-size: 1.5rem !important;
     }
 
-    .dashboard-metric-card__icon {
-      .dashboard-metric-card__icon-wrapper {
+    .m-dashboard-metric-card__icon {
+      .m-dashboard-metric-card__icon-wrapper {
         width: 40px;
         height: 40px;
         font-size: 1rem;

@@ -23,6 +23,7 @@ import Card from '@/components/molecules/card';
 import DashboardMetricCard from '@/components/molecules/dashboard-metric-card';
 import CalendarChart from '@/components/organisms/calendar-chart';
 import MeetingDashboardTemplate from '@/components/templates/dashboard/meeting-dashboard';
+import { getCurrentDate } from '@/constants/const';
 import { paths } from '@/constants/paths';
 import { GET_BOOKINGS } from '@/graphql/booking/queries';
 import { GET_EVENTS } from '@/graphql/event/queries';
@@ -32,6 +33,7 @@ import type { Booking } from '@/types/booking';
 import type { Event } from '@/types/event';
 import type { Meeting } from '@/types/meeting';
 import type { UserProfile } from '@/types/user';
+import { cloneDate, now } from '@/utils/date';
 
 interface DashboardData {
   meetings: Meeting[];
@@ -59,9 +61,9 @@ interface DashboardMetrics {
 }
 
 const DashboardPage: React.FC = () => {
-  const [currentDate] = useState(new Date());
+  const [currentDate] = useState(getCurrentDate());
 
-  // Fetch data from multiple sources with limits for performance optimization
+  // Fetch meetings data
   const {
     data: meetingsData,
     loading: meetingsLoading,
@@ -71,20 +73,32 @@ const DashboardPage: React.FC = () => {
     errorPolicy: 'all',
   });
 
-  const { data: eventsData, loading: eventsLoading, error: eventsError } = useQuery(GET_EVENTS);
+  // Fetch events data
+  const {
+    data: eventsData,
+    loading: eventsLoading,
+    error: eventsError,
+  } = useQuery(GET_EVENTS, {
+    errorPolicy: 'all',
+  });
 
+  // Fetch bookings data
   const {
     data: bookingsData,
     loading: bookingsLoading,
     error: bookingsError,
-  } = useQuery(GET_BOOKINGS);
+  } = useQuery(GET_BOOKINGS, {
+    errorPolicy: 'all',
+  });
 
+  // Fetch users data
   const {
     data: usersData,
     loading: usersLoading,
     error: usersError,
   } = useQuery(GET_USERS, {
-    variables: { pagination: { limit: 50 } },
+    variables: { pagination: { limit: 5 } },
+    errorPolicy: 'all',
   });
 
   // Combine loading and error states
@@ -104,14 +118,14 @@ const DashboardPage: React.FC = () => {
   // Calculate analytics metrics
   const metrics: DashboardMetrics = useMemo(() => {
     const { meetings, events, bookings, users } = dashboardData;
-    const nowDate = new Date();
+    const nowDate = now();
     const thirtyDaysAgo = subMonths(nowDate, 1);
 
     // Recent data (last 30 days)
     const recentMeetings = [...meetings].filter((m) => new Date(m.createdAt || '') > thirtyDaysAgo);
-    const recentEvents = [...events].filter((e) => new Date(e.createdAt) > thirtyDaysAgo);
-    const recentBookings = [...bookings].filter((b) => new Date(b.createdAt) > thirtyDaysAgo);
-    const recentUsers = [...users].filter((u) => new Date(u.createdAt) > thirtyDaysAgo);
+    const recentEvents = [...events].filter((e) => cloneDate(e.createdAt) > thirtyDaysAgo);
+    const recentBookings = [...bookings].filter((b) => cloneDate(b.createdAt) > thirtyDaysAgo);
+    const recentUsers = [...users].filter((u) => cloneDate(u.createdAt) > thirtyDaysAgo);
 
     // Calculate revenue
     const totalRevenue = events.reduce((sum, event) => sum + (event.price || 0), 0);
@@ -281,7 +295,7 @@ const DashboardPage: React.FC = () => {
               title="Total Users"
               value={metrics.totalUsers}
               icon="bi-people"
-              colorScheme="purple"
+              colorScheme="info"
               trend={{
                 value: metrics.userGrowth,
                 isPositive: metrics.userGrowth > 0,
