@@ -415,7 +415,6 @@ export const apolloClient = new ApolloClient({
 
   cache,
   // defaultOptions,
-
   // Enable Apollo DevTools in development only
   connectToDevTools: import.meta.env.DEV,
 
