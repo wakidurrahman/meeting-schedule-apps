@@ -115,23 +115,6 @@ async function start() {
   morgan.token('id', (req) => req.id);
   app.use(morgan(':id :method :url :status :res[content-length] - :response-time ms'));
 
-  // Additional error logging for debugging production issues
-  app.use((req, res, next) => {
-    if (req.method === 'POST' && req.url === '/graphql') {
-      console.log('🚀 GraphQL Request Debug:', {
-        requestId: req.id,
-        method: req.method,
-        url: req.url,
-        origin: req.headers.origin,
-        contentType: req.headers['content-type'],
-        authorization: req.headers.authorization ? 'Bearer ***' : 'none',
-        bodyExists: !!req.body,
-        bodyKeys: req.body ? Object.keys(req.body) : 'no-body',
-      });
-    }
-    next();
-  });
-
   /**
    * Cross-origin resource sharing. Allows the front-end app to call this API with credentials.
    * Supports multiple origins for development and production builds.
@@ -181,6 +164,25 @@ async function start() {
    * JSON body parsing for GraphQL POST requests.
    */
   app.use(express.json());
+
+  // Additional error logging for debugging production issues (AFTER body parsing)
+  app.use((req, res, next) => {
+    if (req.method === 'POST' && req.url === '/graphql') {
+      console.log('🚀 GraphQL Request Debug:', {
+        requestId: req.id,
+        method: req.method,
+        url: req.url,
+        origin: req.headers.origin,
+        contentType: req.headers['content-type'],
+        authorization: req.headers.authorization ? 'Bearer ***' : 'none',
+        bodyExists: !!req.body,
+        bodyKeys: req.body ? Object.keys(req.body) : 'no-body',
+        queryExists: !!req.body?.query,
+        variablesExists: !!req.body?.variables,
+      });
+    }
+    next();
+  });
 
   /**
    * Authentication middleware.

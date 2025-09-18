@@ -327,9 +327,8 @@ const httpLink = new HttpLink({
   uri: graphqlUri,
   useGETForQueries: false, // Use POST for queries (cleaner URLs)
   credentials: 'include', // Include cookies for authentication
-  // Enhanced headers for better debugging
+  // Remove explicit Content-Type - let Apollo handle it automatically
   headers: {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 });
