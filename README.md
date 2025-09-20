@@ -225,6 +225,130 @@ DASH --> PROF
 
 ---
 
+## Local Build Process
+
+### Prerequisites
+
+- **Node.js**: `>=22.14.0 <23.0.0`
+- **npm**: `>=10.0.0`
+- **MongoDB**: Running instance (local or remote)
+
+### Client Build Process
+
+#### Development Build
+
+```bash
+cd client
+
+# Install dependencies
+npm install
+
+# Start development server (http://localhost:5173)
+npm run dev
+
+# Start with hot reload on all network interfaces
+npm run dev:hot
+```
+
+#### Production Build
+
+```bash
+cd client
+
+# Build for production
+npm run build
+
+# Preview production build locally
+npm run preview
+
+# Analyze bundle size
+npm run build:analyze
+
+# Generate build statistics
+npm run build:stats
+```
+
+#### Code Quality & Formatting
+
+```bash
+cd client
+
+# Lint TypeScript files
+npm run lint
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+npm run format:check
+
+# Check bundle size
+npm run bundle:size
+
+# Run Lighthouse performance audit
+npm run performance:lighthouse
+```
+
+### Server Build Process
+
+#### Development Build
+
+```bash
+cd server
+
+# Install dependencies
+npm install
+
+# Start development server with auto-reload (http://localhost:4000)
+npm run dev
+
+# Start production server
+npm start
+```
+
+#### Production Build
+
+```bash
+cd server
+
+# Install production dependencies only
+npm run prod:install
+
+# Start production server with optimizations
+npm run start:prod
+
+# Docker production start
+npm run docker:start
+```
+
+#### Testing & Quality
+
+```bash
+cd server
+
+# Run test suite
+npm test
+
+# Watch mode for testing
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+
+# CI test run
+npm run test:ci
+
+# Lint JavaScript files
+npm run lint
+npm run lint:fix
+
+# Format code
+npm run format
+npm run format:check
+
+# Run all checks
+npm run check
+```
+
 ## Server development
 
 ### GraphQL modular structure
