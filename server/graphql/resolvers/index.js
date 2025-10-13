@@ -7,6 +7,7 @@ const authResolvers = require('./auth');
 const bookingResolvers = require('./booking');
 const eventResolvers = require('./event');
 const meetingResolvers = require('./meeting');
+const productResolvers = require('./product');
 const userResolvers = require('./user');
 
 /**
@@ -28,4 +29,7 @@ module.exports = {
 
   // Booking resolvers
   ...bookingResolvers,
+
+  // Product resolvers (from DummyJSON API)
+  ...productResolvers,
 };

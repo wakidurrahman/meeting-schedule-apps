@@ -16,3 +16,11 @@
 ## Meeting Scheduler Implementation
 
 - Create Meeting Event
+
+## Study
+
+- Jira
+- Confluence
+- Jenkins
+- Agile
+- Kanban Board

@@ -9,6 +9,7 @@ const authTypeDefs = require('./auth');
 const bookingTypeDefs = require('./booking');
 const eventTypeDefs = require('./event');
 const meetingTypeDefs = require('./meeting');
+const productTypeDefs = require('./product');
 const userTypeDefs = require('./user');
 
 // Base types that other files extend
@@ -37,4 +38,5 @@ module.exports = [
   meetingTypeDefs,
   eventTypeDefs,
   bookingTypeDefs,
+  productTypeDefs,
 ].join('\n');

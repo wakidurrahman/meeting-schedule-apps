@@ -22,6 +22,8 @@ const ERROR_CODES = {
   NOT_FOUND: 'NOT_FOUND',
   CONFLICT: 'CONFLICT',
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  EXTERNAL_API_ERROR: 'EXTERNAL_API_ERROR',
 };
 
 const MESSAGES = {
@@ -43,6 +45,7 @@ const MESSAGES = {
   MEETING_NOT_FOUND: 'Meeting not found',
   EVENT_NOT_FOUND: 'Event not found',
   BOOKING_NOT_FOUND: 'Booking not found',
+  PRODUCT_NOT_FOUND: 'Product not found',
 
   // DB
   DB_URI_MISSING: 'MONGO_URI is not set',

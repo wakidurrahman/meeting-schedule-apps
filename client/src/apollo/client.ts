@@ -77,6 +77,7 @@ declare global {
  * - Pagination support with offset-based merging
  * - Optimized cache-first policies for read-heavy operations
  */
+
 const typePolicies: TypePolicies = {
   Query: {
     fields: {

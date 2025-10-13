@@ -20,6 +20,7 @@ import {
   CalendarPageSpinner,
   DashboardPageSpinner,
   EventsPageSpinner,
+  ProductsPageSpinner,
   ProfilePageSpinner,
   UsersPageSpinner,
 } from '@/components/atoms/page-spinner';
@@ -60,6 +61,9 @@ const EditEventPage = lazy(() => import('@/pages/events/edit'));
 
 // Booking Management Pages
 const BookingsPage = lazy(() => import('@/pages/bookings'));
+
+// Product Management Pages (DummyJSON API)
+const ProductsPage = lazy(() => import('@/pages/products'));
 
 // Meeting Management Pages
 const EditMeetingPage = lazy(() => import('@/pages/calendar/edit/[id]'));
@@ -246,6 +250,15 @@ export default function AppRoutes(): React.ReactElement {
       <Route
         path={paths.bookings}
         element={<LazyRoute component={BookingsPage} fallback={BookingsPageSpinner} />}
+      />
+
+      {/* ================================================================== */}
+      {/* PRODUCTS ROUTES (DummyJSON API) */}
+      {/* ================================================================== */}
+
+      <Route
+        path={paths.products}
+        element={<LazyRoute component={ProductsPage} fallback={ProductsPageSpinner} />}
       />
 
       {/* ================================================================== */}

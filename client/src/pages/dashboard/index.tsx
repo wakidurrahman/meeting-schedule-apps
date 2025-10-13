@@ -61,6 +61,7 @@ interface DashboardMetrics {
 }
 
 const DashboardPage: React.FC = () => {
+  // Current date.
   const [currentDate] = useState(getCurrentDate());
 
   // Fetch meetings data
