@@ -25,3 +25,6 @@ export * from './booking/queries';
 
 // Dashboard operations
 export * from './dashboard/queries';
+
+// Product operations (DummyJSON API)
+export * from './product/queries';

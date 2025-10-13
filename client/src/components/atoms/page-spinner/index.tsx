@@ -136,4 +136,8 @@ export const AuthPageSpinner: React.FC = () => (
   <PageSpinner message="Loading..." variant="register" />
 );
 
+export const ProductsPageSpinner: React.FC = () => (
+  <PageSpinner message="Loading Products..." variant="content-area" />
+);
+
 export default PageSpinner;

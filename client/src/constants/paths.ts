@@ -21,6 +21,7 @@ export const paths = {
   eventCreate: '/events/new',
   eventEdit: '/events/:id/edit',
   bookings: '/bookings',
+  products: '/products',
   login: '/login',
   register: '/register',
 } as const;
@@ -40,4 +41,5 @@ export const NAV_PATHS: NavPath[] = [
 
   { to: paths.events, label: 'Events', userRole: 'USER', isAuth: true },
   { to: paths.bookings, label: 'Bookings', userRole: 'USER', isAuth: true },
+  { to: paths.products, label: 'Products', userRole: 'USER', isAuth: true },
 ];
